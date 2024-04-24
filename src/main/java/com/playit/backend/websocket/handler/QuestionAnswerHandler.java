@@ -1,4 +1,4 @@
-package com.playit.backend.websocket.classic.handler;
+package com.playit.backend.websocket.handler;
 
 import java.io.IOException;
 import java.util.List;
