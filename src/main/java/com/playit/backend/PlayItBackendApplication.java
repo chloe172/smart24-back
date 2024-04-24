@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @RestController
 public class PlayItBackendApplication {
+
 	public static void main(String[] args) {
 		SpringApplication.run(PlayItBackendApplication.class, args);
 	}
@@ -20,6 +21,6 @@ public class PlayItBackendApplication {
 
 	@GetMapping("/hello")
 	public String hello(@RequestParam(value = "name", defaultValue = "World") String name) {
-		return String.format("Salut %s!", name);
+		return String.format("Hello %s!", name);
 	}
 }
