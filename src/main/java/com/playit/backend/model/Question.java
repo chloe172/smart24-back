@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 @Entity
 public class Question extends Activite {
 	private String typeQuestion;
-	private String intitule;
 	private List<String> reponses;
 	private String bonneReponse;
 	private String explication;
@@ -19,11 +18,44 @@ public class Question extends Activite {
 		this.intitule = intitule;
 	}
 
-	/**
-	 * @return the intitule
-	 */
+	public String getTypeQuestion() {
+		return this.typeQuestion;
+	}
+
+	public void setTypeQuestion(String typeQuestion) {
+		this.typeQuestion = typeQuestion;
+	}
+
 	public String getIntitule() {
 		return this.intitule;
+	}
+
+	public void setIntitule(String intitule) {
+		this.intitule = intitule;
+	}
+
+	public List<String> getReponses() {
+		return this.reponses;
+	}
+
+	public void setReponses(List<String> reponses) {
+		this.reponses = reponses;
+	}
+
+	public String getBonneReponse() {
+		return this.bonneReponse;
+	}
+
+	public void setBonneReponse(String bonneReponse) {
+		this.bonneReponse = bonneReponse;
+	}
+
+	public String getExplication() {
+		return this.explication;
+	}
+
+	public void setExplication(String explication) {
+		this.explication = explication;
 	}
 
 }
