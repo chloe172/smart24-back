@@ -1,16 +1,16 @@
 package com.playit.backend.model;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
-
-import java.util.List;
 
 @Entity
 public class Partie {
@@ -20,7 +20,7 @@ public class Partie {
 	private int nombreEquipes;
 	private String codePin;
 	@Enumerated(EnumType.STRING)
-	private EtatPartie etat = EtatPartie.EnAttente;
+	private EtatPartie etat = EtatPartie.EN_ATTENTE;
 
 	@OneToOne
 	private Plateau plateauCourant;
@@ -38,11 +38,11 @@ public class Partie {
 	}
 
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 
 	public String getCodePin() {
-		return codePin;
+		return this.codePin;
 	}
 
 	public void setCodePin(String codePin) {
@@ -50,7 +50,7 @@ public class Partie {
 	}
 
 	public Plateau getPlateauCourant() {
-		return plateauCourant;
+		return this.plateauCourant;
 	}
 
 	public void setPlateauCourant(Plateau plateauCourant) {
@@ -58,7 +58,7 @@ public class Partie {
 	}
 
 	public List<Plateau> getPlateaux() {
-		return listePlateaux;
+		return this.listePlateaux;
 	}
 
 	public void setPlateaux(List<Plateau> plateaux) {
@@ -66,7 +66,7 @@ public class Partie {
 	}
 
 	public List<Equipe> getEquipes() {
-		return listeEquipes;
+		return this.listeEquipes;
 	}
 
 	public void setEquipes(List<Equipe> equipes) {
@@ -74,7 +74,7 @@ public class Partie {
 	}
 
 	public MaitreDuJeu getMaitreDuJeu() {
-		return maitreDuJeu;
+		return this.maitreDuJeu;
 	}
 
 	public void setMaitreDuJeu(MaitreDuJeu maitreDuJeu) {
@@ -82,7 +82,7 @@ public class Partie {
 	}
 
 	public int getNombreEquipes() {
-		return nombreEquipes;
+		return this.nombreEquipes;
 	}
 
 	public void setNombreEquipes(int nombreEquipes) {
@@ -90,14 +90,14 @@ public class Partie {
 	}
 
 	public EtatPartie getEtat() {
-		return etat;
+		return this.etat;
 	}
 
 	public void setEtat(EtatPartie etat) {
 		this.etat = etat;
 	}
 
-	public void addEquipe(Equipe equipe){
+	public void addEquipe(Equipe equipe) {
 		equipe.setPartie(this);
 		this.listeEquipes.add(equipe);
 	}

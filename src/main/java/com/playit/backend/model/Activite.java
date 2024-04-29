@@ -17,8 +17,8 @@ public abstract class Activite {
 	protected int difficulte;
 	protected String intitule;
 
-    @ManyToOne
-    private Plateau plateau;
+	@ManyToOne
+	private Plateau plateau;
 
 	public Activite() {
 	}
@@ -28,27 +28,27 @@ public abstract class Activite {
 		this.difficulte = difficulte;
 	}
 
-	public Long getId(){
-		return id;
+	public Long getId() {
+		return this.id;
 	}
 
 	public int getDifficulte() {
-		return difficulte;
-	} 
+		return this.difficulte;
+	}
 
 	public void setDifficulte(int difficulte) {
 		this.difficulte = difficulte;
 	}
 
 	public String getIntitule() {
-		return intitule;
+		return this.intitule;
 	}
-	
+
 	public void setIntitule(String intitule) {
 		this.intitule = intitule;
 	}
 
-    public void setPlateau(Plateau plateau) {
+	public void setPlateau(Plateau plateau) {
 		this.plateau = plateau;
 	}
 

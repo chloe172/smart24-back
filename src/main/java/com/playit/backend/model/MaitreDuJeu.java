@@ -1,13 +1,12 @@
 package com.playit.backend.model;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-
-import java.util.List;
-
 
 @Entity
 public class MaitreDuJeu {
@@ -17,26 +16,26 @@ public class MaitreDuJeu {
 	private String nom;
 	private String motDePasse;
 
-    @OneToMany(mappedBy = "maitreDuJeu")
-    private List<Partie> listeParties;
+	@OneToMany(mappedBy = "maitreDuJeu")
+	private List<Partie> listeParties;
 
 	public MaitreDuJeu() {
 	}
-	
+
 	public Long getId() {
-		return id;
+		return this.id;
 	}
-	
+
 	public String getNom() {
-		return nom;
+		return this.nom;
 	}
-	
+
 	public void setNom(String nom) {
 		this.nom = nom;
 	}
 
 	public String getMotDePasse() {
-		return motDePasse;
+		return this.motDePasse;
 	}
 
 	public void setMotDePasse(String motDePasse) {
@@ -44,16 +43,16 @@ public class MaitreDuJeu {
 	}
 
 	public List<Partie> getListeParties() {
-		return listeParties;
+		return this.listeParties;
 	}
 
-    public void addPartie(Partie partie){
-        partie.setMaitreDuJeu(this);
-        this.listeParties.add(partie);
-    }
+	public void addPartie(Partie partie) {
+		partie.setMaitreDuJeu(this);
+		this.listeParties.add(partie);
+	}
 
 	public void setListeParties(List<Partie> listeParties) {
 		this.listeParties = listeParties;
 	}
-	
+
 }

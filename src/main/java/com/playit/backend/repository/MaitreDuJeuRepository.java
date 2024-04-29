@@ -8,5 +8,5 @@ import com.playit.backend.model.MaitreDuJeu;
 
 public interface MaitreDuJeuRepository extends JpaRepository<MaitreDuJeu, Long> {
 
-    public Optional<MaitreDuJeu> findByNom(String nom);
+	Optional<MaitreDuJeu> findByNom(String nom);
 }

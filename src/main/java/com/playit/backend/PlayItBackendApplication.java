@@ -13,12 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.playit.backend.model.Question;
 import com.playit.backend.repository.QuestionRepository;
+import com.playit.backend.service.PlayITService;
 
 @SpringBootApplication
 @RestController
 public class PlayItBackendApplication {
 	@Autowired
 	QuestionRepository questionRepository;
+
+	@Autowired
+	PlayITService playITService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(PlayItBackendApplication.class, args);

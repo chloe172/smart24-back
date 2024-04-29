@@ -15,17 +15,17 @@ public class Equipe {
 	private int score;
 
 	@ManyToOne
-    private Partie partie;
+	private Partie partie;
 
 	public Equipe() {
 	}
 
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 
 	public String getNom() {
-		return nom;
+		return this.nom;
 	}
 
 	public void setNom(String nom) {
@@ -33,7 +33,7 @@ public class Equipe {
 	}
 
 	public int getScore() {
-		return score;
+		return this.score;
 	}
 
 	public void setScore(int score) {
@@ -41,7 +41,7 @@ public class Equipe {
 	}
 
 	public Partie getPartie() {
-		return partie;
+		return this.partie;
 	}
 
 	public void setPartie(Partie partie) {

@@ -26,10 +26,12 @@ public class Question extends Activite {
 		this.typeQuestion = typeQuestion;
 	}
 
+	@Override
 	public String getIntitule() {
 		return this.intitule;
 	}
 
+	@Override
 	public void setIntitule(String intitule) {
 		this.intitule = intitule;
 	}
