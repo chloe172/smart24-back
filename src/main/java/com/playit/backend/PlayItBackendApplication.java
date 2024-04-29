@@ -24,16 +24,16 @@ public class PlayItBackendApplication {
 		SpringApplication.run(PlayItBackendApplication.class, args);
 	}
 
-	@Bean
-	CommandLineRunner commandLineRunner(QuestionRepository questionRepository) {
-		return args -> {
-			questionRepository.save(new Question("Quelle est la capitale de la France ?"));
-			questionRepository.save(new Question("Quelle est la capitale de l'Espagne ?"));
-			questionRepository.save(new Question("Quelle est la capitale de l'Allemagne ?"));
-			questionRepository.flush();
-			System.out.println("Questions ajoutées à la base de données");
-		};
-	}
+	// @Bean
+	// CommandLineRunner commandLineRunner(QuestionRepository questionRepository) {
+	// 	return args -> {
+	// 		questionRepository.save(new Question("Quelle est la capitale de la France ?"));
+	// 		questionRepository.save(new Question("Quelle est la capitale de l'Espagne ?"));
+	// 		questionRepository.save(new Question("Quelle est la capitale de l'Allemagne ?"));
+	// 		questionRepository.flush();
+	// 		System.out.println("Questions ajoutées à la base de données");
+	// 	};
+	// }
 
 	@GetMapping("/")
 	public String index() {
@@ -52,7 +52,7 @@ public class PlayItBackendApplication {
 
 	@GetMapping("/createQuestion")
 	public String createQuestion(@RequestParam(value = "question") String question) {
-		this.questionRepository.saveAndFlush(new Question(question));
+		// this.questionRepository.saveAndFlush(new Question(question));
 
 		return "Question ajoutée";
 	}

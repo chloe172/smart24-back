@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
@@ -14,7 +16,9 @@ public abstract class Activite {
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	protected Long id;
-	protected int difficulte;
+
+	@Enumerated(EnumType.STRING)
+	protected DifficulteActivite difficulte;
 	protected String intitule;
 
     @ManyToOne
@@ -23,7 +27,7 @@ public abstract class Activite {
 	public Activite() {
 	}
 
-	public Activite(int difficulte, String intitule) {
+	public Activite(DifficulteActivite difficulte, String intitule) {
 		this.intitule = intitule;
 		this.difficulte = difficulte;
 	}
@@ -32,11 +36,11 @@ public abstract class Activite {
 		return id;
 	}
 
-	public int getDifficulte() {
+	public DifficulteActivite getDifficulte() {
 		return difficulte;
 	} 
 
-	public void setDifficulte(int difficulte) {
+	public void setDifficulte(DifficulteActivite difficulte) {
 		this.difficulte = difficulte;
 	}
 

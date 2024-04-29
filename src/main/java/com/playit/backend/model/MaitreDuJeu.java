@@ -7,20 +7,25 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 
 import java.util.List;
-
+import java.util.ArrayList;
 
 @Entity
 public class MaitreDuJeu {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	private String nom;
 	private String motDePasse;
 
     @OneToMany(mappedBy = "maitreDuJeu")
-    private List<Partie> listeParties;
+    private List<Partie> listeParties = new ArrayList<>();
 
 	public MaitreDuJeu() {
+	}
+
+	public MaitreDuJeu(String nom, String motDePasse) {
+		this.nom = nom;
+		this.motDePasse = motDePasse;
 	}
 	
 	public Long getId() {

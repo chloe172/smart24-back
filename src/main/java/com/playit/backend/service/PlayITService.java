@@ -11,13 +11,10 @@ import com.playit.backend.repository.MiniJeuRepository;
 import com.playit.backend.repository.PartieRepository;
 import com.playit.backend.repository.QuestionRepository;
 
-import com.playit.backend.model.Activite;
 import com.playit.backend.model.MaitreDuJeu;
 import com.playit.backend.model.Plateau;
 import com.playit.backend.model.Equipe;
-import com.playit.backend.model.MiniJeu;
 import com.playit.backend.model.Partie;
-import com.playit.backend.model.Question;
 import com.playit.backend.model.EtatPartie;
 
 import java.util.List;

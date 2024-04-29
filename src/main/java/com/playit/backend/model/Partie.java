@@ -11,11 +11,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 public class Partie {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	private int nombreEquipes;
 	private String codePin;
@@ -26,10 +27,10 @@ public class Partie {
 	private Plateau plateauCourant;
 
 	@OneToMany
-	private List<Plateau> listePlateaux;
+	private List<Plateau> listePlateaux = new ArrayList<>();
 
 	@OneToMany(mappedBy = "partie")
-	private List<Equipe> listeEquipes;
+	private List<Equipe> listeEquipes = new ArrayList<>();
 
 	@ManyToOne
 	private MaitreDuJeu maitreDuJeu;
