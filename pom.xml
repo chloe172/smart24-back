@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -32,12 +32,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- <dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency> -->
 		
 		<dependency>
 	        <groupId>org.springframework.boot</groupId>
@@ -50,23 +44,15 @@
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-redis -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
-			<version>3.2.5</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-redis</artifactId>
-			<version>3.2.5</version>
-		</dependency>
+		</dependency> -->
 		<!-- https://mvnrepository.com/artifact/org.springframework.session/spring-session-data-redis -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.springframework.session</groupId>
 			<artifactId>spring-session-data-redis</artifactId>
-			<version>3.2.2</version>
-		</dependency>
+		</dependency> -->
 		<!-- ... other dependency elements ... -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
