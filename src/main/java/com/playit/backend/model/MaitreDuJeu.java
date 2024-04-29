@@ -1,5 +1,7 @@
 package com.playit.backend.model;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,19 +31,19 @@ public class MaitreDuJeu {
 	}
 	
 	public Long getId() {
-		return id;
+		return this.id;
 	}
-	
+
 	public String getNom() {
-		return nom;
+		return this.nom;
 	}
-	
+
 	public void setNom(String nom) {
 		this.nom = nom;
 	}
 
 	public String getMotDePasse() {
-		return motDePasse;
+		return this.motDePasse;
 	}
 
 	public void setMotDePasse(String motDePasse) {
@@ -49,16 +51,16 @@ public class MaitreDuJeu {
 	}
 
 	public List<Partie> getListeParties() {
-		return listeParties;
+		return this.listeParties;
 	}
 
-    public void addPartie(Partie partie){
-        partie.setMaitreDuJeu(this);
-        this.listeParties.add(partie);
-    }
+	public void addPartie(Partie partie) {
+		partie.setMaitreDuJeu(this);
+		this.listeParties.add(partie);
+	}
 
 	public void setListeParties(List<Partie> listeParties) {
 		this.listeParties = listeParties;
 	}
-	
+
 }

@@ -6,6 +6,6 @@ import com.playit.backend.model.Partie;
 
 public interface PartieRepository extends JpaRepository<Partie, Long> {
 
-    Partie findByCodePin(String codePin);
+	Partie findByCodePin(String codePin);
 
 }

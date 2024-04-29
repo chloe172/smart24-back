@@ -1,8 +1,5 @@
 package com.playit.backend.model;
 
 public enum EtatPartie {
-    EnAttente,
-    EnCours, 
-    Terminee, 
-    EnPause;
+	EN_ATTENTE, EN_COURS, TERMINEE, EN_PAUSE;
 }

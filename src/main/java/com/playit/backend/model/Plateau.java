@@ -1,5 +1,7 @@
 package com.playit.backend.model;
 
+import java.util.List;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,7 +11,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-import java.util.List;
 import java.util.ArrayList;
 
 @Entity
@@ -35,37 +36,36 @@ public class Plateau {
 	}
 
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 
 	public String getNom() {
-		return nom;
+		return this.nom;
 	}
-	
+
 	public void setNom(String nom) {
 		this.nom = nom;
 	}
-	
+
 	public List<Activite> getListeActivites() {
-		return listeActivites;
+		return this.listeActivites;
 	}
 
 	public void addActivite(Activite activite) {
 		activite.setPlateau(this);
 		this.listeActivites.add(activite);
 	}
-	
+
 	public void setListeActivites(List<Activite> listeActivites) {
 		this.listeActivites = listeActivites;
 	}
-	
+
 	public Activite getActiviteCourante() {
-		return activiteCourante;
+		return this.activiteCourante;
 	}
 
 	public void setActiviteCourante(Activite activiteCourante) {
 		this.activiteCourante = activiteCourante;
 	}
-
 
 }
