@@ -1,9 +1,10 @@
 package com.playit.backend.model;
 
-import javax.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 @Entity
 @Table
-public class MiniJeu extends Activite{
-    private String intitule;
+public class MiniJeu extends Activite {
+	private String intitule;
 }
