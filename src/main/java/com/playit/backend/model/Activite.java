@@ -1,14 +1,14 @@
 package com.playit.backend.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
@@ -37,8 +37,8 @@ public abstract class Activite {
 	}
 
 	public DifficulteActivite getDifficulte() {
-		return difficulte;
-	} 
+		return this.difficulte;
+	}
 
 	public void setDifficulte(DifficulteActivite difficulte) {
 		this.difficulte = difficulte;

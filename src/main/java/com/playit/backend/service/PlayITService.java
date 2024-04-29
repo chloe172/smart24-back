@@ -2,6 +2,7 @@ package com.playit.backend.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ import java.util.Optional;
 @Service
 public class PlayITService {
 	private static final int TAILLE_CODE_PIN = 6;
+	private static final String CODE_PIN_CHARACTERES = "0123456789AZERTYUIOPQSDFGHJKLMWXCVBN";
 
 	private final ActiviteRepository activiteRepository;
 	private final EquipeRepository equipeRepository;
@@ -65,26 +67,16 @@ public class PlayITService {
 		return result.get();
 	}
 
-	public List<Plateau> listerPlateaux(Long idPartie) {
-		Optional<Partie> result = this.partieRepository.findById(idPartie);
-		if (result.isEmpty()) {
-			throw new IllegalArgumentException("Partie non trouvée");
-		}
-		return result.get()
-					 .getPlateaux();
+	public List<Plateau> listerPlateauxDansPartie(Partie partie) {
+		return partie.getPlateaux();
 	}
 
 	public List<Plateau> listerPlateaux() {
 		return this.plateauRepository.findAll();
 	}
 
-	public List<Equipe> listerEquipe(Long idPartie) {
-		Optional<Partie> result = this.partieRepository.findById(idPartie);
-		if (result.isEmpty()) {
-			throw new IllegalArgumentException("Partie non trouvée");
-		}
-		return result.get()
-					 .getEquipes();
+	public List<Equipe> listerEquipe(Partie partie) {
+		return partie.getEquipes();
 	}
 
 	@Transactional
@@ -161,14 +153,19 @@ public class PlayITService {
 	}
 
 	public void envoyerReponse(Partie partie, Equipe equipe) {
-
+		// TODO
 	}
 
+	private Random random = new Random();
+
 	private String genererCodePin() {
-		String possibleValues = "0123456789AZERTYUIOPQSDFGHJKLMWXCVBN";
+		int numberOfPossibleValues = CODE_PIN_CHARACTERES.length();
+
 		StringBuilder codePin = new StringBuilder();
 		for (int i = 0; i < TAILLE_CODE_PIN; i++) {
-			codePin.append(possibleValues.charAt((int) (Math.random() * possibleValues.length())));
+			int index = this.random.nextInt(numberOfPossibleValues);
+			char randomChar = CODE_PIN_CHARACTERES.charAt(index);
+			codePin.append(randomChar);
 		}
 		return codePin.toString();
 	}

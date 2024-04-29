@@ -9,7 +9,7 @@ import jakarta.persistence.ManyToOne;
 @Entity
 public class Equipe {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String nom;
 	private int score;

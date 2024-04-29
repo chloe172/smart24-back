@@ -7,28 +7,28 @@ import jakarta.persistence.Id;
 
 @Entity
 public class Reponse {
-    @Id
+	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
-    private String intitule;
+	private String intitule;
 
-    public Reponse() {
-    }
+	public Reponse() {
+	}
 
-    public Reponse(String intitule){
-        this.intitule = intitule;
-    }
+	public Reponse(String intitule) {
+		this.intitule = intitule;
+	}
 
-    public Long getId() {
-        return id;
-    }
+	public Long getId() {
+		return this.id;
+	}
 
-    public String getIntitule() {
-        return intitule;
-    }
+	public String getIntitule() {
+		return this.intitule;
+	}
 
-    public void setIntitule(String intitule) {
-        this.intitule = intitule;
-    }
+	public void setIntitule(String intitule) {
+		this.intitule = intitule;
+	}
 
 }
