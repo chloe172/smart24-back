@@ -59,7 +59,6 @@ public class QuestionAnswerHandler extends TextWebSocketHandler {
 			return;
 		}
 
-		
 		case "question": {
 			this.handleQuestion(session, body);
 			return;

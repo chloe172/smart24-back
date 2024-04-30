@@ -8,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,7 +38,7 @@ public class Partie {
 	private Plateau plateauCourant;
 	private int indiceActivite;
 
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	private List<Plateau> listePlateaux = new ArrayList<>();
 
 	@OneToMany(mappedBy = "partie")
@@ -161,7 +162,7 @@ public class Partie {
 
 	public Activite getActiviteCourante() {
 		return this.plateauCourant.getListeActivites()
-								  .get(this.indiceActivite);
+				.get(this.indiceActivite);
 	}
 
 }

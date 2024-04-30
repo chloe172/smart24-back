@@ -41,16 +41,16 @@ public class PlayItBackendApplication {
 		Plateau plateauCyber = this.plateauRepository.findByNom("Cyber");
 		List<Plateau> listePlateaux = List.of(plateauGene, plateauCyber);
 
-		MaitreDuJeu maitre = this.maitreDuJeuRepository.findByNom("admin")
-													   .get();
-		Partie partie = this.playITService.creerPartie("Stage seconde", 4, maitre, listePlateaux);
+		MaitreDuJeu maitre = this.maitreDuJeuRepository.findByNom("admin@volvo.fr")
+				.get();
+		Partie partie = this.playITService.creerPartie("Stage seconde", maitre, listePlateaux);
 		this.playITService.choisirPlateau(partie, plateauGene);
 		ActiviteEnCours activiteEnCours = this.playITService.lancerActivite(partie);
 		System.out.println(activiteEnCours.getActivite()
-										  .getIntitule());
+				.getIntitule());
 		activiteEnCours = this.playITService.lancerActivite(partie);
 		System.out.println(activiteEnCours.getActivite()
-										  .getIntitule());
+				.getIntitule());
 		return "OUIIIIIIIIIIIIIIIIIIIII";
 	}
 

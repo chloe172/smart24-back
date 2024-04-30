@@ -20,13 +20,11 @@ import com.playit.backend.model.Plateau;
 import com.playit.backend.model.Proposition;
 import com.playit.backend.model.Question;
 import com.playit.backend.model.Reponse;
-import com.playit.backend.repository.ActiviteRepository;
+import com.playit.backend.repository.ActiviteEnCoursRepository;
 import com.playit.backend.repository.EquipeRepository;
 import com.playit.backend.repository.MaitreDuJeuRepository;
-import com.playit.backend.repository.MiniJeuRepository;
 import com.playit.backend.repository.PartieRepository;
 import com.playit.backend.repository.PlateauRepository;
-import com.playit.backend.repository.QuestionRepository;
 import com.playit.backend.repository.ReponseRepository;
 
 @Service
@@ -36,21 +34,17 @@ public class PlayITService {
 	private static final String CODE_PIN_CHARACTERES = "0123456789AZERTYUIOPQSDFGHJKLMWXCVBN";
 
 	@Autowired
-	private ActiviteRepository activiteRepository;
-	@Autowired
 	private EquipeRepository equipeRepository;
 	@Autowired
 	private MaitreDuJeuRepository maitreDuJeuRepository;
-	@Autowired
-	private MiniJeuRepository miniJeuRepository;
 	@Autowired
 	private PartieRepository partieRepository;
 	@Autowired
 	private PlateauRepository plateauRepository;
 	@Autowired
-	private QuestionRepository questionRepository;
-	@Autowired
 	private ReponseRepository reponseRepository;
+	@Autowired
+	private ActiviteEnCoursRepository activiteEnCoursRepository;
 
 	public MaitreDuJeu authentifier(String login, String mdp) {
 		Optional<MaitreDuJeu> result = this.maitreDuJeuRepository.findByNom(login);
@@ -58,8 +52,8 @@ public class PlayITService {
 			throw new IllegalArgumentException("Compte Maître du Jeu non trouvé");
 		}
 		if (!result.get()
-				   .getMotDePasse()
-				   .equals(mdp)) {
+				.getMotDePasse()
+				.equals(mdp)) {
 			throw new IllegalArgumentException("Erreur de mot de passe");
 		}
 		return result.get();
@@ -77,9 +71,8 @@ public class PlayITService {
 		return partie.getEquipes();
 	}
 
-	public Partie creerPartie(String nom, int nombreEquipes, MaitreDuJeu maitre, List<Plateau> listePlateaux) {
+	public Partie creerPartie(String nom, MaitreDuJeu maitre, List<Plateau> listePlateaux) {
 		Partie partie = new Partie(nom);
-		partie.setNombreEquipes(nombreEquipes);
 		partie.setPlateaux(listePlateaux);
 		partie.setMaitreDuJeu(maitre);
 		String codePin = this.genererCodePin();
@@ -90,18 +83,21 @@ public class PlayITService {
 
 	public void demarrerPartie(Partie partie) {
 		partie.setEtat(EtatPartie.EN_COURS);
+		this.partieRepository.saveAndFlush(partie);
 	}
 
 	public void mettreEnPausePartie(Partie partie) {
 		partie.setEtat(EtatPartie.EN_PAUSE);
+		this.partieRepository.saveAndFlush(partie);
 	}
 
 	public void terminerPartie(Partie partie) {
 		partie.setEtat(EtatPartie.TERMINEE);
+		this.partieRepository.saveAndFlush(partie);
 	}
 
-	public List<Partie> listerParties() {
-		return this.partieRepository.findAll();
+	public List<Partie> listerParties(MaitreDuJeu maitreDuJeu) {
+		return this.partieRepository.findAllByMaitreDuJeu(maitreDuJeu);
 	}
 
 	public Partie validerCodePin(String codePin) {
@@ -122,8 +118,8 @@ public class PlayITService {
 
 	public Equipe modifierEquipe(Long idEquipe, String nouveauNom) {
 		Equipe equipe = this.equipeRepository.findById(idEquipe)
-											 .orElseThrow(() -> new IllegalStateException(
-												 "l'équipe avec l'id " + idEquipe + " n'existe pas"));
+				.orElseThrow(() -> new IllegalStateException(
+						"l'équipe avec l'id " + idEquipe + " n'existe pas"));
 		Optional<Equipe> result = this.equipeRepository.findByNom(nouveauNom);
 		if (result.isPresent()) {
 			throw new IllegalStateException("nom d'équipe déjà pris");
@@ -139,22 +135,25 @@ public class PlayITService {
 		Activite activite;
 		int indiceActiviteCourante = partie.getIndiceActivite();
 		if (indiceActiviteCourante >= plateauCourant.getListeActivites()
-													.size()) {
+				.size()) {
 			throw new IllegalStateException("Plus d'activité à réaliser dans ce plateau");
 		}
 		activite = plateauCourant.getListeActivites()
-								 .get(indiceActiviteCourante);
+				.get(indiceActiviteCourante);
 		partie.setIndiceActivite(indiceActiviteCourante + 1);
 
 		ActiviteEnCours activiteEnCours = new ActiviteEnCours();
 		activiteEnCours.setPartie(partie);
 		activiteEnCours.setActivite(activite);
 
+		this.activiteEnCoursRepository.saveAndFlush(activiteEnCours);
+		this.partieRepository.saveAndFlush(partie);
+
 		return activiteEnCours;
 	}
 
 	public void soumettreReponse(Partie partie, Equipe equipe, Proposition proposition,
-		ActiviteEnCours activiteEnCours) {
+			ActiviteEnCours activiteEnCours) {
 		Activite activite = activiteEnCours.getActivite();
 
 		if (!(activite instanceof Question)) {
@@ -164,9 +163,9 @@ public class PlayITService {
 		Reponse reponse = new Reponse();
 		Duration dureeQuestion = ((Question) activite).getTemps();
 		LocalDateTime tempsLimite = activiteEnCours.getDate()
-												   .plus(dureeQuestion);
+				.plus(dureeQuestion);
 		if (reponse.getDateSoumission()
-				   .isAfter(tempsLimite)) {
+				.isAfter(tempsLimite)) {
 			throw new IllegalStateException("La réponse a été soumise après le temps imparti.");
 		}
 		reponse.setEquipe(equipe);
@@ -177,7 +176,9 @@ public class PlayITService {
 	}
 
 	public void choisirPlateau(Partie partie, Plateau plateau) {
+		// TODO : verifier que le plateau appartient bien aux plateaux de la partie
 		partie.setPlateauCourant(plateau);
+		this.partieRepository.saveAndFlush(partie);
 	}
 
 	private Random random = new Random();
@@ -192,6 +193,21 @@ public class PlayITService {
 			codePin.append(randomChar);
 		}
 		return codePin.toString();
+	}
+
+	public Partie trouverPartieParId(Long idPartie) {
+		// TODO : renvoyer une erreur si la partie n'existe pas
+		return this.partieRepository.findById(idPartie).get();
+	}
+
+	public MaitreDuJeu trouverMaitreDuJeuParId(Long idMaitreDuJeu) {
+		// TODO : renvoyer une erreur si le maitre du jeu n'existe pas
+		return this.maitreDuJeuRepository.findById(idMaitreDuJeu).get();
+	}
+
+	public Plateau trouverPlateauParId(Long idPlateau) {
+		// TODO : renvoyer une erreur si le maitre du jeu n'existe pas
+		return this.plateauRepository.findById(idPlateau).get();
 	}
 
 }
