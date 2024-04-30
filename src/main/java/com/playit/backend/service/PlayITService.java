@@ -108,7 +108,7 @@ public class PlayITService {
 	}
 
 	public Equipe inscrireEquipe(String nom, Partie partie) {
-		Optional<Equipe> result = this.equipeRepository.findByNom(nom);
+		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nom, partie);
 		if (result.isPresent()) {
 			throw new IllegalStateException("Nom d'équipe déjà pris");
 		}
@@ -123,7 +123,7 @@ public class PlayITService {
 		Equipe equipe = this.equipeRepository.findById(idEquipe)
 											 .orElseThrow(() -> new IllegalStateException(
 												 "l'équipe avec l'id " + idEquipe + " n'existe pas"));
-		Optional<Equipe> result = this.equipeRepository.findByNom(nouveauNom);
+		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nouveauNom, equipe.getPartie());
 		if (result.isPresent()) {
 			throw new IllegalStateException("nom d'équipe déjà pris");
 		}
