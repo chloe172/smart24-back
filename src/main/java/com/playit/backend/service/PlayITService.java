@@ -1,24 +1,25 @@
 package com.playit.backend.service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.time.Duration;
-import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.playit.backend.model.Activite;
+import com.playit.backend.model.ActiviteEnCours;
 import com.playit.backend.model.Equipe;
 import com.playit.backend.model.EtatPartie;
 import com.playit.backend.model.MaitreDuJeu;
 import com.playit.backend.model.Partie;
 import com.playit.backend.model.Plateau;
 import com.playit.backend.model.Proposition;
-import com.playit.backend.model.Reponse;
 import com.playit.backend.model.Question;
-import com.playit.backend.model.ActiviteEnCours;
+import com.playit.backend.model.Reponse;
 import com.playit.backend.repository.ActiviteRepository;
 import com.playit.backend.repository.EquipeRepository;
 import com.playit.backend.repository.MaitreDuJeuRepository;
@@ -137,37 +138,42 @@ public class PlayITService {
 		Plateau plateauCourant = partie.getPlateauCourant();
 		Activite activite;
 		int indiceActiviteCourante = partie.getIndiceActivite();
-		if (indiceActiviteCourante >= plateauCourant.getListeActivites().size()) {
+		if (indiceActiviteCourante >= plateauCourant.getListeActivites()
+													.size()) {
 			throw new IllegalStateException("Plus d'activité à réaliser dans ce plateau");
 		}
-		activite = plateauCourant.getListeActivites().get(indiceActiviteCourante);
+		activite = plateauCourant.getListeActivites()
+								 .get(indiceActiviteCourante);
 		partie.setIndiceActivite(indiceActiviteCourante + 1);
-				
+
 		ActiviteEnCours activiteEnCours = new ActiviteEnCours();
 		activiteEnCours.setPartie(partie);
 		activiteEnCours.setActivite(activite);
-		
+
 		return activiteEnCours;
 	}
 
-	public void soumettreReponse(Partie partie, Equipe equipe, Proposition proposition, ActiviteEnCours activiteEnCours) {
+	public void soumettreReponse(Partie partie, Equipe equipe, Proposition proposition,
+		ActiviteEnCours activiteEnCours) {
 		Activite activite = activiteEnCours.getActivite();
 
-		if(!(activite instanceof Question)) {
+		if (!(activite instanceof Question)) {
 			throw new IllegalStateException("L'activité n'est pas une question !");
 		}
 
 		Reponse reponse = new Reponse();
 		Duration dureeQuestion = ((Question) activite).getTemps();
-		LocalDateTime tempsLimite = activiteEnCours.getDate().plus(dureeQuestion); 
-		if(reponse.getDateSoumission().isAfter(tempsLimite)) {
+		LocalDateTime tempsLimite = activiteEnCours.getDate()
+												   .plus(dureeQuestion);
+		if (reponse.getDateSoumission()
+				   .isAfter(tempsLimite)) {
 			throw new IllegalStateException("La réponse a été soumise après le temps imparti.");
 		}
 		reponse.setEquipe(equipe);
 		reponse.setProposition(proposition);
 		activiteEnCours.addReponse(reponse);
 		reponse.calculerScoreEquipe();
-		reponseRepository.saveAndFlush(reponse);
+		this.reponseRepository.saveAndFlush(reponse);
 	}
 
 	public void choisirPlateau(Partie partie, Plateau plateau) {
