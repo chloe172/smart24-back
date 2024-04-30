@@ -1,17 +1,19 @@
 package com.playit.backend.model;
 
-import java.util.List;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
@@ -22,6 +24,8 @@ public class Partie {
 	private Long id;
 	private int nombreEquipes;
 	private String codePin;
+
+	@Column(unique = true)
 	private String nom;
 	@Temporal(TemporalType.TIMESTAMP)
 	private LocalDateTime date;
@@ -29,11 +33,11 @@ public class Partie {
 	@Enumerated(EnumType.STRING)
 	private EtatPartie etat = EtatPartie.EN_ATTENTE;
 
-	@OneToOne
+	@ManyToOne
 	private Plateau plateauCourant;
 	private int indiceActivite;
 
-	@OneToMany
+	@ManyToMany
 	private List<Plateau> listePlateaux = new ArrayList<>();
 
 	@OneToMany(mappedBy = "partie")
@@ -103,7 +107,7 @@ public class Partie {
 	}
 
 	public LocalDateTime getDate() {
-		return date;
+		return this.date;
 	}
 
 	public void setDate(LocalDateTime date) {
@@ -111,7 +115,7 @@ public class Partie {
 	}
 
 	public List<Plateau> getListePlateaux() {
-		return listePlateaux;
+		return this.listePlateaux;
 	}
 
 	public void setListePlateaux(List<Plateau> listePlateaux) {
@@ -119,7 +123,7 @@ public class Partie {
 	}
 
 	public List<Equipe> getListeEquipes() {
-		return listeEquipes;
+		return this.listeEquipes;
 	}
 
 	public void setListeEquipes(List<Equipe> listeEquipes) {
@@ -156,7 +160,8 @@ public class Partie {
 	}
 
 	public Activite getActiviteCourante() {
-		return this.plateauCourant.getListeActivites().get(indiceActivite);
+		return this.plateauCourant.getListeActivites()
+								  .get(this.indiceActivite);
 	}
 
 }
