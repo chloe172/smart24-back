@@ -7,22 +7,22 @@ import jakarta.persistence.CascadeType;
 @Entity
 public class QuestionVraiFaux extends Question {
     @OneToOne(cascade = CascadeType.PERSIST)
-	private Reponse bonneReponse;
+	private Proposition bonneProposition;
 
     public QuestionVraiFaux() {
     }
 
-    public QuestionVraiFaux(DifficulteActivite difficulteActivite, String intitule, String explication, Reponse bonneReponse) {
-        super(difficulteActivite, intitule, explication);
-        this.bonneReponse = bonneReponse;
+    public QuestionVraiFaux(DifficulteActivite difficulteActivite, String intitule, int numeroActivite, String explication, Proposition bonneProposition) {
+        super(difficulteActivite, intitule, numeroActivite, explication);
+        this.bonneProposition = bonneProposition;
     }
     
-    public Reponse getBonneReponse() {
-		return this.bonneReponse;
+    public Proposition getBonneProposition() {
+		return this.bonneProposition;
 	}
 
-	public void setBonneReponse(Reponse bonneReponse) {
-		this.bonneReponse = bonneReponse;
+	public void setBonneProposition(Proposition bonneProposition) {
+		this.bonneProposition = bonneProposition;
 	}
 
 }

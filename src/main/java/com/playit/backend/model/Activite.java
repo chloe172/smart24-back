@@ -16,20 +16,22 @@ public abstract class Activite {
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	protected Long id;
+	protected int numeroActivite;
 
 	@Enumerated(EnumType.STRING)
 	protected DifficulteActivite difficulte;
 	protected String intitule;
 
 	@ManyToOne
-	private Plateau plateau;
+	protected Plateau plateau;
 
 	public Activite() {
 	}
 
-	public Activite(DifficulteActivite difficulte, String intitule) {
+	public Activite(DifficulteActivite difficulte, String intitule, int numeroActivite) {
 		this.intitule = intitule;
 		this.difficulte = difficulte;
+		this.numeroActivite = numeroActivite;
 	}
 
 	public Long getId() {
@@ -52,8 +54,20 @@ public abstract class Activite {
 		this.intitule = intitule;
 	}
 
+	public Plateau getPlateau() {
+		return this.plateau;
+	}
+
 	public void setPlateau(Plateau plateau) {
 		this.plateau = plateau;
+	}
+
+	public int getNumeroActivite() {
+		return this.numeroActivite;
+	}
+
+	public void setNumeroActivite(int numeroActivite) {
+		this.numeroActivite = numeroActivite;
 	}
 
 }

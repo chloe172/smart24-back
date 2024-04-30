@@ -3,15 +3,22 @@ package com.playit.backend.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-
+import java.time.Duration;
+import java.time.LocalDateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.playit.backend.model.Activite;
 import com.playit.backend.model.Equipe;
 import com.playit.backend.model.EtatPartie;
 import com.playit.backend.model.MaitreDuJeu;
 import com.playit.backend.model.Partie;
 import com.playit.backend.model.Plateau;
+import com.playit.backend.model.Proposition;
+import com.playit.backend.model.Reponse;
+import com.playit.backend.model.Question;
+import com.playit.backend.model.ActiviteEnCours;
 import com.playit.backend.repository.ActiviteRepository;
 import com.playit.backend.repository.EquipeRepository;
 import com.playit.backend.repository.MaitreDuJeuRepository;
@@ -19,40 +26,30 @@ import com.playit.backend.repository.MiniJeuRepository;
 import com.playit.backend.repository.PartieRepository;
 import com.playit.backend.repository.PlateauRepository;
 import com.playit.backend.repository.QuestionRepository;
-
-import com.playit.backend.model.MaitreDuJeu;
-import com.playit.backend.model.Plateau;
-import com.playit.backend.model.Equipe;
-import com.playit.backend.model.Partie;
-import com.playit.backend.model.EtatPartie;
-
-import java.util.List;
-import java.util.Optional;
+import com.playit.backend.repository.ReponseRepository;
 
 @Service
+@Transactional
 public class PlayITService {
 	private static final int TAILLE_CODE_PIN = 6;
 	private static final String CODE_PIN_CHARACTERES = "0123456789AZERTYUIOPQSDFGHJKLMWXCVBN";
 
-	private final ActiviteRepository activiteRepository;
-	private final EquipeRepository equipeRepository;
-	private final MaitreDuJeuRepository maitreDuJeuRepository;
-	private final MiniJeuRepository miniJeuRepository;
-	private final PartieRepository partieRepository;
-	private final PlateauRepository plateauRepository;
-	private final QuestionRepository questionRepository;
-
-	public PlayITService(ActiviteRepository activiteRepository, EquipeRepository equipeRepository,
-		MaitreDuJeuRepository maitreDuJeuRepository, MiniJeuRepository miniJeuRepository,
-		PartieRepository partieRepository, PlateauRepository plateauRepository, QuestionRepository questionRepository) {
-		this.activiteRepository = activiteRepository;
-		this.equipeRepository = equipeRepository;
-		this.maitreDuJeuRepository = maitreDuJeuRepository;
-		this.miniJeuRepository = miniJeuRepository;
-		this.plateauRepository = plateauRepository;
-		this.partieRepository = partieRepository;
-		this.questionRepository = questionRepository;
-	}
+	@Autowired
+	private ActiviteRepository activiteRepository;
+	@Autowired
+	private EquipeRepository equipeRepository;
+	@Autowired
+	private MaitreDuJeuRepository maitreDuJeuRepository;
+	@Autowired
+	private MiniJeuRepository miniJeuRepository;
+	@Autowired
+	private PartieRepository partieRepository;
+	@Autowired
+	private PlateauRepository plateauRepository;
+	@Autowired
+	private QuestionRepository questionRepository;
+	@Autowired
+	private ReponseRepository reponseRepository;
 
 	public MaitreDuJeu authentifier(String login, String mdp) {
 		Optional<MaitreDuJeu> result = this.maitreDuJeuRepository.findByNom(login);
@@ -79,9 +76,8 @@ public class PlayITService {
 		return partie.getEquipes();
 	}
 
-	@Transactional
-	public Partie creerPartie(int nombreEquipes, MaitreDuJeu maitre, List<Plateau> listePlateaux) {
-		Partie partie = new Partie();
+	public Partie creerPartie(String nom, int nombreEquipes, MaitreDuJeu maitre, List<Plateau> listePlateaux) {
+		Partie partie = new Partie(nom);
 		partie.setNombreEquipes(nombreEquipes);
 		partie.setPlateaux(listePlateaux);
 		partie.setMaitreDuJeu(maitre);
@@ -91,17 +87,14 @@ public class PlayITService {
 		return this.partieRepository.saveAndFlush(partie);
 	}
 
-	@Transactional
 	public void demarrerPartie(Partie partie) {
 		partie.setEtat(EtatPartie.EN_COURS);
 	}
 
-	@Transactional
 	public void mettreEnPausePartie(Partie partie) {
 		partie.setEtat(EtatPartie.EN_PAUSE);
 	}
 
-	@Transactional
 	public void terminerPartie(Partie partie) {
 		partie.setEtat(EtatPartie.TERMINEE);
 	}
@@ -114,11 +107,10 @@ public class PlayITService {
 		return this.partieRepository.findByCodePin(codePin);
 	}
 
-	@Transactional
 	public Equipe inscrireEquipe(String nom, Partie partie) {
 		Optional<Equipe> result = this.equipeRepository.findByNom(nom);
 		if (result.isPresent()) {
-			throw new IllegalStateException("nom d'équipe déjà pris");
+			throw new IllegalStateException("Nom d'équipe déjà pris");
 		}
 		Equipe equipe = new Equipe();
 		equipe.setNom(nom);
@@ -127,7 +119,6 @@ public class PlayITService {
 		return this.equipeRepository.saveAndFlush(equipe);
 	}
 
-	@Transactional
 	public Equipe modifierEquipe(Long idEquipe, String nouveauNom) {
 		Equipe equipe = this.equipeRepository.findById(idEquipe)
 											 .orElseThrow(() -> new IllegalStateException(
@@ -142,18 +133,45 @@ public class PlayITService {
 		return equipe;
 	}
 
-	public void lancerActivite(Partie partie) {
+	public ActiviteEnCours lancerActivite(Partie partie) {
 		Plateau plateauCourant = partie.getPlateauCourant();
-		if (plateauCourant.getActiviteCourante() == null) {
-			plateauCourant.setActiviteCourante(plateauCourant.getListeActivites()
-															 .get(0));
-		} else {
-			// todo aller chercher l'activité suivante
+		Activite activite;
+		int indiceActiviteCourante = partie.getIndiceActivite();
+		if (indiceActiviteCourante >= plateauCourant.getListeActivites().size()) {
+			throw new IllegalStateException("Plus d'activité à réaliser dans ce plateau");
 		}
+		activite = plateauCourant.getListeActivites().get(indiceActiviteCourante);
+		partie.setIndiceActivite(indiceActiviteCourante + 1);
+				
+		ActiviteEnCours activiteEnCours = new ActiviteEnCours();
+		activiteEnCours.setPartie(partie);
+		activiteEnCours.setActivite(activite);
+		
+		return activiteEnCours;
 	}
 
-	public void envoyerReponse(Partie partie, Equipe equipe) {
-		// TODO
+	public void soumettreReponse(Partie partie, Equipe equipe, Proposition proposition, ActiviteEnCours activiteEnCours) {
+		Activite activite = activiteEnCours.getActivite();
+
+		if(!(activite instanceof Question)) {
+			throw new IllegalStateException("L'activité n'est pas une question !");
+		}
+
+		Reponse reponse = new Reponse();
+		Duration dureeQuestion = ((Question) activite).getTemps();
+		LocalDateTime tempsLimite = activiteEnCours.getDate().plus(dureeQuestion); 
+		if(reponse.getDateSoumission().isAfter(tempsLimite)) {
+			throw new IllegalStateException("La réponse a été soumise après le temps imparti.");
+		}
+		reponse.setEquipe(equipe);
+		reponse.setProposition(proposition);
+		activiteEnCours.addReponse(reponse);
+		reponse.calculerScoreEquipe();
+		reponseRepository.saveAndFlush(reponse);
+	}
+
+	public void choisirPlateau(Partie partie, Plateau plateau) {
+		partie.setPlateauCourant(plateau);
 	}
 
 	private Random random = new Random();

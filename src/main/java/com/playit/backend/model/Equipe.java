@@ -48,4 +48,14 @@ public class Equipe {
 		this.partie = partie;
 	}
 
+	@Override
+	public String toString() {
+		return "Equipe {" + " id='" + getId() + "'" + ", nom='" + getNom() + "'" + ", score='" + getScore() + "'"
+				+ ", partie='" + getPartie() + "'" + "}";
+	}
+
+    public void ajouterScore(int scoreEquipe) {
+        this.score += scoreEquipe;
+    }
+
 }

@@ -3,15 +3,18 @@ package com.playit.backend;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.playit.backend.model.Question;
+import com.playit.backend.model.ActiviteEnCours;
+import com.playit.backend.model.MaitreDuJeu;
+import com.playit.backend.model.Partie;
+import com.playit.backend.model.Plateau;
+import com.playit.backend.repository.MaitreDuJeuRepository;
+import com.playit.backend.repository.PlateauRepository;
 import com.playit.backend.repository.QuestionRepository;
 import com.playit.backend.service.PlayITService;
 
@@ -20,33 +23,33 @@ import com.playit.backend.service.PlayITService;
 public class PlayItBackendApplication {
 	@Autowired
 	QuestionRepository questionRepository;
-
+	
+	@Autowired
+	PlateauRepository plateauRepository;
+	@Autowired
+	MaitreDuJeuRepository maitreDuJeuRepository;
 	@Autowired
 	PlayITService playITService;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		SpringApplication.run(PlayItBackendApplication.class, args);
 	}
 
-	// @Bean
-	// CommandLineRunner commandLineRunner(QuestionRepository questionRepository) {
-	// 	return args -> {
-	// 		questionRepository.save(new Question("Quelle est la capitale de la France ?"));
-	// 		questionRepository.save(new Question("Quelle est la capitale de l'Espagne ?"));
-	// 		questionRepository.save(new Question("Quelle est la capitale de l'Allemagne ?"));
-	// 		questionRepository.flush();
-	// 		System.out.println("Questions ajoutées à la base de données");
-	// 	};
-	// }
-
 	@GetMapping("/")
 	public String index() {
-		List<Question> questions = this.questionRepository.findAll();
-		String result = "";
-		for (Question question : questions) {
-			result += question.getIntitule() + "<br>";
-		}
-		return result;
+		Plateau plateauGene = plateauRepository.findByNom("Général");
+		Plateau plateauCyber = plateauRepository.findByNom("Cyber");
+		List<Plateau> listePlateaux = List.of(plateauGene, plateauCyber);
+
+		MaitreDuJeu maitre = maitreDuJeuRepository.findByNom("admin").get();
+		
+		Partie partie = playITService.creerPartie("Stage seconde", 4, maitre, listePlateaux);
+		playITService.choisirPlateau(partie, plateauGene);
+		ActiviteEnCours activiteEnCours = playITService.lancerActivite(partie);
+		System.out.println(activiteEnCours.getActivite().getIntitule());
+		activiteEnCours = playITService.lancerActivite(partie);
+		System.out.println(activiteEnCours.getActivite().getIntitule());
+		return "OUIIIIIIIIIIIIIIIIIIIII";
 	}
 
 	@GetMapping("/hello")
@@ -54,10 +57,9 @@ public class PlayItBackendApplication {
 		return String.format("Hello %s!", name);
 	}
 
-	@GetMapping("/createQuestion")
-	public String createQuestion(@RequestParam(value = "question") String question) {
-		// this.questionRepository.saveAndFlush(new Question(question));
-
-		return "Question ajoutée";
+	@GetMapping("/lancerActivite")
+	public ActiviteEnCours lancerActivite(@RequestParam(value = "partie") Partie partie) {
+		ActiviteEnCours activite = playITService.lancerActivite(partie);
+		return activite;
 	}
 }

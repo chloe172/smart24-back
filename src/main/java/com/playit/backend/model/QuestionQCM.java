@@ -10,37 +10,37 @@ import jakarta.persistence.Entity;
 @Entity
 public class QuestionQCM extends Question {
     @OneToMany(cascade = CascadeType.PERSIST)
-	private List<Reponse> listeReponses = new ArrayList<>();
+	private List<Proposition> listePropositions = new ArrayList<>();
 
     @OneToOne
-	private Reponse bonneReponse;
+	private Proposition bonneProposition;
 
     public QuestionQCM() {
     }
 
-    public QuestionQCM(DifficulteActivite difficulteActivite, String intitule, String explication, List<Reponse> reponses, Reponse bonneReponse) {
-        super(difficulteActivite, intitule, explication);
-        this.listeReponses = reponses;
-        this.bonneReponse = bonneReponse;
+    public QuestionQCM(DifficulteActivite difficulteActivite, String intitule, int numeroActivite, String explication, List<Proposition> propositions, Proposition bonneProposition) {
+        super(difficulteActivite, intitule, numeroActivite, explication);
+        this.listePropositions = propositions;
+        this.bonneProposition = bonneProposition;
     }
 
-    public List<Reponse> getListeReponses() {
-		return this.listeReponses;
+    public List<Proposition> getListePropositions() {
+		return this.listePropositions;
 	}
 
-    public void addReponse(Reponse reponse){
-        this.listeReponses.add(reponse);
+    public void addProposition(Proposition proposition){
+        this.listePropositions.add(proposition);
     }
 
-	public void setListeReponses(List<Reponse> reponses) {
-		this.listeReponses = reponses;
+	public void setListePropositions(List<Proposition> propositions) {
+		this.listePropositions = propositions;
 	}
     
-    public Reponse getBonneReponse() {
-		return this.bonneReponse;
+    public Proposition getBonneProposition() {
+		return this.bonneProposition;
 	}
 
-	public void setBonneReponse(Reponse bonneReponse) {
-		this.bonneReponse = bonneReponse;
+	public void setBonneProposition(Proposition bonneProposition) {
+		this.bonneProposition = bonneProposition;
 	}
 }

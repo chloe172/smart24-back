@@ -8,7 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 
 import java.util.ArrayList;
@@ -22,17 +22,14 @@ public class Plateau {
 	private String nom;
 
 	@OneToMany(mappedBy = "plateau", cascade = CascadeType.PERSIST)
+	@OrderBy("numeroActivite")
 	private List<Activite> listeActivites = new ArrayList<>();
-
-	@OneToOne
-	private Activite activiteCourante;
 
 	public Plateau() {
 	}
 
 	public Plateau(String nom) {
 		this.nom = nom;
-		activiteCourante = null;
 	}
 
 	public Long getId() {
@@ -60,12 +57,10 @@ public class Plateau {
 		this.listeActivites = listeActivites;
 	}
 
-	public Activite getActiviteCourante() {
-		return this.activiteCourante;
-	}
-
-	public void setActiviteCourante(Activite activiteCourante) {
-		this.activiteCourante = activiteCourante;
+	@Override
+	public String toString() {
+		return "Plateau {" + " id='" + getId() + "'" + ", nom='" + getNom() + "'" + ", listeActivites='" + getListeActivites()
+				+ "'" + "}";
 	}
 
 }
