@@ -31,7 +31,7 @@ public class PlayItBackendApplication {
 	@Autowired
 	PlayITService playITService;
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) {
 		SpringApplication.run(PlayItBackendApplication.class, args);
 	}
 
