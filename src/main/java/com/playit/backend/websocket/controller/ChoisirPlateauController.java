@@ -5,14 +5,14 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.playit.backend.model.Partie;
-import com.playit.backend.model.Plateau;
-import com.playit.backend.service.PlayITService;
-import com.playit.backend.service.NotFoundException;
+import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.model.Plateau;
+import com.playit.backend.metier.service.NotFoundException;
+import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class ChoisirPlateauController extends Controller {
-	
+
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
@@ -50,7 +50,7 @@ public class ChoisirPlateauController extends Controller {
 
 		try {
 			playITService.choisirPlateau(partie, plateau);
-		} catch (IllegalArgumentException|IllegalStateException e) {
+		} catch (IllegalArgumentException | IllegalStateException e) {
 			response.addProperty("messageErreur", e.getMessage());
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());

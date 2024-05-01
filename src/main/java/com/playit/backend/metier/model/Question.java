@@ -1,22 +1,29 @@
-package com.playit.backend.model;
+package com.playit.backend.metier.model;
 
 import java.time.Duration;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public abstract class Question extends Activite {
 	protected String explication;
+
 	protected Duration temps = Duration.ofSeconds(30);
+
 	protected int score;
-	
-	public Question() {
+
+	@OneToOne(cascade = CascadeType.PERSIST)
+	protected Proposition bonneProposition;
+
+	protected Question() {
 	}
 
-	public Question(DifficulteActivite difficulte, String intitule, int numeroActivite, String explication) {
+	protected Question(DifficulteActivite difficulte, String intitule, int numeroActivite, String explication) {
 		super(difficulte, intitule, numeroActivite);
 		this.explication = explication;
-		score = difficulte.getPoints();
+		this.score = difficulte.getPoints();
 	}
 
 	public String getExplication() {
@@ -41,6 +48,14 @@ public abstract class Question extends Activite {
 
 	public void setScore(int score) {
 		this.score = score;
+	}
+
+	public Proposition getBonneProposition() {
+		return this.bonneProposition;
+	}
+
+	public void setBonneProposition(Proposition bonneProposition) {
+		this.bonneProposition = bonneProposition;
 	}
 
 }

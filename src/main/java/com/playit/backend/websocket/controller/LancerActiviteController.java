@@ -8,15 +8,15 @@ import org.springframework.web.socket.WebSocketSession;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.playit.backend.model.Activite;
-import com.playit.backend.model.ActiviteEnCours;
-import com.playit.backend.model.Partie;
-import com.playit.backend.model.Proposition;
-import com.playit.backend.model.Question;
-import com.playit.backend.model.QuestionQCM;
-import com.playit.backend.model.QuestionVraiFaux;
-import com.playit.backend.service.PlayITService;
-import com.playit.backend.service.NotFoundException;
+import com.playit.backend.metier.model.Activite;
+import com.playit.backend.metier.model.ActiviteEnCours;
+import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.model.Proposition;
+import com.playit.backend.metier.model.Question;
+import com.playit.backend.metier.model.QuestionQCM;
+import com.playit.backend.metier.model.QuestionVraiFaux;
+import com.playit.backend.metier.service.NotFoundException;
+import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
@@ -30,7 +30,7 @@ public class LancerActiviteController extends Controller {
 
 		JsonObject response = new JsonObject();
 		JsonObject dataObject = new JsonObject();
-				
+
 		Partie partie;
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
@@ -43,7 +43,7 @@ public class LancerActiviteController extends Controller {
 			return;
 		}
 
-		//Trouver prochaine activite
+		// Trouver prochaine activite
 		ActiviteEnCours activiteEnCours;
 		try {
 			activiteEnCours = playITService.lancerActivite(partie);
@@ -55,12 +55,12 @@ public class LancerActiviteController extends Controller {
 			session.sendMessage(responseMessage);
 			return;
 		}
-		
+
 		Activite activite = activiteEnCours.getActivite();
 
 		response.addProperty("type", "");
 		response.addProperty("succes", true);
-		
+
 		List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
 
 		if (activite instanceof Question) {
@@ -78,11 +78,11 @@ public class LancerActiviteController extends Controller {
 				}
 				dataObject.add("listePropositions", listePropositionsJson);
 				response.add("data", dataObject);
-				
+
 				// Envoi du message aux equipes
 				response.addProperty("type", "notificationLancerActivite");
 				TextMessage responseMessage = new TextMessage(response.toString());
-				for(WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+				for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
 					sessionEquipe.sendMessage(responseMessage);
 				}
 
@@ -102,11 +102,11 @@ public class LancerActiviteController extends Controller {
 				}
 				dataObject.add("listePropositions", listePropositionsJson);
 				response.add("data", dataObject);
-				
+
 				// Envoi du message aux equipes
 				response.addProperty("type", "notificationLancerActivite");
 				TextMessage responseMessage = new TextMessage(response.toString());
-				for(WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+				for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
 					sessionEquipe.sendMessage(responseMessage);
 				}
 
@@ -116,12 +116,12 @@ public class LancerActiviteController extends Controller {
 				responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
 			}
-			// TODO : lancer un timer sur la durée de la question pour envoyer la réponse après/mettre fin aux réponses
+			// TODO : lancer un timer sur la durée de la question pour envoyer la réponse
+			// après/mettre fin aux réponses
 			// et passer la partie en état EXPLICATION
 			/**
-			 * A envoyer :
-			 * - bonne réponse aux équipes et maitre du jeu
-			 * - les explications au maitre du jeu
+			 * A envoyer : - bonne réponse aux équipes et maitre du jeu - les explications
+			 * au maitre du jeu
 			 */
 			Thread.sleep(10000);
 			playITService.passerEnModeExplication(partie);
@@ -132,5 +132,5 @@ public class LancerActiviteController extends Controller {
 		return;
 
 	}
-	
+
 }

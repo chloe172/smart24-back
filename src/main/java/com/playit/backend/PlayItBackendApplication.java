@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.playit.backend.model.ActiviteEnCours;
-import com.playit.backend.model.MaitreDuJeu;
-import com.playit.backend.model.Partie;
-import com.playit.backend.model.Plateau;
+import com.playit.backend.metier.model.ActiviteEnCours;
+import com.playit.backend.metier.model.MaitreDuJeu;
+import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.model.Plateau;
+import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.repository.MaitreDuJeuRepository;
 import com.playit.backend.repository.PlateauRepository;
 import com.playit.backend.repository.QuestionRepository;
-import com.playit.backend.service.PlayITService;
 
 @SpringBootApplication
 @RestController
@@ -40,18 +40,19 @@ public class PlayItBackendApplication {
 	public String index() {
 		Plateau plateauGene = this.plateauRepository.findByNom("Général");
 		Plateau plateauCyber = this.plateauRepository.findByNom("Cyber");
-		List<Plateau> listePlateaux = new ArrayList<Plateau>();
+		List<Plateau> listePlateaux = new ArrayList<>();
 		listePlateaux.add(plateauGene);
 		listePlateaux.add(plateauCyber);
 
-		MaitreDuJeu maitre = this.maitreDuJeuRepository.findByNom("admin@volvo.fr")
-				.get();
+		MaitreDuJeu maitre = this.maitreDuJeuRepository.findAll()
+		                                               .get(0);
 		Partie partie = this.playITService.creerPartie("Stage seconde", maitre, listePlateaux);
 		StringBuilder sb = new StringBuilder();
 		sb.append("Partie créée : ");
 		sb.append(partie.getNom());
 		sb.append(" avec ");
-		sb.append(partie.getPlateaux().size());
+		sb.append(partie.getPlateaux()
+		                .size());
 		sb.append(" plateaux");
 		sb.append("<br>");
 		sb.append("Code PIN : ");

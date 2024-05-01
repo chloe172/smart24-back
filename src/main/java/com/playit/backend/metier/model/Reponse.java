@@ -1,4 +1,4 @@
-package com.playit.backend.model;
+package com.playit.backend.metier.model;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -34,16 +34,12 @@ public class Reponse {
 	private ActiviteEnCours activiteEnCours;
 
 	public Reponse() {
+		// Default constructor for JPA
 	}
 
 	public int calculerScoreEquipe() {
 		Question question = ((Question) this.activiteEnCours.getActivite());
-		Proposition bonneProposition = new Proposition();
-		if (question instanceof QuestionQCM) {
-			bonneProposition = ((QuestionQCM) question).getBonneProposition();
-		} else if (question instanceof QuestionVraiFaux) {
-			bonneProposition = ((QuestionVraiFaux) question).getBonneProposition();
-		}
+		Proposition bonneProposition = question.getBonneProposition();
 
 		if (bonneProposition.equals(this.proposition)) {
 			int scoreMax = question.getScore();
@@ -110,23 +106,24 @@ public class Reponse {
 	}
 
 	@Override
+	public int hashCode() {
+		return Objects.hash(this.activiteEnCours, this.dateSoumission, this.equipe, this.id, this.proposition,
+		                    this.scoreEquipe);
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
-		if ((obj == null) || (this.getClass() != obj.getClass())) {
+		if (!(obj instanceof Reponse)) {
 			return false;
 		}
 		Reponse other = (Reponse) obj;
-		if (!Objects.equals(this.id, other.id) || !Objects.equals(this.dateSoumission, other.dateSoumission)
-			|| (this.scoreEquipe != other.scoreEquipe) || !Objects.equals(this.proposition, other.proposition)) {
-			return false;
-		}
-		if (!Objects.equals(this.equipe, other.equipe)
-			|| !Objects.equals(this.activiteEnCours, other.activiteEnCours)) {
-			return false;
-		}
-		return true;
+		return Objects.equals(this.activiteEnCours, other.activiteEnCours)
+		    && Objects.equals(this.dateSoumission, other.dateSoumission) && Objects.equals(this.equipe, other.equipe)
+		    && Objects.equals(this.id, other.id) && Objects.equals(this.proposition, other.proposition)
+		    && this.scoreEquipe == other.scoreEquipe;
 	}
 
 }

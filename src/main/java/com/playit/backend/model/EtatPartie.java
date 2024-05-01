@@ -1,5 +1,0 @@
-package com.playit.backend.model;
-
-public enum EtatPartie {
-	CREEE, ATTENTE_EQUIPE, EN_PAUSE, CHOIX_PLATEAU, ATTENTE_ACTIVITE, ACTIVITE_EN_COURS, EXPLICATION, TERMINEE;
-}

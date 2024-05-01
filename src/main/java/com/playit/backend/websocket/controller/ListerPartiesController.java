@@ -8,19 +8,21 @@ import org.springframework.web.socket.WebSocketSession;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import com.playit.backend.model.MaitreDuJeu;
-import com.playit.backend.model.Partie;
-import com.playit.backend.service.PlayITService;
-import com.playit.backend.service.NotFoundException;
+import com.playit.backend.metier.model.MaitreDuJeu;
+import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.service.NotFoundException;
+import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class ListerPartiesController extends Controller {
 
+	@Override
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
 		MaitreDuJeu maitreDuJeu;
-		Long idMaitreDuJeu = (Long) session.getAttributes().get("idMaitreDuJeu");
+		Long idMaitreDuJeu = (Long) session.getAttributes()
+		                                   .get("idMaitreDuJeu");
 
 		JsonObject response = new JsonObject();
 		JsonObject dataObject = new JsonObject();
@@ -35,7 +37,7 @@ public class ListerPartiesController extends Controller {
 			session.sendMessage(responseMessage);
 			return;
 		}
-		
+
 		response.addProperty("succes", true);
 
 		List<Partie> listeParties = playITService.listerParties(maitreDuJeu);
@@ -45,10 +47,13 @@ public class ListerPartiesController extends Controller {
 			partieJson.addProperty("id", partie.getId());
 			partieJson.addProperty("nom", partie.getNom());
 			partieJson.addProperty("codePin", partie.getCodePin());
-			partieJson.addProperty("etat", partie.getEtat().toString());
-			partieJson.addProperty("date", partie.getDate().toString());
+			partieJson.addProperty("etat", partie.getEtat()
+			                                     .toString());
+			partieJson.addProperty("date", partie.getDate()
+			                                     .toString());
 			if (partie.getPlateauCourant() != null) {
-				partieJson.addProperty("dernierPlateau", partie.getPlateauCourant().getNom());
+				partieJson.addProperty("dernierPlateau", partie.getPlateauCourant()
+				                                               .getNom());
 			} else {
 				partieJson.add("dernierPlateau", JsonNull.INSTANCE);
 			}
@@ -60,8 +65,6 @@ public class ListerPartiesController extends Controller {
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
-
-		return;
 	}
-	
+
 }

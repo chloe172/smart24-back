@@ -7,17 +7,19 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.playit.backend.model.Equipe;
-import com.playit.backend.model.Partie;
-import com.playit.backend.service.NotFoundException;
-import com.playit.backend.service.PlayITService;
+import com.playit.backend.metier.model.Equipe;
+import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.service.NotFoundException;
+import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class ListerEquipesController extends Controller {
+	@Override
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-		Long idPartie = data.get("idPartie").getAsLong();
+		Long idPartie = data.get("idPartie")
+		                    .getAsLong();
 
 		Partie partie = null;
 		try {
@@ -43,7 +45,7 @@ public class ListerEquipesController extends Controller {
 			JsonObject equipeJson = new JsonObject();
 			equipeJson.addProperty("nom", equipe.getNom());
 			equipeJson.addProperty("codePin", equipe.getScore());
-			
+
 			listeEquipesJson.add(equipeJson);
 		}
 		dataObject.add("listeEquipes", listeEquipesJson);
@@ -51,8 +53,6 @@ public class ListerEquipesController extends Controller {
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
-
-		return;
 	}
-	
+
 }

@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.playit.backend.model.MaitreDuJeu;
-import com.playit.backend.model.Partie;
+import com.playit.backend.metier.model.MaitreDuJeu;
+import com.playit.backend.metier.model.Partie;
 
 public interface PartieRepository extends JpaRepository<Partie, Long> {
 
@@ -14,6 +14,6 @@ public interface PartieRepository extends JpaRepository<Partie, Long> {
 
 	List<Partie> findAllByMaitreDuJeu(MaitreDuJeu maitreDuJeu);
 
-    Optional<Partie> findByNom(String nom);
+	Optional<Partie> findByNom(String nom);
 
 }

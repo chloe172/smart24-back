@@ -1,4 +1,4 @@
-package com.playit.backend.model;
+package com.playit.backend.metier.model;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class MaitreDuJeu {
 		this.nom = nom;
 		this.motDePasse = motDePasse;
 	}
-	
+
 	public Long getId() {
 		return this.id;
 	}

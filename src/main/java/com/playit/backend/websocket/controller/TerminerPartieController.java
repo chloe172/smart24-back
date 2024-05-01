@@ -5,57 +5,57 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.playit.backend.model.Partie;
-import com.playit.backend.service.NotFoundException;
-import com.playit.backend.service.PlayITService;
+import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.service.NotFoundException;
+import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class TerminerPartieController extends Controller {
 
+	@Override
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
 		JsonElement idPartieObjet = data.get("idPartie");
-				Long idPartie = idPartieObjet.getAsLong();
+		Long idPartie = idPartieObjet.getAsLong();
 
-				Partie partie = null;
-				try {
-					partie = playITService.trouverPartieParId(idPartie);
-				} catch (NotFoundException e) {
-					JsonObject response = new JsonObject();
-					response.addProperty("type", "reponseTerminerPartie");
-					response.addProperty("succes", false);
-					response.addProperty("messageErreur", "Partie non trouvée");
-					TextMessage responseMessage = new TextMessage(response.toString());
-					session.sendMessage(responseMessage);
-					return;
-				}
+		Partie partie = null;
+		try {
+			partie = playITService.trouverPartieParId(idPartie);
+		} catch (NotFoundException e) {
+			JsonObject response = new JsonObject();
+			response.addProperty("type", "reponseTerminerPartie");
+			response.addProperty("succes", false);
+			response.addProperty("messageErreur", "Partie non trouvée");
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
+		}
 
-				try {
-					playITService.terminerPartie(partie);
-				} catch (IllegalStateException e) {
-					JsonObject response = new JsonObject();
-					response.addProperty("type", "reponseTerminerPartie");
-					response.addProperty("succes", false);
-					response.addProperty("messageErreur", e.getMessage());
-					TextMessage responseMessage = new TextMessage(response.toString());
-					session.sendMessage(responseMessage);
-					return;
-				}
-				
-				JsonObject response = new JsonObject();
-				response.addProperty("type", "reponseTerminerPartie");
-				response.addProperty("succes", true);
+		try {
+			playITService.terminerPartie(partie);
+		} catch (IllegalStateException e) {
+			JsonObject response = new JsonObject();
+			response.addProperty("type", "reponseTerminerPartie");
+			response.addProperty("succes", false);
+			response.addProperty("messageErreur", e.getMessage());
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
+		}
 
-				String etatPartie = partie.getEtat().toString();
-				JsonObject dataObject = new JsonObject();
-				dataObject.addProperty("etatPartie", etatPartie);
-				response.add("data", dataObject);
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseTerminerPartie");
+		response.addProperty("succes", true);
 
-				TextMessage responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
+		String etatPartie = partie.getEtat()
+		                          .toString();
+		JsonObject dataObject = new JsonObject();
+		dataObject.addProperty("etatPartie", etatPartie);
+		response.add("data", dataObject);
 
-				return;
+		TextMessage responseMessage = new TextMessage(response.toString());
+		session.sendMessage(responseMessage);
 	}
-	
+
 }

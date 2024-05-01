@@ -1,23 +1,23 @@
 package com.playit.backend.websocket.controller;
 
-
-import com.google.gson.JsonObject;
-
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.playit.backend.model.Partie;
-import com.playit.backend.service.PlayITService;
+import com.google.gson.JsonObject;
+import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.service.NotFoundException;
+import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.SessionRole;
-import com.playit.backend.service.NotFoundException;
 
 public class TerminerExplicationController extends Controller {
 
-    public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
+	@Override
+	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-        Long idPartie = (Long) data.get("idPartie").getAsLong();
-        
+		Long idPartie = data.get("idPartie")
+		                    .getAsLong();
+
 		JsonObject response = new JsonObject();
 		JsonObject dataObject = new JsonObject();
 		response.addProperty("type", "reponseTerminerExplication");
@@ -33,13 +33,16 @@ public class TerminerExplicationController extends Controller {
 			return;
 		}
 
-        // Vérification fin plateau
-		if (partie.getPlateauCourant().getListeActivites().size() == partie.getIndiceActivite()) {
+		// Vérification fin plateau
+		if (partie.getPlateauCourant()
+		          .getListeActivites()
+		          .size() == partie.getIndiceActivite()) {
 			try {
 				playITService.passerEnModeChoixPlateau(partie);
 				response.addProperty("type", "reponseTerminerExplication");
 				dataObject.addProperty("finPlateau", true);
-				String etatPartie = partie.getEtat().toString();
+				String etatPartie = partie.getEtat()
+				                          .toString();
 				dataObject.addProperty("etatPartie", etatPartie);
 				response.add("data", dataObject);
 				TextMessage responseMessage = new TextMessage(response.toString());
@@ -55,19 +58,20 @@ public class TerminerExplicationController extends Controller {
 			}
 		}
 
-        try {
-            playITService.terminerExpliquation(partie);
-        } catch (Exception e) {
+		try {
+			playITService.terminerExpliquation(partie);
+		} catch (Exception e) {
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", e.getMessage());
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
-        }
+		}
 		response.addProperty("succes", true);
-        dataObject.addProperty("finPlateau", false);
+		dataObject.addProperty("finPlateau", false);
 		dataObject.addProperty("idPartie", partie.getId());
-		String etatPartie = partie.getEtat().toString();
+		String etatPartie = partie.getEtat()
+		                          .toString();
 		dataObject.addProperty("etatPartie", etatPartie);
 		response.add("data", dataObject);
 
@@ -76,8 +80,6 @@ public class TerminerExplicationController extends Controller {
 
 		// TODO : envoyer aussi aux équipes
 
-		return;
 	}
-	
-}
 
+}
