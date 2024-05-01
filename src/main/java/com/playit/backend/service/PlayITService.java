@@ -26,6 +26,7 @@ import com.playit.backend.repository.MaitreDuJeuRepository;
 import com.playit.backend.repository.PartieRepository;
 import com.playit.backend.repository.PlateauRepository;
 import com.playit.backend.repository.ReponseRepository;
+import com.playit.backend.repository.PropositionRepository;
 
 @Service
 @Transactional
@@ -45,6 +46,8 @@ public class PlayITService {
 	private ReponseRepository reponseRepository;
 	@Autowired
 	private ActiviteEnCoursRepository activiteEnCoursRepository;
+	@Autowired
+	private PropositionRepository propositionRepository;
 
 	public MaitreDuJeu authentifier(String login, String mdp) {
 		Optional<MaitreDuJeu> result = this.maitreDuJeuRepository.findByNom(login);
@@ -116,10 +119,7 @@ public class PlayITService {
 		return this.equipeRepository.saveAndFlush(equipe);
 	}
 
-	public Equipe modifierEquipe(Long idEquipe, String nouveauNom) {
-		Equipe equipe = this.equipeRepository.findById(idEquipe)
-				.orElseThrow(() -> new IllegalStateException(
-						"l'équipe avec l'id " + idEquipe + " n'existe pas"));
+	public Equipe modifierEquipe(Equipe equipe, String nouveauNom) {
 		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nouveauNom, equipe.getPartie());
 		if (result.isPresent()) {
 			throw new IllegalStateException("nom d'équipe déjà pris");
@@ -152,7 +152,7 @@ public class PlayITService {
 		return activiteEnCours;
 	}
 
-	public void soumettreReponse(Partie partie, Equipe equipe, Proposition proposition,
+	public int soumettreReponse(Partie partie, Equipe equipe, Proposition proposition,
 			ActiviteEnCours activiteEnCours) {
 		Activite activite = activiteEnCours.getActivite();
 
@@ -171,12 +171,21 @@ public class PlayITService {
 		reponse.setEquipe(equipe);
 		reponse.setProposition(proposition);
 		activiteEnCours.addReponse(reponse);
-		reponse.calculerScoreEquipe();
+		int score = reponse.calculerScoreEquipe();
+		equipe.ajouterScore(score);
+
 		this.reponseRepository.saveAndFlush(reponse);
+		this.equipeRepository.saveAndFlush(equipe);
+
+		return score;
 	}
 
 	public void choisirPlateau(Partie partie, Plateau plateau) {
-		// TODO : verifier que le plateau appartient bien aux plateaux de la partie
+		if (!partie.getPlateaux()
+				.stream()
+				.anyMatch(p -> p.getId().equals(plateau.getId()))) {
+			throw new IllegalArgumentException("Le plateau n'appartient pas à la partie");
+		}
 		partie.setPlateauCourant(plateau);
 		this.partieRepository.saveAndFlush(partie);
 	}
@@ -196,18 +205,33 @@ public class PlayITService {
 	}
 
 	public Partie trouverPartieParId(Long idPartie) {
-		// TODO : renvoyer une erreur si la partie n'existe pas
-		return this.partieRepository.findById(idPartie).get();
+		return this.partieRepository.findById(idPartie).orElseThrow(() -> new IllegalStateException(
+			"La partie avec l'id " + idPartie + " n'existe pas"));
 	}
 
 	public MaitreDuJeu trouverMaitreDuJeuParId(Long idMaitreDuJeu) {
-		// TODO : renvoyer une erreur si le maitre du jeu n'existe pas
-		return this.maitreDuJeuRepository.findById(idMaitreDuJeu).get();
+		return this.maitreDuJeuRepository.findById(idMaitreDuJeu).orElseThrow(() -> new IllegalStateException(
+			"Le maitre du jeu avec l'id " + idMaitreDuJeu + " n'existe pas"));
 	}
 
 	public Plateau trouverPlateauParId(Long idPlateau) {
-		// TODO : renvoyer une erreur si le maitre du jeu n'existe pas
-		return this.plateauRepository.findById(idPlateau).get();
+		return this.plateauRepository.findById(idPlateau).orElseThrow(() -> new IllegalStateException(
+			"Le plateau avec l'id " + idPlateau + " n'existe pas"));
+	}
+
+	public Equipe trouverEquipeParId(Long idEquipe) {
+		return this.equipeRepository.findById(idEquipe).orElseThrow(() -> new IllegalStateException(
+			"L'équipe avec l'id " + idEquipe + " n'existe pas"));
+	}
+
+	public Proposition trouverPropositionParId(Long idProposition) {
+		return this.propositionRepository.findById(idProposition).orElseThrow(() -> new IllegalStateException(
+			"La propositioni avec l'id " + idProposition + " n'existe pas"));
+	}
+
+	public ActiviteEnCours trouverActiviteEnCoursParId(Long idActiviteEnCours) {
+		return this.activiteEnCoursRepository.findById(idActiviteEnCours).orElseThrow(() -> new IllegalStateException(
+			"L'activité en cours avec l'id " + idActiviteEnCours + " n'existe pas"));
 	}
 
 }

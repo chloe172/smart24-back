@@ -28,6 +28,7 @@ public class Partie {
 
 	@Column(unique = true)
 	private String nom;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	private LocalDateTime date;
 
@@ -113,22 +114,6 @@ public class Partie {
 
 	public void setDate(LocalDateTime date) {
 		this.date = date;
-	}
-
-	public List<Plateau> getListePlateaux() {
-		return this.listePlateaux;
-	}
-
-	public void setListePlateaux(List<Plateau> listePlateaux) {
-		this.listePlateaux = listePlateaux;
-	}
-
-	public List<Equipe> getListeEquipes() {
-		return this.listeEquipes;
-	}
-
-	public void setListeEquipes(List<Equipe> listeEquipes) {
-		this.listeEquipes = listeEquipes;
 	}
 
 	public MaitreDuJeu getMaitreDuJeu() {

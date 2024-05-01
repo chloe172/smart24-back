@@ -1,12 +1,10 @@
 package com.playit.backend.websocket.handler;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -26,9 +24,17 @@ import com.playit.backend.model.QuestionQCM;
 import com.playit.backend.model.QuestionVraiFaux;
 import com.playit.backend.model.Activite;
 import com.playit.backend.model.ActiviteEnCours;
+import com.playit.backend.model.Equipe;
 import com.playit.backend.service.PlayITService;
+import com.playit.backend.websocket.controller.Controller;
+import com.playit.backend.websocket.controller.CreerPartieController;
+import com.playit.backend.websocket.controller.ListerParties;
+import com.playit.backend.websocket.controller.ListerPlateauxController;
+import com.playit.backend.websocket.controller.ListerPlateauxPartieController;
+import com.playit.backend.websocket.RoleUtilisateurException;
+import com.playit.backend.websocket.controller.AuthentifierUtilisateurController;
 
-@Service // TODO : Vérifier que c'est le bon type d'annotation
+@Component
 public class PlayITHandler extends TextWebSocketHandler {
 
 	@Autowired
@@ -37,6 +43,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws IOException {
 		System.out.println("New session: " + session.getId());
+		session.getAttributes().put("role", SessionRole.ANONYME);
 	}
 
 	@Override
@@ -56,145 +63,27 @@ public class PlayITHandler extends TextWebSocketHandler {
 		String type = typeElement.getAsString();
 		JsonObject data = body.get("data").getAsJsonObject();
 
+		Controller controller = null;
 		switch (type) {
 			case "authentifierUtilisateur": {
-				JsonElement nomObjet = data.get("nom");
-				String nom = nomObjet.getAsString();
-				JsonElement motDePasseObjet = data.get("mdp");
-				String motDePasse = motDePasseObjet.getAsString();
-
-				JsonObject response = new JsonObject();
-				response.addProperty("type", "reponseAuthentifierUtilisateur");
-				try {
-					MaitreDuJeu maitreDuJeu = playITService.authentifier(nom, motDePasse);
-					// TODO : associer la session au maitre du jeu
-					response.addProperty("succes", true);
-				} catch (IllegalArgumentException e) {
-					response.addProperty("succes", false);
-					response.addProperty("messageErreur", "Nom ou mot de passe incorrect");
-				}
-				TextMessage responseMessage = new TextMessage(response.toString());
-				System.out.println("Message sent: " + responseMessage.getPayload());
-				session.sendMessage(responseMessage);
-
-				return;
+				controller = new AuthentifierUtilisateurController();
+				break;
 			}
 			case "listerPlateaux": {
-				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
-				JsonObject response = new JsonObject();
-				response.addProperty("type", "reponseListerPlateaux");
-
-				JsonObject dataObject = new JsonObject();
-				List<Plateau> listePlateaux = playITService.listerPlateaux();
-				JsonArray listePlateauxJson = new JsonArray();
-				for (Plateau plateau : listePlateaux) {
-					JsonObject plateauJson = new JsonObject();
-					plateauJson.addProperty("nom", plateau.getNom());
-					listePlateauxJson.add(plateauJson);
-				}
-				dataObject.add("listePlateaux", listePlateauxJson);
-				response.add("data", dataObject);
-				response.addProperty("succes", true);
-				TextMessage responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
-
-				return;
+				controller = new ListerPlateauxController();
+				break;
 			}
 			case "listerPlateauxPartie": {
-				JsonElement idObjet = data.get("idPartie");
-				Long idPartie = idObjet.getAsLong();
-
-				// TODO : reception exception
-				Partie partie = playITService.trouverPartieParId(idPartie);
-
-				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
-				JsonObject response = new JsonObject();
-				response.addProperty("type", "reponseListerPlateaux");
-
-				JsonObject dataObject = new JsonObject();
-				List<Plateau> listePlateaux = playITService.listerPlateauxDansPartie(partie);
-				JsonArray listePlateauxJson = new JsonArray();
-				for (Plateau plateau : listePlateaux) {
-					JsonObject plateauJson = new JsonObject();
-					plateauJson.addProperty("nom", plateau.getNom());
-					listePlateauxJson.add(plateauJson);
-				}
-				dataObject.add("listePlateaux", listePlateauxJson);
-				response.add("data", dataObject);
-				response.addProperty("succes", true);
-				TextMessage responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
-
-				return;
+				controller = new ListerPlateauxPartieController();
+				break;
 			}
 			case "creerPartie": {
-				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
-				JsonElement idMaitreDuJeuObjet = data.get("idMaitreDuJeu");
-				Long idMaitreDuJeu = idMaitreDuJeuObjet.getAsLong();
-				MaitreDuJeu maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
-
-				JsonElement nomPartieObjet = data.get("nomPartie");
-				String nomPartie = nomPartieObjet.getAsString();
-
-				JsonArray listePlateauxJson = data.get("plateaux").getAsJsonArray();
-				List<Plateau> listePlateaux = new ArrayList<>();
-
-				for (JsonElement plateauJson : listePlateauxJson) {
-					Long idPlateau = plateauJson.getAsLong();
-					Plateau plateau = playITService.trouverPlateauParId(idPlateau);
-					listePlateaux.add(plateau);
-				}
-
-				Partie partie = playITService.creerPartie(nomPartie, maitreDuJeu, listePlateaux);
-
-				JsonObject response = new JsonObject();
-				response.addProperty("type", "reponseCreerPartie");
-				response.addProperty("succes", true);
-
-				JsonObject dataObject = new JsonObject();
-				dataObject.addProperty("idPartie", partie.getId());
-				response.add("data", dataObject);
-
-				TextMessage responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
-
-				return;
+				controller = new CreerPartieController();
+				break;
 			}
 			case "listerParties": {
-				JsonElement idMaitreDuJeuObjet = data.get("idMaitreDuJeu");
-				Long idMaitreDuJeu = idMaitreDuJeuObjet.getAsLong();
-
-				// TODO : reception exception - pas d'id dans BD
-				MaitreDuJeu maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
-
-				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
-				JsonObject response = new JsonObject();
-				response.addProperty("type", "reponseListerParties");
-				response.addProperty("succes", true);
-
-				JsonObject dataObject = new JsonObject();
-				List<Partie> listeParties = playITService.listerParties(maitreDuJeu);
-				JsonArray listePartiesJson = new JsonArray();
-				for (Partie partie : listeParties) {
-					JsonObject partieJson = new JsonObject();
-					partieJson.addProperty("nom", partie.getNom());
-					partieJson.addProperty("codePin", partie.getCodePin());
-					partieJson.addProperty("etat", partie.getEtat().toString());
-					if (partie.getPlateauCourant() != null) {
-						partieJson.addProperty("dernierPlateau", partie.getPlateauCourant().getNom());
-					} else {
-						partieJson.add("dernierPlateau", JsonNull.INSTANCE);
-					}
-
-					listePartiesJson.add(partieJson);
-				}
-				dataObject.add("listeParties", listePartiesJson);
-				response.add("data", dataObject);
-
-				TextMessage responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
-
-				return;
+				controller = new ListerParties();
+				break;
 			}
 			case "demarrerPartie": {
 				JsonElement idPartieObjet = data.get("idPartie");
@@ -208,6 +97,11 @@ public class PlayITHandler extends TextWebSocketHandler {
 				JsonObject response = new JsonObject();
 				response.addProperty("type", "reponseDemarrerPartie");
 				response.addProperty("succes", true);
+
+				String etatPartie = partie.getEtat().toString();
+				JsonObject dataObject = new JsonObject();
+				dataObject.addProperty("etatPartie", etatPartie);
+				response.add("data", dataObject);
 
 				TextMessage responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
@@ -228,7 +122,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 
 				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
 				JsonObject response = new JsonObject();
-				response.addProperty("type", "reponseDemarrerPartie");
+				response.addProperty("type", "reponseChoisirPlateau");
 				response.addProperty("succes", true);
 
 				TextMessage responseMessage = new TextMessage(response.toString());
@@ -287,6 +181,216 @@ public class PlayITHandler extends TextWebSocketHandler {
 
 				return;
 			}
+			case "mettreEnPause": {
+				JsonElement idPartieObjet = data.get("idPartie");
+				Long idPartie = idPartieObjet.getAsLong();
+
+				// TODO : reception exception - pas d'id dans BD
+				Partie partie = playITService.trouverPartieParId(idPartie);
+				playITService.mettreEnPausePartie(partie);
+
+				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
+				JsonObject response = new JsonObject();
+				response.addProperty("type", "reponseMettreEnPausePartie");
+				response.addProperty("succes", true);
+
+				String etatPartie = partie.getEtat().toString();
+				JsonObject dataObject = new JsonObject();
+				dataObject.addProperty("etatPartie", etatPartie);
+				response.add("data", dataObject);
+
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+
+				return;
+			}
+			case "terminerPlateau": {
+				JsonElement idPartieObjet = data.get("idPartie");
+				Long idPartie = idPartieObjet.getAsLong();
+
+				// TODO : reception exception - pas d'id dans BD
+				Partie partie = playITService.trouverPartieParId(idPartie);
+				playITService.terminerPartie(partie);
+
+				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
+				JsonObject response = new JsonObject();
+				response.addProperty("type", "reponseTerminerPartie");
+				response.addProperty("succes", true);
+
+				String etatPartie = partie.getEtat().toString();
+				JsonObject dataObject = new JsonObject();
+				dataObject.addProperty("etatPartie", etatPartie);
+				response.add("data", dataObject);
+
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+
+				return;
+			}
+			case "listerEquipes": {
+				JsonElement idPartieObjet = data.get("idPartie");
+				Long idPartie = idPartieObjet.getAsLong();
+
+				// TODO : reception exception - pas d'id dans BD
+				Partie partie = playITService.trouverPartieParId(idPartie);
+
+				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
+				JsonObject response = new JsonObject();
+				response.addProperty("type", "reponseListerEquipes");
+				response.addProperty("succes", true);
+
+				JsonObject dataObject = new JsonObject();
+				List<Equipe> listeEquipes = playITService.listerEquipe(partie);
+				JsonArray listeEquipesJson = new JsonArray();
+				for (Equipe equipe : listeEquipes) {
+					JsonObject equipeJson = new JsonObject();
+					equipeJson.addProperty("nom", equipe.getNom());
+					equipeJson.addProperty("codePin", equipe.getScore());
+					
+					listeEquipesJson.add(equipeJson);
+				}
+				dataObject.add("listeEquipes", listeEquipesJson);
+				response.add("data", dataObject);
+
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+
+				return;
+			}
+			case "inscrireEquipe": {
+				JsonElement idPartieObjet = data.get("idPartie");
+				Long idPartie = idPartieObjet.getAsLong();
+
+				JsonElement nomEquipeObjet = data.get("nomEquipe");
+				String nomEquipe = nomEquipeObjet.getAsString();
+
+				// TODO : reception exception - pas d'id dans BD
+				Partie partie = playITService.trouverPartieParId(idPartie);
+				Equipe equipe = playITService.inscrireEquipe(nomEquipe, partie);
+
+				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
+				JsonObject response = new JsonObject();
+				response.addProperty("type", "reponseInscrireEquipe");
+				response.addProperty("succes", true);
+
+				JsonObject dataObject = new JsonObject();
+				dataObject.addProperty("nomEquipe", equipe.getNom());
+				response.add("data", dataObject);
+
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+
+				return;
+			}
+			case "soumettreReponse": {
+				JsonElement idPartieObjet = data.get("idPartie");
+				Long idPartie = idPartieObjet.getAsLong();
+
+				JsonElement idPropositionObjet = data.get("idProposition");
+				Long idProposition = idPropositionObjet.getAsLong();
+
+				JsonElement idEquipeObjet = data.get("idEquipe");
+				Long idEquipe = idEquipeObjet.getAsLong();
+
+				JsonElement idActiviteEnCoursObjet = data.get("idActiviteEnCours");
+				Long idActiviteEnCours = idActiviteEnCoursObjet.getAsLong();
+
+				// TODO : reception exception - pas d'id dans BD
+				Partie partie = playITService.trouverPartieParId(idPartie);
+				Proposition proposition = playITService.trouverPropositionParId(idProposition);
+				Equipe equipe = playITService.trouverEquipeParId(idEquipe);
+				ActiviteEnCours activiteEnCours = playITService.trouverActiviteEnCoursParId(idActiviteEnCours);
+								
+				int score = playITService.soumettreReponse(partie, equipe, proposition, activiteEnCours);
+
+				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
+				JsonObject response = new JsonObject();
+				response.addProperty("type", "reponseInscrireEquipe");
+				response.addProperty("succes", true);
+
+				JsonObject dataObject = new JsonObject();
+				dataObject.addProperty("scoreQuestion", score);
+				dataObject.addProperty("scoreEquipe", equipe.getScore());
+				response.add("data", dataObject);
+
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+
+				return;
+			}
+			case "modifierEquipe": {
+
+				JsonElement idEquipeObjet = data.get("idEquipe");
+				Long idEquipe = idEquipeObjet.getAsLong();
+
+				// TODO : reception exception - pas d'id dans BD
+				Equipe equipe = playITService.trouverEquipeParId(idEquipe);
+
+				// TODO : verifier que la partie est bien EN Cours
+
+				JsonElement nouveauNomEquipeObjet = data.get("nouveauNomEquipe");
+				String nouveauNomEquipe = nouveauNomEquipeObjet.getAsString();
+								
+				equipe = playITService.modifierEquipe(equipe, nouveauNomEquipe);
+
+				// TODO : vérifier que l'utilisateur est bien authentifié en maitre du jeu
+				JsonObject response = new JsonObject();
+				response.addProperty("type", "reponseInscrireEquipe");
+				response.addProperty("succes", true);
+
+				JsonObject dataObject = new JsonObject();
+				dataObject.addProperty("nouveauNomEquipe", equipe.getNom());
+				response.add("data", dataObject);
+
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+
+				return;
+			}
+			case "validerCodePin": {
+				JsonElement codePinObjeet = data.get("codePin");
+				String codePin = codePinObjeet.getAsString();
+
+				Partie partie = playITService.validerCodePin(codePin);
+
+				// TODO : vérifier que l'utilisateur est bien authentifié en joueur
+				JsonObject response = new JsonObject();
+				response.addProperty("type", "reponseInscrireEquipe");
+				response.addProperty("succes", true);
+
+				JsonObject dataObject = new JsonObject();
+				dataObject.addProperty("nomPartie", partie.getNom());
+				response.add("data", dataObject);
+
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+
+				return;
+			}
+		}
+
+		if (controller != null) {
+			try {
+				controller.handleRequest(session, data, playITService);
+			} catch (RoleUtilisateurException e) {
+				String reponseType = "reponse" + type.substring(0, 1).toUpperCase() + type.substring(1);
+
+				JsonObject response = new JsonObject();
+				response.addProperty("type", reponseType);
+				response.addProperty("succes", false);
+				response.addProperty("messageErreur", "Vous n'avez pas les droits pour effectuer cette action");
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+			} catch (Exception e) {
+				// TODO : gérer les autres exceptions
+			}
+		} else {
+			JsonObject response = new JsonObject();
+			response.addProperty("type", "erreur");
+			response.addProperty("succes", false);
+			response.addProperty("messageErreur", "Type de message inconnu : " + type);
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
 		}
 	}
 }

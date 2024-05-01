@@ -5,11 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.playit.backend.model.MaitreDuJeu;
-import com.playit.backend.model.Partie;
 import com.playit.backend.model.Plateau;
 import com.playit.backend.model.QuestionVraiFaux;
 import com.playit.backend.model.QuestionQCM;
-import com.playit.backend.model.ActiviteEnCours;
 import com.playit.backend.model.DifficulteActivite;
 import com.playit.backend.model.Proposition;
 import com.playit.backend.repository.MaitreDuJeuRepository;
