@@ -33,6 +33,28 @@ public class TerminerExplicationController extends Controller {
 			return;
 		}
 
+        // Vérification fin plateau
+		if (partie.getPlateauCourant().getListeActivites().size() == partie.getIndiceActivite()) {
+			try {
+				playITService.passerEnModeChoixPlateau(partie);
+				response.addProperty("type", "reponseTerminerExplication");
+				dataObject.addProperty("finPlateau", true);
+				String etatPartie = partie.getEtat().toString();
+				dataObject.addProperty("etatPartie", etatPartie);
+				response.add("data", dataObject);
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+				return;
+			} catch (IllegalStateException e) {
+				response.addProperty("type", "reponseTerminerExplication");
+				response.addProperty("messageErreur", e.getMessage());
+				response.addProperty("succes", false);
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+				return;
+			}
+		}
+
         try {
             playITService.terminerExpliquation(partie);
         } catch (Exception e) {
@@ -41,11 +63,9 @@ public class TerminerExplicationController extends Controller {
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
-            
         }
-        
 		response.addProperty("succes", true);
-
+        dataObject.addProperty("finPlateau", false);
 		dataObject.addProperty("idPartie", partie.getId());
 		String etatPartie = partie.getEtat().toString();
 		dataObject.addProperty("etatPartie", etatPartie);
@@ -53,6 +73,8 @@ public class TerminerExplicationController extends Controller {
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
+
+		// TODO : envoyer aussi aux équipes
 
 		return;
 	}

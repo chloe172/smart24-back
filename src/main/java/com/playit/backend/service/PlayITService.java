@@ -245,7 +245,7 @@ public class PlayITService {
 		}
 		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
 		partie.setPlateauCourant(plateau);
-		
+		// TODO : ajouter un indice Acitivte pour chaque plateau - nouvelle entite plateau en cours		
 		this.partieRepository.saveAndFlush(partie);
 	}
 

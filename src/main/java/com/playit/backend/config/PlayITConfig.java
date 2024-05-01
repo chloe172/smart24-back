@@ -34,7 +34,6 @@ public class PlayITConfig {
 			MaitreDuJeuRepository maitreDuJeuRepository, PlayITService playITService) {
 		return args -> {
 			Plateau plateauGeneral = new Plateau("Général");
-			Plateau plateauCyber = new Plateau("Cyber");
 			QuestionVraiFaux question1 = new QuestionVraiFaux(DifficulteActivite.MOYEN,
 					"L'informatique est apparu avec les ordinateurs ?",
 					0,
@@ -59,9 +58,15 @@ public class PlayITConfig {
 			plateauGeneral.addActivite(question2);
 			plateauGeneral.addActivite(question3);
 			plateauRepository.save(plateauGeneral);
+
+			Plateau plateauCyber = new Plateau("Cyber");
+			QuestionVraiFaux question1Cyber = new QuestionVraiFaux(DifficulteActivite.MOYEN,
+					"Question Cyber", 1, ",sdn:fljlkdmjfl",
+					true);
+			plateauCyber.addActivite(question1Cyber);
 			plateauRepository.save(plateauCyber);
 			plateauRepository.flush();
-			System.out.println("Plateau General ajouté et ses questions");
+			System.out.println("Plateaux ajoutés");
 
 			// Plateau plateau1 = plateauRepository.findByNom("Général");
 			// Plateau plateau2 = plateauRepository.findByNom("Cyber");

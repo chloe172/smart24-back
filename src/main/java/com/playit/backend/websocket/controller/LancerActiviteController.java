@@ -43,26 +43,6 @@ public class LancerActiviteController extends Controller {
 			return;
 		}
 
-		// Vérification fin plateau
-		if (partie.getPlateauCourant().getListeActivites().size() == partie.getIndiceActivite()) {
-			try {
-				playITService.passerEnModeChoixPlateau(partie);
-				response.addProperty("type", "reponseLancerActivite");
-				dataObject.addProperty("finPlateau", true);
-				response.add("data", dataObject);
-				TextMessage responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
-				return;
-			} catch (IllegalStateException e) {
-				response.addProperty("type", "reponseLancerActivite");
-				response.addProperty("messageErreur", e.getMessage());
-				response.addProperty("succes", false);
-				TextMessage responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
-				return;
-			}
-		}
-
 		//Trouver prochaine activite
 		ActiviteEnCours activiteEnCours;
 		try {
@@ -108,7 +88,6 @@ public class LancerActiviteController extends Controller {
 
 				// Envoi du message au maitre du jeu
 				response.addProperty("type", "reponseLancerActivite");
-				dataObject.addProperty("finPlateau", false);
 				response.add("data", dataObject);
 				responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
@@ -133,13 +112,17 @@ public class LancerActiviteController extends Controller {
 
 				// Envoi du message au maitre du jeu
 				response.addProperty("type", "reponseLancerActivite");
-				dataObject.addProperty("finPlateau", false);
 				response.add("data", dataObject);
 				responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
 			}
 			// TODO : lancer un timer sur la durée de la question pour envoyer la réponse après/mettre fin aux réponses
 			// et passer la partie en état EXPLICATION
+			/**
+			 * A envoyer :
+			 * - bonne réponse aux équipes et maitre du jeu
+			 * - les explications au maitre du jeu
+			 */
 			Thread.sleep(10000);
 			playITService.passerEnModeExplication(partie);
 		} else {
