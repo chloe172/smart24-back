@@ -20,6 +20,7 @@ public abstract class Activite {
 
 	@Enumerated(EnumType.STRING)
 	protected DifficulteActivite difficulte;
+
 	protected String intitule;
 
 	@ManyToOne

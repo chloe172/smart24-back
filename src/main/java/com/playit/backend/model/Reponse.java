@@ -36,7 +36,7 @@ public class Reponse {
 	public Reponse() {
 	}
 
-	public void calculerScoreEquipe() {
+	public int calculerScoreEquipe() {
 		Question question = ((Question) this.activiteEnCours.getActivite());
 		Proposition bonneProposition = new Proposition();
 		if (question instanceof QuestionQCM) {
@@ -62,7 +62,7 @@ public class Reponse {
 			this.scoreEquipe = 0;
 		}
 
-		this.equipe.ajouterScore(this.scoreEquipe);
+		return this.scoreEquipe;
 	}
 
 	public LocalDateTime getDateSoumission() {

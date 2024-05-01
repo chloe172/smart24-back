@@ -1,5 +1,6 @@
 package com.playit.backend;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ import com.playit.backend.service.PlayITService;
 public class PlayItBackendApplication {
 	@Autowired
 	QuestionRepository questionRepository;
-	
+
 	@Autowired
 	PlateauRepository plateauRepository;
 	@Autowired
@@ -37,19 +38,25 @@ public class PlayItBackendApplication {
 
 	@GetMapping("/")
 	public String index() {
-		Plateau plateauGene = plateauRepository.findByNom("Général");
-		Plateau plateauCyber = plateauRepository.findByNom("Cyber");
-		List<Plateau> listePlateaux = List.of(plateauGene, plateauCyber);
+		Plateau plateauGene = this.plateauRepository.findByNom("Général");
+		Plateau plateauCyber = this.plateauRepository.findByNom("Cyber");
+		List<Plateau> listePlateaux = new ArrayList<Plateau>();
+		listePlateaux.add(plateauGene);
+		listePlateaux.add(plateauCyber);
 
-		MaitreDuJeu maitre = maitreDuJeuRepository.findByNom("admin").get();
-		
-		Partie partie = playITService.creerPartie("Stage seconde", 4, maitre, listePlateaux);
-		playITService.choisirPlateau(partie, plateauGene);
-		ActiviteEnCours activiteEnCours = playITService.lancerActivite(partie);
-		System.out.println(activiteEnCours.getActivite().getIntitule());
-		activiteEnCours = playITService.lancerActivite(partie);
-		System.out.println(activiteEnCours.getActivite().getIntitule());
-		return "OUIIIIIIIIIIIIIIIIIIIII";
+		MaitreDuJeu maitre = this.maitreDuJeuRepository.findByNom("admin@volvo.fr")
+				.get();
+		Partie partie = this.playITService.creerPartie("Stage seconde", maitre, listePlateaux);
+		StringBuilder sb = new StringBuilder();
+		sb.append("Partie créée : ");
+		sb.append(partie.getNom());
+		sb.append(" avec ");
+		sb.append(partie.getPlateaux().size());
+		sb.append(" plateaux");
+		sb.append("<br>");
+		sb.append("Code PIN : ");
+		sb.append(partie.getCodePin());
+		return sb.toString();
 	}
 
 	@GetMapping("/hello")
@@ -59,7 +66,6 @@ public class PlayItBackendApplication {
 
 	@GetMapping("/lancerActivite")
 	public ActiviteEnCours lancerActivite(@RequestParam(value = "partie") Partie partie) {
-		ActiviteEnCours activite = playITService.lancerActivite(partie);
-		return activite;
+		return this.playITService.lancerActivite(partie);
 	}
 }

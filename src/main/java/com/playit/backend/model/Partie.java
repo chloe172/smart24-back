@@ -1,17 +1,20 @@
 package com.playit.backend.model;
 
-import java.util.List;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
@@ -22,21 +25,24 @@ public class Partie {
 	private Long id;
 	private int nombreEquipes;
 	private String codePin;
+
+	@Column(unique = true)
 	private String nom;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	private LocalDateTime date;
 
 	@Enumerated(EnumType.STRING)
-	private EtatPartie etat = EtatPartie.EN_ATTENTE;
+	private EtatPartie etat = EtatPartie.CREEE;
 
-	@OneToOne
+	@ManyToOne
 	private Plateau plateauCourant;
 	private int indiceActivite;
 
-	@OneToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	private List<Plateau> listePlateaux = new ArrayList<>();
 
-	@OneToMany(mappedBy = "partie")
+	@OneToMany(mappedBy = "partie", fetch = FetchType.EAGER)
 	private List<Equipe> listeEquipes = new ArrayList<>();
 
 	@ManyToOne
@@ -103,27 +109,11 @@ public class Partie {
 	}
 
 	public LocalDateTime getDate() {
-		return date;
+		return this.date;
 	}
 
 	public void setDate(LocalDateTime date) {
 		this.date = date;
-	}
-
-	public List<Plateau> getListePlateaux() {
-		return listePlateaux;
-	}
-
-	public void setListePlateaux(List<Plateau> listePlateaux) {
-		this.listePlateaux = listePlateaux;
-	}
-
-	public List<Equipe> getListeEquipes() {
-		return listeEquipes;
-	}
-
-	public void setListeEquipes(List<Equipe> listeEquipes) {
-		this.listeEquipes = listeEquipes;
 	}
 
 	public MaitreDuJeu getMaitreDuJeu() {
@@ -156,7 +146,8 @@ public class Partie {
 	}
 
 	public Activite getActiviteCourante() {
-		return this.plateauCourant.getListeActivites().get(indiceActivite);
+		return this.plateauCourant.getListeActivites()
+				.get(this.indiceActivite);
 	}
 
 }

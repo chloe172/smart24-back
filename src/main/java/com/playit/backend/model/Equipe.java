@@ -1,6 +1,8 @@
 package com.playit.backend.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,7 +16,7 @@ public class Equipe {
 	private String nom;
 	private int score;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER, cascade= CascadeType.ALL)
 	private Partie partie;
 
 	public Equipe() {
@@ -45,6 +47,7 @@ public class Equipe {
 	}
 
 	public void setPartie(Partie partie) {
+		// TODO : supprimer l'équipe de l'ancienne partie s'il y en avait une
 		this.partie = partie;
 	}
 

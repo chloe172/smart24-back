@@ -1,17 +1,17 @@
 package com.playit.backend.model;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-
-import java.util.ArrayList;
 
 @Entity
 @Table
@@ -21,7 +21,7 @@ public class Plateau {
 	private Long id;
 	private String nom;
 
-	@OneToMany(mappedBy = "plateau", cascade = CascadeType.PERSIST)
+	@OneToMany(mappedBy = "plateau", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
 	@OrderBy("numeroActivite")
 	private List<Activite> listeActivites = new ArrayList<>();
 
@@ -59,7 +59,8 @@ public class Plateau {
 
 	@Override
 	public String toString() {
-		return "Plateau {" + " id='" + getId() + "'" + ", nom='" + getNom() + "'" + ", listeActivites='" + getListeActivites()
+		return "Plateau {" + " id='" + getId() + "'" + ", nom='" + getNom() + "'" + ", listeActivites='"
+				+ getListeActivites()
 				+ "'" + "}";
 	}
 
