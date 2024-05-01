@@ -33,7 +33,7 @@ public class Partie {
 	private LocalDateTime date;
 
 	@Enumerated(EnumType.STRING)
-	private EtatPartie etat = EtatPartie.EN_ATTENTE;
+	private EtatPartie etat = EtatPartie.CREEE;
 
 	@ManyToOne
 	private Plateau plateauCourant;

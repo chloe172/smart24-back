@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playit.backend.model.MaitreDuJeu;
 import com.playit.backend.websocket.handler.SessionRole;
@@ -15,10 +14,8 @@ public class AuthentifierUtilisateurController extends Controller {
     
     public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws IOException {
         
-        JsonElement nomObjet = data.get("nom");
-        String nom = nomObjet.getAsString();
-        JsonElement motDePasseObjet = data.get("mdp");
-        String motDePasse = motDePasseObjet.getAsString();
+        String nom = data.get("nom").getAsString();
+        String motDePasse = data.get("mdp").getAsString();
 
         JsonObject response = new JsonObject();
         response.addProperty("type", "reponseAuthentifierUtilisateur");
