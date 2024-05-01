@@ -1,5 +1,6 @@
 package com.playit.backend;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,9 @@ public class PlayItBackendApplication {
 	public String index() {
 		Plateau plateauGene = this.plateauRepository.findByNom("Général");
 		Plateau plateauCyber = this.plateauRepository.findByNom("Cyber");
-		List<Plateau> listePlateaux = List.of(plateauGene, plateauCyber);
+		List<Plateau> listePlateaux = new ArrayList<Plateau>();
+		listePlateaux.add(plateauGene);
+		listePlateaux.add(plateauCyber);
 
 		MaitreDuJeu maitre = this.maitreDuJeuRepository.findByNom("admin@volvo.fr")
 				.get();
