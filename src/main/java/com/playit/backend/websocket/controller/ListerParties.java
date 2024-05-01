@@ -45,6 +45,7 @@ public class ListerParties extends Controller {
             partieJson.addProperty("nom", partie.getNom());
             partieJson.addProperty("codePin", partie.getCodePin());
             partieJson.addProperty("etat", partie.getEtat().toString());
+            partieJson.addProperty("date", partie.getDate().toString());
             if (partie.getPlateauCourant() != null) {
                 partieJson.addProperty("dernierPlateau", partie.getPlateauCourant().getNom());
             } else {
