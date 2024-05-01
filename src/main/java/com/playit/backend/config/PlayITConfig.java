@@ -39,10 +39,10 @@ public class PlayITConfig {
 					"L'informatique est apparu avec les ordinateurs ?",
 					0,
 					"Informatique = jonction de plusieurs concepts : les algorithmes, les langages, les machines et les informations. Origines du concept très vieilles (un des plus vieux du monde : les scribes d’Egypte et de Mésopotamie en utilisaient déjà à leur époque). Ordinateurs sont eux apparus au milieu du XXe siècle pendant la seconde guerre mondiale par les anglais pour déchiffrer le code Enigma. (Il existait des programmes informatiques bien avant le premier ordinateur!)",
-					new Proposition("Faux"));
+					false);
 			QuestionVraiFaux question2 = new QuestionVraiFaux(DifficulteActivite.MOYEN,
 					"Le terme bug vient de la présence d'insectes dans les ordinateurs ?", 1, ",sdn:fljlkdmjfl",
-					new Proposition("Vrai"));
+					true);
 			Proposition proposition1_Q3 = new Proposition("56%");
 			Proposition proposition2_Q3 = new Proposition("33%");
 			Proposition proposition3_Q3 = new Proposition("21%");

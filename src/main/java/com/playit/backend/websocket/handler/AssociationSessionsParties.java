@@ -1,5 +1,6 @@
 package com.playit.backend.websocket.handler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -16,6 +17,10 @@ public class AssociationSessionsParties {
     public static void ajouterSessionEquipeAPartie(WebSocketSession equipe, Partie partie) {
         Long idPartie = partie.getId();
         List<WebSocketSession> equipes = equipesParPartie.get(idPartie);
+        if(equipes == null) {
+            equipes = new ArrayList<>();
+            equipesParPartie.put(idPartie, equipes);
+        }
         equipes.add(equipe);
     }
 
@@ -24,5 +29,22 @@ public class AssociationSessionsParties {
         maitreDuJeuParPartie.put(idPartie, maitreDuJeu);
     }
 
+    public static List<WebSocketSession> getEquipesParPartie(Partie partie) {
+        return equipesParPartie.get(partie.getId());
+    }
+
+    public static WebSocketSession getMaitreDuJeuPartie(Partie partie) {
+        return maitreDuJeuParPartie.get(partie.getId());
+    }
+
+    public static void retirerSession(WebSocketSession session) {
+        for(Long idPartie : equipesParPartie.keySet()) {
+            List<WebSocketSession> equipes = equipesParPartie.get(idPartie);
+            if(equipes.contains(session)) {
+                equipes.remove(session);
+            }
+        }
+        maitreDuJeuParPartie.values().remove(session);
+    }
     
 }

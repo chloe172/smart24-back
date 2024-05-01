@@ -18,7 +18,7 @@ public class SoumettreReponseController extends Controller {
 
         Long idPartie = data.get("idPartie").getAsLong();
         Long idProposition = data.get("idProposition").getAsLong();
-        Long idEquipe = data.get("idEquipe").getAsLong();
+        Long idEquipe = (Long) session.getAttributes().get("idEquipe");
         Long idActiviteEnCours = data.get("idActiviteEnCours").getAsLong();
 
         JsonObject response = new JsonObject();
@@ -70,7 +70,7 @@ public class SoumettreReponseController extends Controller {
         int score = 0;
         try {
             score = playITService.soumettreReponse(partie, equipe, proposition, activiteEnCours);
-        } catch (Exception e) {
+        } catch (IllegalStateException|IllegalArgumentException e) {
             response.addProperty("messageErreur", e.getMessage());
             response.addProperty("succes", false);
             TextMessage responseMessage = new TextMessage(response.toString());
@@ -87,6 +87,8 @@ public class SoumettreReponseController extends Controller {
 
         TextMessage responseMessage = new TextMessage(response.toString());
         session.sendMessage(responseMessage);
+
+        // TODO : envoyer un truc au maitre du jeu
 
         return;
 

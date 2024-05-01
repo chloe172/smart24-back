@@ -14,45 +14,45 @@ import com.playit.backend.service.PlayITService;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class ListerEquipesController extends Controller {
-    public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
-        this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
+	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
+		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-        Long idPartie = data.get("idPartie").getAsLong();
+		Long idPartie = data.get("idPartie").getAsLong();
 
-        Partie partie = null;
-        try {
-            partie = playITService.trouverPartieParId(idPartie);
-        } catch (NotFoundException e) {
-            JsonObject response = new JsonObject();
-            response.addProperty("type", "reponseListerEquipes");
-            response.addProperty("succes", false);
-            response.addProperty("messageErreur", "Partie non trouvée");
-            TextMessage responseMessage = new TextMessage(response.toString());
-            session.sendMessage(responseMessage);
-            return;
-        }
+		Partie partie = null;
+		try {
+			partie = playITService.trouverPartieParId(idPartie);
+		} catch (NotFoundException e) {
+			JsonObject response = new JsonObject();
+			response.addProperty("type", "reponseListerEquipes");
+			response.addProperty("succes", false);
+			response.addProperty("messageErreur", "Partie non trouvée");
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
+		}
 
-        JsonObject response = new JsonObject();
-        response.addProperty("type", "reponseListerEquipes");
-        response.addProperty("succes", true);
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseListerEquipes");
+		response.addProperty("succes", true);
 
-        JsonObject dataObject = new JsonObject();
-        List<Equipe> listeEquipes = partie.getEquipes();
-        JsonArray listeEquipesJson = new JsonArray();
-        for (Equipe equipe : listeEquipes) {
-            JsonObject equipeJson = new JsonObject();
-            equipeJson.addProperty("nom", equipe.getNom());
-            equipeJson.addProperty("codePin", equipe.getScore());
-            
-            listeEquipesJson.add(equipeJson);
-        }
-        dataObject.add("listeEquipes", listeEquipesJson);
-        response.add("data", dataObject);
+		JsonObject dataObject = new JsonObject();
+		List<Equipe> listeEquipes = partie.getEquipes();
+		JsonArray listeEquipesJson = new JsonArray();
+		for (Equipe equipe : listeEquipes) {
+			JsonObject equipeJson = new JsonObject();
+			equipeJson.addProperty("nom", equipe.getNom());
+			equipeJson.addProperty("codePin", equipe.getScore());
+			
+			listeEquipesJson.add(equipeJson);
+		}
+		dataObject.add("listeEquipes", listeEquipesJson);
+		response.add("data", dataObject);
 
-        TextMessage responseMessage = new TextMessage(response.toString());
-        session.sendMessage(responseMessage);
+		TextMessage responseMessage = new TextMessage(response.toString());
+		session.sendMessage(responseMessage);
 
-        return;
-    }
-    
+		return;
+	}
+	
 }

@@ -15,43 +15,44 @@ import com.playit.backend.websocket.handler.SessionRole;
 
 public class ListerPlateauxPartieController extends Controller {
 
-    public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
-        
-        this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
+	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
+		
+		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-        Long idPartie = data.get("idPartie").getAsLong();
-        
-        JsonObject response = new JsonObject();
-        JsonObject dataObject = new JsonObject();
-        response.addProperty("type", "reponseListerPlateaux");
+		Long idPartie = data.get("idPartie").getAsLong();
+		
+		JsonObject response = new JsonObject();
+		JsonObject dataObject = new JsonObject();
+		response.addProperty("type", "reponseListerPlateaux");
 
-        Partie partie;
-        
-        try {
-            partie = playITService.trouverPartieParId(idPartie);
-        } catch (NotFoundException e) {
-            response.addProperty("messageErreur", "Partie non trouvée");
-            response.addProperty("succes", false);
-            TextMessage responseMessage = new TextMessage(response.toString());
-            session.sendMessage(responseMessage);
-            return;
-        }
+		Partie partie;
+		
+		try {
+			partie = playITService.trouverPartieParId(idPartie);
+		} catch (NotFoundException e) {
+			response.addProperty("messageErreur", "Partie non trouvée");
+			response.addProperty("succes", false);
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
+		}
 
-        List<Plateau> listePlateaux = playITService.listerPlateauxDansPartie(partie);
-        JsonArray listePlateauxJson = new JsonArray();
-        for (Plateau plateau : listePlateaux) {
-            JsonObject plateauJson = new JsonObject();
-            plateauJson.addProperty("nom", plateau.getNom());
-            listePlateauxJson.add(plateauJson);
-        }
-        dataObject.add("listePlateaux", listePlateauxJson);
-        response.add("data", dataObject);
-        response.addProperty("succes", true);
+		List<Plateau> listePlateaux = playITService.listerPlateauxDansPartie(partie);
+		JsonArray listePlateauxJson = new JsonArray();
+		for (Plateau plateau : listePlateaux) {
+			JsonObject plateauJson = new JsonObject();
+			plateauJson.addProperty("nom", plateau.getNom());
+			plateauJson.addProperty("id", plateau.getId());
+			listePlateauxJson.add(plateauJson);
+		}
+		dataObject.add("listePlateaux", listePlateauxJson);
+		response.add("data", dataObject);
+		response.addProperty("succes", true);
 
-        TextMessage responseMessage = new TextMessage(response.toString());
-        session.sendMessage(responseMessage);
+		TextMessage responseMessage = new TextMessage(response.toString());
+		session.sendMessage(responseMessage);
 
-        return;
-    }
-    
+		return;
+	}
+	
 }

@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playit.backend.model.Equipe;
 import com.playit.backend.service.PlayITService;
+import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class ModifierEquipeController extends Controller {
@@ -35,18 +36,16 @@ public class ModifierEquipeController extends Controller {
         
         try {
             equipe = playITService.modifierEquipe(equipe, nouveauNomEquipe);
-        } catch (Exception e) {
+        } catch (IllegalStateException e) {
             JsonObject response = new JsonObject();
             response.addProperty("type", "reponseModifierEquipe");
             response.addProperty("succes", false);
-            // TODO : verifier que la partie est bien EN Cours + nom equipe OK + pas d'erreur de commit dans BD
-            response.addProperty("messageErreur", "?????");
+            response.addProperty("messageErreur", e.getMessage());
             TextMessage responseMessage = new TextMessage(response.toString());
             session.sendMessage(responseMessage);
             return;
         }
         
-        // TODO : envoyer une notif au maitre du jeu pour changement nom equipe
         JsonObject response = new JsonObject();
         response.addProperty("type", "reponseModifierEquipe");
         response.addProperty("succes", true);
@@ -57,6 +56,10 @@ public class ModifierEquipeController extends Controller {
 
         TextMessage responseMessage = new TextMessage(response.toString());
         session.sendMessage(responseMessage);
+
+        response.addProperty("type", "notificationModifierEquipe");
+        WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties.getMaitreDuJeuPartie(equipe.getPartie());
+        sessionMaitreDuJeu.sendMessage(responseMessage);
 
         return;
     }

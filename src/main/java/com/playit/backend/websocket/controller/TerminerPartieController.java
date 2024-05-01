@@ -12,10 +12,10 @@ import com.playit.backend.websocket.handler.SessionRole;
 
 public class TerminerPartieController extends Controller {
 
-    public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
-        this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
+	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
+		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-        JsonElement idPartieObjet = data.get("idPartie");
+		JsonElement idPartieObjet = data.get("idPartie");
 				Long idPartie = idPartieObjet.getAsLong();
 
 				Partie partie = null;
@@ -31,17 +31,17 @@ public class TerminerPartieController extends Controller {
 					return;
 				}
 
-                try {
-                    playITService.terminerPartie(partie);
-                } catch (Exception e) {
-                    JsonObject response = new JsonObject();
+				try {
+					playITService.terminerPartie(partie);
+				} catch (IllegalStateException e) {
+					JsonObject response = new JsonObject();
 					response.addProperty("type", "reponseTerminerPartie");
 					response.addProperty("succes", false);
-					response.addProperty("messageErreur", "Etat Partie non adapté");
+					response.addProperty("messageErreur", e.getMessage());
 					TextMessage responseMessage = new TextMessage(response.toString());
 					session.sendMessage(responseMessage);
 					return;
-                }
+				}
 				
 				JsonObject response = new JsonObject();
 				response.addProperty("type", "reponseTerminerPartie");
@@ -56,6 +56,6 @@ public class TerminerPartieController extends Controller {
 				session.sendMessage(responseMessage);
 
 				return;
-    }
-    
+	}
+	
 }

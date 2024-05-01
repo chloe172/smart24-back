@@ -15,66 +15,69 @@ import com.playit.backend.model.Partie;
 import com.playit.backend.model.Plateau;
 import com.playit.backend.service.PlayITService;
 import com.playit.backend.service.NotFoundException;
+import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class CreerPartieController extends Controller {
 
-    public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
-        this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
-        
-        Long idMaitreDuJeu = (Long) session.getAttributes().get("idMaitreDuJeu");
+	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
+		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
+		
+		Long idMaitreDuJeu = (Long) session.getAttributes().get("idMaitreDuJeu");
 
-        JsonObject response = new JsonObject();
-        JsonObject dataObject = new JsonObject();
-        response.addProperty("type", "reponseListerPlateauxPartie");
+		JsonObject response = new JsonObject();
+		JsonObject dataObject = new JsonObject();
+		response.addProperty("type", "reponseListerPlateauxPartie");
 
-        MaitreDuJeu maitreDuJeu;
+		MaitreDuJeu maitreDuJeu;
 
-        try {
-            maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
-        } catch (NotFoundException e) {
-            response.addProperty("messageErreur", "Maitre du jeu non trouvé");
-            response.addProperty("succes", false);
-            TextMessage responseMessage = new TextMessage(response.toString());
-            session.sendMessage(responseMessage);
-            return;
-        }
+		try {
+			maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
+		} catch (NotFoundException e) {
+			response.addProperty("messageErreur", "Maitre du jeu non trouvé");
+			response.addProperty("succes", false);
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
+		}
 
-        JsonElement nomPartieObjet = data.get("nomPartie");
-        String nomPartie = nomPartieObjet.getAsString();
+		JsonElement nomPartieObjet = data.get("nomPartie");
+		String nomPartie = nomPartieObjet.getAsString();
 
-        JsonArray listePlateauxJson = data.get("plateaux").getAsJsonArray();
-        List<Plateau> listePlateaux = new ArrayList<>();
+		JsonArray listePlateauxJson = data.get("plateaux").getAsJsonArray();
+		List<Plateau> listePlateaux = new ArrayList<>();
 
-        for (JsonElement plateauJson : listePlateauxJson) {
-            Long idPlateau = plateauJson.getAsLong();
-            Plateau plateau = playITService.trouverPlateauParId(idPlateau);
-            listePlateaux.add(plateau);
-        }
-        Partie partie;
+		for (JsonElement plateauJson : listePlateauxJson) {
+			Long idPlateau = plateauJson.getAsLong();
+			Plateau plateau = playITService.trouverPlateauParId(idPlateau);
+			listePlateaux.add(plateau);
+		}
 
-        try {
-            partie = playITService.creerPartie(nomPartie, maitreDuJeu, listePlateaux);
-        } catch (IllegalStateException e) {
-            response.addProperty("messageErreur", "Partie non créée : " + e.getMessage());
-            response.addProperty("succes", false);
-            TextMessage responseMessage = new TextMessage(response.toString());
-            session.sendMessage(responseMessage);
-            return;
-        }
+		Partie partie;
+		try {
+			partie = playITService.creerPartie(nomPartie, maitreDuJeu, listePlateaux);
+            session.getAttributes().put("idPartie", partie.getId());
+		} catch (IllegalStateException e) {
+			response.addProperty("messageErreur", "Partie non créée : " + e.getMessage());
+			response.addProperty("succes", false);
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
+		}
+        AssociationSessionsParties.associerSessionMaitreDuJeuAPartie(session, partie);
 
-        response.addProperty("type", "reponseCreerPartie");
-        response.addProperty("succes", true);
+		response.addProperty("type", "reponseCreerPartie");
+		response.addProperty("succes", true);
 
-        dataObject.addProperty("idPartie", partie.getId());
-        String etatPartie = partie.getEtat().toString();
-        dataObject.addProperty("etatPartie", etatPartie);
-        response.add("data", dataObject);
+		dataObject.addProperty("idPartie", partie.getId());
+		String etatPartie = partie.getEtat().toString();
+		dataObject.addProperty("etatPartie", etatPartie);
+		response.add("data", dataObject);
 
-        TextMessage responseMessage = new TextMessage(response.toString());
-        session.sendMessage(responseMessage);
+		TextMessage responseMessage = new TextMessage(response.toString());
+		session.sendMessage(responseMessage);
 
-        return;
-    }
-    
+		return;
+	}
+	
 }

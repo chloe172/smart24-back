@@ -2,6 +2,7 @@ package com.playit.backend.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -17,60 +18,60 @@ import java.util.List;
 
 @Entity
 public class ActiviteEnCours {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-    
-    @Column(columnDefinition = "TIMESTAMP")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime date;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
+	
+	@Column(columnDefinition = "TIMESTAMP")
+	@Temporal(TemporalType.TIMESTAMP)
+	private LocalDateTime date = LocalDateTime.now();
 
-    @ManyToOne
-    private Partie partie;
+	@ManyToOne
+	private Partie partie;
 
-    @ManyToOne
-    private Activite activite;
+	@ManyToOne
+	private Activite activite;
 
-    @OneToMany(mappedBy = "activiteEnCours")
-    @OrderBy("dateSoumission")
-    private List<Reponse> listeReponses = new ArrayList<>();
+	@OneToMany(mappedBy = "activiteEnCours", fetch = FetchType.EAGER)
+	@OrderBy("dateSoumission")
+	private List<Reponse> listeReponses = new ArrayList<>();
 
-    public LocalDateTime getDate() {
-        return date;
-    }
+	public LocalDateTime getDate() {
+		return date;
+	}
 
-    public void setDate(LocalDateTime date) {
-        this.date = date;
-    }
+	public void setDate(LocalDateTime date) {
+		this.date = date;
+	}
 
-    public Partie getPartie() {
-        return partie;
-    }
+	public Partie getPartie() {
+		return partie;
+	}
 
-    public void setPartie(Partie partie) {
-        this.partie = partie;
-    }
+	public void setPartie(Partie partie) {
+		this.partie = partie;
+	}
 
-    public Activite getActivite() {
-        return activite;
-    }
+	public Activite getActivite() {
+		return activite;
+	}
 
-    public void setActivite(Activite activite) {
-        this.activite = activite;
-    }
+	public void setActivite(Activite activite) {
+		this.activite = activite;
+	}
 
-    public List<Reponse> getListeReponses() {
-        return listeReponses;
-    }
+	public List<Reponse> getListeReponses() {
+		return listeReponses;
+	}
 
-    public void setListeReponses(List<Reponse> listeReponses) {
-        this.listeReponses = listeReponses;
-    }
+	public void setListeReponses(List<Reponse> listeReponses) {
+		this.listeReponses = listeReponses;
+	}
 
-    public void addReponse(Reponse reponse){
-        reponse.setActiviteEnCours(this);
-        this.listeReponses.add(reponse);
-    }
+	public void addReponse(Reponse reponse){
+		reponse.setActiviteEnCours(this);
+		this.listeReponses.add(reponse);
+	}
 
-    
+	
 }

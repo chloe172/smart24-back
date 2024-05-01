@@ -18,8 +18,8 @@ public class MaitreDuJeu {
 	private String nom;
 	private String motDePasse;
 
-    @OneToMany(mappedBy = "maitreDuJeu")
-    private List<Partie> listeParties = new ArrayList<>();
+	@OneToMany(mappedBy = "maitreDuJeu")
+	private List<Partie> listeParties = new ArrayList<>();
 
 	public MaitreDuJeu() {
 	}

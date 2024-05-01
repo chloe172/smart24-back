@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import com.playit.backend.model.Partie;
 import com.playit.backend.service.PlayITService;
 import com.playit.backend.service.NotFoundException;
-import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class AttendreEquipesController extends Controller {
@@ -33,16 +32,23 @@ public class AttendreEquipesController extends Controller {
             return;
         }
         
-        playITService.attendreEquipes(partie);
+        try {
+            playITService.attendreEquipes(partie);
+        } catch (IllegalStateException e) {
+            response.addProperty("messageErreur", e.getMessage());
+            response.addProperty("succes", false);
+            TextMessage responseMessage = new TextMessage(response.toString());
+            session.sendMessage(responseMessage);
+            return;
+        }
 
-        response.addProperty("type", "reponseDemarrerPartie");
+        response.addProperty("type", "reponseAttendreEquipes");
         response.addProperty("succes", true);
 
         String etatPartie = partie.getEtat().toString();
         dataObject.addProperty("etatPartie", etatPartie);
+        dataObject.addProperty("codePin", partie.getCodePin());
         response.add("data", dataObject);
-
-        AssociationSessionsParties.associerSessionMaitreDuJeuAPartie(session, partie);
 
         TextMessage responseMessage = new TextMessage(response.toString());
         session.sendMessage(responseMessage);

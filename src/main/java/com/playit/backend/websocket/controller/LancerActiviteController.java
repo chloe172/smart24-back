@@ -17,87 +17,137 @@ import com.playit.backend.model.QuestionQCM;
 import com.playit.backend.model.QuestionVraiFaux;
 import com.playit.backend.service.PlayITService;
 import com.playit.backend.service.NotFoundException;
+import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class LancerActiviteController extends Controller {
 
-    public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
-        this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
+	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
+		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-        JsonElement idPartieObjet = data.get("idPartie");
-        Long idPartie = idPartieObjet.getAsLong();
+		JsonElement idPartieObjet = data.get("idPartie");
+		Long idPartie = idPartieObjet.getAsLong();
 
-        JsonObject response = new JsonObject();
-        JsonObject dataObject = new JsonObject();
-        response.addProperty("type", "reponseLancerActivite");
+		JsonObject response = new JsonObject();
+		JsonObject dataObject = new JsonObject();
+				
+		Partie partie;
+		try {
+			partie = playITService.trouverPartieParId(idPartie);
+		} catch (NotFoundException e) {
+			response.addProperty("type", "reponseLancerActivite");
+			response.addProperty("messageErreur", "Partie non trouvée");
+			response.addProperty("succes", false);
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
+		}
 
-        Partie partie;
+		// Vérification fin plateau
+		if (partie.getPlateauCourant().getListeActivites().size() == partie.getIndiceActivite()) {
+			try {
+				playITService.passerEnModeChoixPlateau(partie);
+				response.addProperty("type", "reponseLancerActivite");
+				dataObject.addProperty("finPlateau", true);
+				response.add("data", dataObject);
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+				return;
+			} catch (IllegalStateException e) {
+				response.addProperty("type", "reponseLancerActivite");
+				response.addProperty("messageErreur", e.getMessage());
+				response.addProperty("succes", false);
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+				return;
+			}
+		}
 
-        try {
-            partie = playITService.trouverPartieParId(idPartie);
-        } catch (NotFoundException e) {
-            response.addProperty("messageErreur", "Partie non trouvée");
-            response.addProperty("succes", false);
-            TextMessage responseMessage = new TextMessage(response.toString());
-            session.sendMessage(responseMessage);
-            return;
-        }
+		//Trouver prochaine activite
+		ActiviteEnCours activiteEnCours;
+		try {
+			activiteEnCours = playITService.lancerActivite(partie);
+		} catch (IllegalStateException e) {
+			response.addProperty("type", "reponseLancerActivite");
+			response.addProperty("messageErreur", e.getMessage());
+			response.addProperty("succes", false);
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
+		}
+		
+		Activite activite = activiteEnCours.getActivite();
 
-        ActiviteEnCours activiteEnCours;
+		response.addProperty("type", "");
+		response.addProperty("succes", true);
+		
+		List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
 
-        try {
-            activiteEnCours = playITService.lancerActivite(partie);
-        } catch (Exception e) {
-            response.addProperty("messageErreur", e.getMessage());
-            response.addProperty("succes", false);
-            TextMessage responseMessage = new TextMessage(response.toString());
-            session.sendMessage(responseMessage);
-            return;
-        }
-        
-        Activite activite = activiteEnCours.getActivite();
+		if (activite instanceof Question) {
+			Question question = (Question) activite;
+			JsonArray listePropositionsJson = new JsonArray();
+			dataObject.addProperty("intitule", question.getIntitule());
 
-        response.addProperty("type", "");
-        response.addProperty("succes", true);
+			if (question instanceof QuestionQCM) {
+				List<Proposition> listePropositions = ((QuestionQCM) activite).getListePropositions();
+				for (Proposition proposition : listePropositions) {
+					JsonObject propositionJson = new JsonObject();
+					propositionJson.addProperty("intitule", proposition.getIntitule());
+					propositionJson.addProperty("id", proposition.getId());
+					listePropositionsJson.add(propositionJson);
+				}
+				dataObject.add("listePropositions", listePropositionsJson);
+				response.add("data", dataObject);
+				
+				// Envoi du message aux equipes
+				response.addProperty("type", "notificationLancerActivite");
+				TextMessage responseMessage = new TextMessage(response.toString());
+				for(WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+					sessionEquipe.sendMessage(responseMessage);
+				}
 
-        if (activite instanceof Question) {
-            Question question = (Question) activite;
-            JsonArray listePropositionsJson = new JsonArray();
-            dataObject.addProperty("intitule", question.getIntitule());
+				// Envoi du message au maitre du jeu
+				response.addProperty("type", "reponseLancerActivite");
+				dataObject.addProperty("finPlateau", false);
+				response.add("data", dataObject);
+				responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
 
-            if (question instanceof QuestionQCM) {
-                List<Proposition> listePropositions = ((QuestionQCM) activite).getListePropositions();
-                for (Proposition proposition : listePropositions) {
-                    JsonObject propositionJson = new JsonObject();
-                    propositionJson.addProperty("intitule", proposition.getIntitule());
-                    listePropositionsJson.add(propositionJson);
-                }
-                dataObject.add("listePropositions", listePropositionsJson);
-                response.add("data", dataObject);
-            } else if (question instanceof QuestionVraiFaux) {
-                JsonObject propositionVrai = new JsonObject();
-                propositionVrai.addProperty("intitule", "Vrai");
-                listePropositionsJson.add(propositionVrai);
-                JsonObject propositionFaux = new JsonObject();
-                propositionFaux.addProperty("intitule", "Faux");
-                listePropositionsJson.add(propositionFaux);
-                dataObject.add("listePropositions", listePropositionsJson);
-                response.add("data", dataObject);
-            }
+			} else if (question instanceof QuestionVraiFaux) {
+				List<Proposition> listePropositions = ((QuestionVraiFaux) activite).getListePropositions();
+				for (Proposition proposition : listePropositions) {
+					JsonObject propositionJson = new JsonObject();
+					propositionJson.addProperty("id", proposition.getId());
+					propositionJson.addProperty("intitule", proposition.getIntitule());
+					listePropositionsJson.add(propositionJson);
+				}
+				dataObject.add("listePropositions", listePropositionsJson);
+				response.add("data", dataObject);
+				
+				// Envoi du message aux equipes
+				response.addProperty("type", "notificationLancerActivite");
+				TextMessage responseMessage = new TextMessage(response.toString());
+				for(WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+					sessionEquipe.sendMessage(responseMessage);
+				}
 
-            // TODO : envoyer la question à tous les joueurs
+				// Envoi du message au maitre du jeu
+				response.addProperty("type", "reponseLancerActivite");
+				dataObject.addProperty("finPlateau", false);
+				response.add("data", dataObject);
+				responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+			}
+			// TODO : lancer un timer sur la durée de la question pour envoyer la réponse après/mettre fin aux réponses
+			// et passer la partie en état EXPLICATION
+			Thread.sleep(10000);
+			playITService.passerEnModeExplication(partie);
+		} else {
+			// mini jeu
+		}
 
-            // TODO : lancer un timer sur la durée de la question pour envoyer la réponse après/mettre fin aux réponses
-            // et passer la partie en état EXPLICATION
-        } else {
-            // mini jeu
-        }
+		return;
 
-        TextMessage responseMessage = new TextMessage(response.toString());
-        session.sendMessage(responseMessage);
-
-        return;
-
-    }
-    
+	}
+	
 }

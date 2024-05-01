@@ -47,14 +47,16 @@ public class PlayItBackendApplication {
 		MaitreDuJeu maitre = this.maitreDuJeuRepository.findByNom("admin@volvo.fr")
 				.get();
 		Partie partie = this.playITService.creerPartie("Stage seconde", maitre, listePlateaux);
-		this.playITService.choisirPlateau(partie, plateauGene);
-		ActiviteEnCours activiteEnCours = this.playITService.lancerActivite(partie);
-		System.out.println(activiteEnCours.getActivite()
-				.getIntitule());
-		activiteEnCours = this.playITService.lancerActivite(partie);
-		System.out.println(activiteEnCours.getActivite()
-				.getIntitule());
-		return "OUIIIIIIIIIIIIIIIIIIIII";
+		StringBuilder sb = new StringBuilder();
+		sb.append("Partie créée : ");
+		sb.append(partie.getNom());
+		sb.append(" avec ");
+		sb.append(partie.getPlateaux().size());
+		sb.append(" plateaux");
+		sb.append("<br>");
+		sb.append("Code PIN : ");
+		sb.append(partie.getCodePin());
+		return sb.toString();
 	}
 
 	@GetMapping("/hello")

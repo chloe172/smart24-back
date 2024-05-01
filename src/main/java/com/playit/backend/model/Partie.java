@@ -42,7 +42,7 @@ public class Partie {
 	@ManyToMany(fetch = FetchType.EAGER)
 	private List<Plateau> listePlateaux = new ArrayList<>();
 
-	@OneToMany(mappedBy = "partie")
+	@OneToMany(mappedBy = "partie", fetch = FetchType.EAGER)
 	private List<Equipe> listeEquipes = new ArrayList<>();
 
 	@ManyToOne

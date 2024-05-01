@@ -8,7 +8,6 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.playit.backend.model.Activite;
 import com.playit.backend.model.ActiviteEnCours;
@@ -29,7 +28,6 @@ import com.playit.backend.repository.ReponseRepository;
 import com.playit.backend.repository.PropositionRepository;
 
 @Service
-@Transactional
 public class PlayITService {
 	private static final int TAILLE_CODE_PIN = 6;
 	private static final String CODE_PIN_CHARACTERES = "0123456789AZERTYUIOPQSDFGHJKLMWXCVBN";
@@ -70,6 +68,10 @@ public class PlayITService {
 		return this.plateauRepository.findAll();
 	}
 
+	public List<Partie> listerParties(MaitreDuJeu maitreDuJeu) {
+		return this.partieRepository.findAllByMaitreDuJeu(maitreDuJeu);
+	}
+
 	public Partie creerPartie(String nom, MaitreDuJeu maitre, List<Plateau> listePlateaux) {
 		Optional<Partie> result = this.partieRepository.findByNom(nom);
 		if (result.isPresent()) {
@@ -86,7 +88,7 @@ public class PlayITService {
 	}
 
 	public void attendreEquipes(Partie partie) {
-		if (partie.getEtat() != EtatPartie.CREEE || partie.getEtat() != EtatPartie.EN_PAUSE) {
+		if (partie.getEtat() != EtatPartie.CREEE && partie.getEtat() != EtatPartie.EN_PAUSE) {
 			throw new IllegalStateException("Impossible de passer en mode Attente Equipes");
 		}
 		partie.setEtat(EtatPartie.ATTENTE_EQUIPE);
@@ -97,7 +99,7 @@ public class PlayITService {
 		if(partie.getEtat() != EtatPartie.ATTENTE_EQUIPE && partie.getEtat() != EtatPartie.EXPLICATION) {
 			throw new IllegalStateException("Impossible de passer en mode Choix Plateau");
 		}
-		partie.setEtat(EtatPartie.EXPLICATION);
+		partie.setEtat(EtatPartie.CHOIX_PLATEAU);
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -127,10 +129,6 @@ public class PlayITService {
 		this.partieRepository.saveAndFlush(partie);
 	}
 
-	public List<Partie> listerParties(MaitreDuJeu maitreDuJeu) {
-		return this.partieRepository.findAllByMaitreDuJeu(maitreDuJeu);
-	}
-
 	public Partie validerCodePin(String codePin) {
 		Partie partie = this.partieRepository.findByCodePin(codePin);
 		if(partie == null) {
@@ -140,33 +138,40 @@ public class PlayITService {
 	}
 
 	public Equipe inscrireEquipe(String nom, Partie partie) {
+		// TODO : vérifier que la partie est en mode Attente Equipe
 		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nom, partie);
 		if (result.isPresent()) {
 			throw new IllegalStateException("Nom d'équipe déjà pris");
 		}
 		Equipe equipe = new Equipe();
 		equipe.setNom(nom);
-		partie.addEquipe(equipe);
 		equipe.setScore(0);
-		return this.equipeRepository.saveAndFlush(equipe);
+		equipe = this.equipeRepository.saveAndFlush(equipe);
+		partie.addEquipe(equipe);
+		this.partieRepository.saveAndFlush(partie);
+		return equipe;
 	}
 
 	public Equipe modifierEquipe(Equipe equipe, String nouveauNom) {
-		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nouveauNom, equipe.getPartie());
+		Partie partie = equipe.getPartie();
+		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nouveauNom, partie);
+		if (partie.getEtat()!=EtatPartie.CHOIX_PLATEAU && partie.getEtat()!=EtatPartie.ATTENTE_ACTIVITE) {
+			throw new IllegalStateException("Impossible de modifier l'equipe");
+		}
 		if (result.isPresent()) {
-			throw new IllegalStateException("nom d'équipe déjà pris");
+			throw new IllegalStateException("Nom d'équipe déjà pris");
 		}
 		if (nouveauNom != null && nouveauNom.length() > 0) {
 			equipe.setNom(nouveauNom);
 		}
-		return equipe;
+		return this.equipeRepository.saveAndFlush(equipe);
 	}
 
 	public ActiviteEnCours lancerActivite(Partie partie) {
-		if(partie.getEtat() != EtatPartie.EXPLICATION || partie.getEtat() != EtatPartie.CHOIX_PLATEAU) {
+		if(partie.getEtat() != EtatPartie.ATTENTE_ACTIVITE) {
 			throw new IllegalStateException("Impossible de passer en mode Activite");
 		}
-		partie.setEtat(EtatPartie.EXPLICATION);
+		partie.setEtat(EtatPartie.ACTIVITE_EN_COURS);
 		
 		Plateau plateauCourant = partie.getPlateauCourant();
 		int indiceActiviteCourante = partie.getIndiceActivite();
@@ -186,14 +191,6 @@ public class PlayITService {
 		this.partieRepository.saveAndFlush(partie);
 
 		return activiteEnCours;
-	}
-
-	public void demarrerPartie(Partie partie) {
-		if(partie.getEtat() != EtatPartie.CHOIX_PLATEAU) {
-			throw new IllegalStateException("Impossible de demarrer partie");
-		}
-		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
-		this.partieRepository.saveAndFlush(partie);
 	}
 
 	public int soumettreReponse(Partie partie, Equipe equipe, Proposition proposition,
@@ -226,6 +223,14 @@ public class PlayITService {
 		this.equipeRepository.saveAndFlush(equipe);
 
 		return score;
+	}
+
+	public void terminerExpliquation(Partie partie) {
+		if(partie.getEtat() != EtatPartie.EXPLICATION) {
+			throw new IllegalStateException("Impossible de terminer l'explication");
+		}
+		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
+		this.partieRepository.saveAndFlush(partie);
 	}
 
 	public void choisirPlateau(Partie partie, Plateau plateau) {

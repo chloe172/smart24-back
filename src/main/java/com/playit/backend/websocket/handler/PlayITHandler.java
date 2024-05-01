@@ -16,6 +16,7 @@ import com.playit.backend.service.PlayITService;
 import com.playit.backend.websocket.RoleUtilisateurException;
 import com.playit.backend.websocket.controller.Controller;
 import com.playit.backend.websocket.controller.CreerPartieController;
+import com.playit.backend.websocket.controller.DemarrerPartieController;
 import com.playit.backend.websocket.controller.AttendreEquipesController;
 import com.playit.backend.websocket.controller.InscrireEquipeController;
 import com.playit.backend.websocket.controller.LancerActiviteController;
@@ -25,6 +26,7 @@ import com.playit.backend.websocket.controller.ListerPlateauxPartieController;
 import com.playit.backend.websocket.controller.MettreEnPauseController;
 import com.playit.backend.websocket.controller.ModifierEquipeController;
 import com.playit.backend.websocket.controller.SoumettreReponseController;
+import com.playit.backend.websocket.controller.TerminerExplicationController;
 import com.playit.backend.websocket.controller.TerminerPartieController;
 import com.playit.backend.websocket.controller.ValiderCodePinController;
 import com.playit.backend.websocket.controller.AuthentifierUtilisateurController;
@@ -45,7 +47,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
 		System.out.println("Session closed: " + session.getId());
-		// TODO : nettoyer les références vers la session dans AssociationSessionsParties
+		AssociationSessionsParties.retirerSession(session);
 	}
 
 	@Override
@@ -86,6 +88,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 			return;
 		}
 
+		// TODO : ajouter les codes d'erreur (codeErreur)
 		Controller controller = null;
 		switch (type) {
 			case "authentifierUtilisateur": {
@@ -108,7 +111,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 				controller = new ListerPartiesController();
 				break;
 			}
-			case "demarrerPartie": {
+			case "attendreEquipes": {
 				controller = new AttendreEquipesController();
 				break;
 			}
@@ -148,6 +151,14 @@ public class PlayITHandler extends TextWebSocketHandler {
 				controller = new ValiderCodePinController();
 				break;
 			}
+			case "demarrerPartie": {
+				controller = new DemarrerPartieController();
+				break;
+			}
+			case "terminerExplication": {
+				controller = new TerminerExplicationController();
+				break;
+			}
 		}
 
 		if (controller != null) {
@@ -163,7 +174,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 				TextMessage responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
 			} catch (Exception e) {
-				// TODO : gérer les autres exceptions
+				e.printStackTrace();
 			}
 		} else {
 			JsonObject response = new JsonObject();
