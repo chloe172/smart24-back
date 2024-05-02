@@ -160,7 +160,7 @@ public class PlayITService {
 	}
 
 	public Equipe inscrireEquipe(String nom, Partie partie) {
-		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_ ) {
+		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_INSCRIPTION) {
 			throw new IllegalStateException("Impossible d'inscrire l'equipe");
 		}
 		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nom, partie);
