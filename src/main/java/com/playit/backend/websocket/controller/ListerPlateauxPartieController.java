@@ -23,7 +23,7 @@ public class ListerPlateauxPartieController extends Controller {
 				.getAsLong();
 
 		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseListerPlateaux");
+		response.addProperty("type", "reponseListerPlateauxPartie");
 		response.addProperty("succes", true);
 
 		Partie partie;

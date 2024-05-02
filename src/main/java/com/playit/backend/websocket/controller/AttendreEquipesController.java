@@ -51,9 +51,6 @@ public class AttendreEquipesController extends Controller {
 		AssociationSessionsParties.associerSessionMaitreDuJeuAPartie(session, partie);
 		AssociationSessionsParties.ajouterPartie(partie);
 
-		response.addProperty("type", "reponseAttendreEquipes");
-		response.addProperty("succes", true);
-
 		JsonObject partieObject = new JsonObject();
 		partieObject.addProperty("id", partie.getId());
 		partieObject.addProperty("nom", partie.getNom());
