@@ -16,8 +16,6 @@ import com.playit.backend.websocket.handler.SessionRole;
 public class ListerEquipesController extends Controller {
 	@Override
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
-		System.out.println("ListerEquipesController");
-		System.out.println(session.getAttributes().get("role"));
 		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
 
 		Long idPartie = data.get("idPartie")
