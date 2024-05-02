@@ -8,7 +8,6 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
 
 import com.playit.backend.metier.model.Activite;
 import com.playit.backend.metier.model.ActiviteEnCours;
@@ -127,7 +126,6 @@ public class PlayITService {
 		return equipeRepository.findEquipeByPartieOrderByScoreDesc(partie);
 	}
 
-	@Transactional
 	public void mettreEnPausePartie(Partie partie) {
 		if (!EtatPartie.EN_PAUSE.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de mettre en pause");
@@ -135,9 +133,8 @@ public class PlayITService {
 		partie.setEtat(EtatPartie.EN_PAUSE);
 		for(Equipe equipe : partie.getEquipes()) {
 			equipe.setEstConnecte(false);
-			this.equipeRepository.save(equipe);
+			this.equipeRepository.saveAndFlush(equipe);
 		}
-		this.equipeRepository.flush();
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -163,7 +160,7 @@ public class PlayITService {
 	}
 
 	public Equipe inscrireEquipe(String nom, Partie partie) {
-		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_INSCRIPTION) {
+		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_ ) {
 			throw new IllegalStateException("Impossible d'inscrire l'equipe");
 		}
 		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nom, partie);
@@ -174,10 +171,10 @@ public class PlayITService {
 		equipe.setNom(nom);
 		equipe.setEstConnecte(true);
 		equipe.setScore(0);
-		equipe = this.equipeRepository.saveAndFlush(equipe);
+		this.equipeRepository.saveAndFlush(equipe);
 		partie.addEquipe(equipe);
 		this.partieRepository.saveAndFlush(partie);
-		return equipe;
+		return this.equipeRepository.saveAndFlush(equipe);
 	}
 
 	public Equipe modifierEquipe(Equipe equipe, String nouveauNom) {

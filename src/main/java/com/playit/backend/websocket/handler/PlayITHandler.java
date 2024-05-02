@@ -23,11 +23,13 @@ import com.playit.backend.websocket.controller.CreerPartieController;
 import com.playit.backend.websocket.controller.DemarrerPartieController;
 import com.playit.backend.websocket.controller.InscrireEquipeController;
 import com.playit.backend.websocket.controller.LancerActiviteController;
+import com.playit.backend.websocket.controller.ListerEquipesController;
 import com.playit.backend.websocket.controller.ListerPartiesController;
 import com.playit.backend.websocket.controller.ListerPlateauxController;
 import com.playit.backend.websocket.controller.ListerPlateauxPartieController;
 import com.playit.backend.websocket.controller.MettreEnPauseController;
 import com.playit.backend.websocket.controller.ModifierEquipeController;
+import com.playit.backend.websocket.controller.RejoindrePartieEquipeController;
 import com.playit.backend.websocket.controller.SoumettreReponseController;
 import com.playit.backend.websocket.controller.TerminerExplicationController;
 import com.playit.backend.websocket.controller.TerminerPartieController;
@@ -135,7 +137,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 			break;
 		}
 		case "listerEquipes": {
-			controller = new ListerPartiesController();
+			controller = new ListerEquipesController();
 			break;
 		}
 		case "inscrireEquipe": {
@@ -160,6 +162,10 @@ public class PlayITHandler extends TextWebSocketHandler {
 		}
 		case "terminerExplication": {
 			controller = new TerminerExplicationController();
+			break;
+		}
+		case "rejoindrePartieEquipe": {
+			controller = new RejoindrePartieEquipeController();
 			break;
 		}
 		}

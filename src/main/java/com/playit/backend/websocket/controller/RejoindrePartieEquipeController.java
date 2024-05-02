@@ -11,7 +11,7 @@ import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
-public class RejoindrePartieEquipe extends Controller {
+public class RejoindrePartieEquipeController extends Controller {
 
     public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
