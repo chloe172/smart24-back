@@ -44,14 +44,17 @@ public class Reponse {
 		if (bonneProposition.equals(this.proposition)) {
 			int scoreMax = question.getScore();
 			this.scoreEquipe = scoreMax / 2;
-
+			System.out.println("ScoreMax / 2 "+scoreEquipe);
+			
 			LocalDateTime debutQuestion = this.activiteEnCours.getDate();
 			Duration dureeQuestion = question.getTemps();
 			LocalDateTime finQuestion = debutQuestion.plus(dureeQuestion);
 
 			// Normalisation du temps restant
-			Duration tempsRestant = Duration.between(finQuestion, this.dateSoumission);
-			long coefficient = tempsRestant.dividedBy(dureeQuestion);
+			Duration tempsRestant = Duration.between(this.dateSoumission, finQuestion);
+			System.out.println("Temps restant " + tempsRestant.toSeconds());
+			double coefficient = (double) tempsRestant.toSeconds() / dureeQuestion.toSeconds();
+			System.out.println("Coefficient : " + coefficient);
 
 			this.scoreEquipe += coefficient * (scoreMax / 2.0);
 		} else {
