@@ -38,15 +38,21 @@ public class ListerEquipesController extends Controller {
 
 		JsonObject dataObject = new JsonObject();
 		List<Equipe> listeEquipes = partie.getEquipes();
-		JsonArray listeEquipesJson = new JsonArray();
+		JsonArray listeEquipesConnecteesJson = new JsonArray();
+		JsonArray listeEquipesNonConnecteesJson = new JsonArray();
 		for (Equipe equipe : listeEquipes) {
 			JsonObject equipeJson = new JsonObject();
 			equipeJson.addProperty("id", equipe.getId());
 			equipeJson.addProperty("nom", equipe.getNom());
 			equipeJson.addProperty("score", equipe.getScore());
-			listeEquipesJson.add(equipeJson);
+			if (equipe.getEstConnecte()) {
+				listeEquipesConnecteesJson.add(equipeJson);
+			} else {
+				listeEquipesNonConnecteesJson.add(equipeJson);
+			}
 		}
-		dataObject.add("listeEquipes", listeEquipesJson);
+		dataObject.add("listeEquipesConnectees", listeEquipesConnecteesJson);
+		dataObject.add("listeEquipesNonConnectees", listeEquipesNonConnecteesJson);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
