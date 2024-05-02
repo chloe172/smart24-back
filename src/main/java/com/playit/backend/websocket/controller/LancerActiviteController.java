@@ -121,8 +121,13 @@ public class LancerActiviteController extends Controller {
 				bonnePropositionObject.addProperty("id", bonneProposition.getId());
 				bonnePropositionObject.addProperty("intitule", bonneProposition.getIntitule());
 				questionJson.add("bonneProposition", bonnePropositionObject);
+				dataObject.add("question", questionJson);
+				response.add("data", dataObject);
 
 				// Envoi du message aux equipes : bonne proposition uniquement
+				questionJson.add("bonneProposition", bonnePropositionObject);
+				dataObject.add("question", questionJson);
+				response.add("data", dataObject);
 				TextMessage bonnePropositionMessage = new TextMessage(response.toString());
 				for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
 					try {
