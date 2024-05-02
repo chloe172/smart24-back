@@ -39,13 +39,7 @@ public class TerminerExplicationController extends Controller {
 			return;
 		}
 
-		JsonObject dataObject = new JsonObject();
-
-		// TODO : le corps du IF et ce qu'il y a après sont très proches : à
-		// factoriser :
-		// Mettre uniquement le try/catch dans un if/else et le reste en dehors
-		// Il faut donc récupérer la liste des équipes dans l'ordre du score dans tous
-		// les cas
+		List<Equipe> listeEquipes = null;
 
 		// Vérification fin plateau
 		if (partie.getPlateauCourant().estTermine()) {
@@ -59,33 +53,20 @@ public class TerminerExplicationController extends Controller {
 				session.sendMessage(responseMessage);
 				return;
 			}
-
-			JsonObject partieObject = new JsonObject();
-			partieObject.addProperty("id", partie.getId());
-			partieObject.addProperty("nom", partie.getNom());
-			partieObject.addProperty("etat", partie.getEtat()
-					.toString());
-			partieObject.addProperty("date", partie.getDate()
-					.toString());
-			partieObject.addProperty("finPlateau", true);
-			dataObject.add("partie", partieObject);
-			response.add("data", dataObject);
-			TextMessage responseMessage = new TextMessage(response.toString());
-			session.sendMessage(responseMessage);
-			return;
+		} else {
+			try {
+				playITService.terminerExpliquation(partie);
+			} catch (Exception e) {
+				response.addProperty("succes", false);
+				response.addProperty("codeErreur", 422);
+				response.addProperty("messageErreur", e.getMessage());
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+				return;
+			}
 		}
 
-		List<Equipe> listeEquipes = null;
-		try {
-			listeEquipes = playITService.terminerExpliquation(partie);
-		} catch (Exception e) {
-			response.addProperty("succes", false);
-			response.addProperty("codeErreur", 422);
-			response.addProperty("messageErreur", e.getMessage());
-			TextMessage responseMessage = new TextMessage(response.toString());
-			session.sendMessage(responseMessage);
-			return;
-		}
+		listeEquipes = playITService.obtenirEquipesParRang(partie);
 
 		JsonObject partieObject = new JsonObject();
 		partieObject.addProperty("id", partie.getId());
@@ -95,6 +76,7 @@ public class TerminerExplicationController extends Controller {
 		partieObject.addProperty("date", partie.getDate()
 				.toString());
 		partieObject.addProperty("finPlateau", false);
+		JsonObject dataObject = new JsonObject();
 		dataObject.add("partie", partieObject);
 
 		JsonArray listeEquipesJson = new JsonArray();

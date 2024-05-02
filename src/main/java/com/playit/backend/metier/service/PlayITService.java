@@ -57,8 +57,8 @@ public class PlayITService {
 			throw new IllegalArgumentException("Compte Maître du Jeu non trouvé");
 		}
 		if (!result.get()
-		           .getMotDePasse()
-		           .equals(mdp)) {
+				.getMotDePasse()
+				.equals(mdp)) {
 			throw new IllegalArgumentException("Erreur de mot de passe");
 		}
 		return result.get();
@@ -91,10 +91,10 @@ public class PlayITService {
 		if (!EtatPartie.ATTENTE_EQUIPE_RECONNEXION.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de passer en mode Attente Equipes");
 		}
-		if(partie.getEtat() == EtatPartie.EN_PAUSE) {
+		if (partie.getEtat() == EtatPartie.EN_PAUSE) {
 			partie.setEtat(EtatPartie.ATTENTE_EQUIPE_RECONNEXION);
 		}
-		
+
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -114,14 +114,12 @@ public class PlayITService {
 		this.partieRepository.saveAndFlush(partie);
 	}
 
-	public List<Equipe> terminerExpliquation(Partie partie) {
+	public void terminerExpliquation(Partie partie) {
 		if (!EtatPartie.ATTENTE_ACTIVITE.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de terminer l'explication");
 		}
 		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
 		this.partieRepository.saveAndFlush(partie);
-
-		return equipeRepository.findEquipeByPartieOrderByScoreDesc(partie);
 	}
 
 	public void mettreEnPausePartie(Partie partie) {
@@ -129,7 +127,7 @@ public class PlayITService {
 			throw new IllegalStateException("Impossible de mettre en pause");
 		}
 		partie.setEtat(EtatPartie.EN_PAUSE);
-		for(Equipe equipe : partie.getEquipes()) {
+		for (Equipe equipe : partie.getEquipes()) {
 			equipe.setEstConnecte(false);
 			this.equipeRepository.saveAndFlush(equipe);
 		}
@@ -141,7 +139,7 @@ public class PlayITService {
 			throw new IllegalStateException("Impossible de terminer");
 		}
 		partie.setEtat(EtatPartie.TERMINEE);
-		for(Equipe equipe : partie.getEquipes()) {
+		for (Equipe equipe : partie.getEquipes()) {
 			equipe.setEstConnecte(false);
 			this.equipeRepository.save(equipe);
 		}
@@ -230,7 +228,7 @@ public class PlayITService {
 	}
 
 	public int soumettreReponse(Partie partie, Equipe equipe, Proposition proposition,
-	    ActiviteEnCours activiteEnCours) {
+			ActiviteEnCours activiteEnCours) {
 		if (partie.getEtat() != EtatPartie.ACTIVITE_EN_COURS) {
 			throw new IllegalStateException("Impossible de soumettre une réponse");
 		}
@@ -243,10 +241,10 @@ public class PlayITService {
 		Question question = (Question) activite;
 		Duration dureeQuestion = question.getTemps();
 		LocalDateTime tempsLimite = activiteEnCours.getDate()
-		                                           .plus(dureeQuestion);
+				.plus(dureeQuestion);
 		Reponse reponse = new Reponse();
 		if (reponse.getDateSoumission()
-		           .isAfter(tempsLimite)) {
+				.isAfter(tempsLimite)) {
 			throw new IllegalStateException("La réponse a été soumise après le temps imparti.");
 		}
 		reponse.setEquipe(equipe);
@@ -267,11 +265,11 @@ public class PlayITService {
 		}
 
 		PlateauEnCours plateauEnCours = partie.getPlateauxEnCours()
-		                                      .stream()
-		                                      .filter(p -> p.getPlateau().getId()
-		                                                    .equals(plateau.getId()))
-		                                      .findFirst()
-		                                      .orElseThrow(() -> new IllegalArgumentException("Le plateau n'appartient pas à la partie"))	;
+				.stream()
+				.filter(p -> p.getPlateau().getId()
+						.equals(plateau.getId()))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("Le plateau n'appartient pas à la partie"));
 
 		if (plateauEnCours.estTermine()) {
 			throw new IllegalStateException("Le plateau est déjà terminé");
@@ -298,38 +296,42 @@ public class PlayITService {
 
 	public Partie trouverPartieParId(Long idPartie) {
 		return this.partieRepository.findById(idPartie)
-		                            .orElseThrow(() -> new NotFoundException(
-		                                "La partie avec l'id " + idPartie + " n'existe pas"));
+				.orElseThrow(() -> new NotFoundException(
+						"La partie avec l'id " + idPartie + " n'existe pas"));
 	}
 
 	public MaitreDuJeu trouverMaitreDuJeuParId(Long idMaitreDuJeu) {
 		return this.maitreDuJeuRepository.findById(idMaitreDuJeu)
-		                                 .orElseThrow(() -> new NotFoundException(
-		                                     "Le maitre du jeu avec l'id " + idMaitreDuJeu + " n'existe pas"));
+				.orElseThrow(() -> new NotFoundException(
+						"Le maitre du jeu avec l'id " + idMaitreDuJeu + " n'existe pas"));
 	}
 
 	public Plateau trouverPlateauParId(Long idPlateau) {
 		return this.plateauRepository.findById(idPlateau)
-		                             .orElseThrow(() -> new NotFoundException(
-		                                 "Le plateau avec l'id " + idPlateau + " n'existe pas"));
+				.orElseThrow(() -> new NotFoundException(
+						"Le plateau avec l'id " + idPlateau + " n'existe pas"));
 	}
 
 	public Equipe trouverEquipeParId(Long idEquipe) {
 		return this.equipeRepository.findById(idEquipe)
-		                            .orElseThrow(() -> new NotFoundException(
-		                                "L'équipe avec l'id " + idEquipe + " n'existe pas"));
+				.orElseThrow(() -> new NotFoundException(
+						"L'équipe avec l'id " + idEquipe + " n'existe pas"));
 	}
 
 	public Proposition trouverPropositionParId(Long idProposition) {
 		return this.propositionRepository.findById(idProposition)
-		                                 .orElseThrow(() -> new NotFoundException(
-		                                     "La propositioni avec l'id " + idProposition + " n'existe pas"));
+				.orElseThrow(() -> new NotFoundException(
+						"La propositioni avec l'id " + idProposition + " n'existe pas"));
 	}
 
 	public ActiviteEnCours trouverActiviteEnCoursParId(Long idActiviteEnCours) {
 		return this.activiteEnCoursRepository.findById(idActiviteEnCours)
-		                                     .orElseThrow(() -> new NotFoundException("L'activité en cours avec l'id "
-		                                         + idActiviteEnCours + " n'existe pas"));
+				.orElseThrow(() -> new NotFoundException("L'activité en cours avec l'id "
+						+ idActiviteEnCours + " n'existe pas"));
+	}
+
+	public List<Equipe> obtenirEquipesParRang(Partie partie) {
+		return this.equipeRepository.findAllByPartieOrderByScoreDesc(partie);
 	}
 
 }
