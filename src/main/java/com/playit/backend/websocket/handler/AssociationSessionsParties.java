@@ -48,4 +48,10 @@ public class AssociationSessionsParties {
 		                    .remove(session);
 	}
 
+	public static void enleverPartie(Partie partie) {
+		Long idPartie = partie.getId();
+		equipesParPartie.remove(idPartie);
+		maitreDuJeuParPartie.remove(idPartie);
+	}
+
 }

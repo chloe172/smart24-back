@@ -14,7 +14,6 @@ import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Plateau;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
-import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class CreerPartieController extends Controller {
@@ -58,8 +57,6 @@ public class CreerPartieController extends Controller {
 		Partie partie;
 		try {
 			partie = playITService.creerPartie(nomPartie, maitreDuJeu, listePlateaux);
-			session.getAttributes()
-			       .put("idPartie", partie.getId());
 		} catch (IllegalStateException e) {
 			response.addProperty("messageErreur", "Partie non créée : " + e.getMessage());
 			response.addProperty("succes", false);
@@ -67,8 +64,7 @@ public class CreerPartieController extends Controller {
 			session.sendMessage(responseMessage);
 			return;
 		}
-		AssociationSessionsParties.associerSessionMaitreDuJeuAPartie(session, partie);
-
+		
 		response.addProperty("type", "reponseCreerPartie");
 		response.addProperty("succes", true);
 
@@ -80,6 +76,7 @@ public class CreerPartieController extends Controller {
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
+		return;
 	}
 
 }

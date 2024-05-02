@@ -15,6 +15,8 @@ public class Equipe {
 	private Long id;
 
 	private String nom;
+	
+	private Boolean estConnecte;
 
 	private int score;
 
@@ -34,6 +36,14 @@ public class Equipe {
 
 	public void setNom(String nom) {
 		this.nom = nom;
+	}
+
+	public Boolean getEstConnecte() {
+		return this.estConnecte;
+	}
+
+	public void setEstConnecte(Boolean estConnecte) {
+		this.estConnecte = estConnecte;
 	}
 
 	public int getScore() {

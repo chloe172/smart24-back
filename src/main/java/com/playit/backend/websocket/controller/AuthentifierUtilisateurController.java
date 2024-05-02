@@ -39,6 +39,7 @@ public class AuthentifierUtilisateurController extends Controller {
 		System.out.println("Message sent: " + responseMessage.getPayload());
 		session.sendMessage(responseMessage);
 
+		return;
 	}
 
 }

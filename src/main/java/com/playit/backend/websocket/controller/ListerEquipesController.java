@@ -16,7 +16,9 @@ import com.playit.backend.websocket.handler.SessionRole;
 public class ListerEquipesController extends Controller {
 	@Override
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
-		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
+		System.out.println("ListerEquipesController");
+		System.out.println(session.getAttributes().get("role"));
+		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
 
 		Long idPartie = data.get("idPartie")
 		                    .getAsLong();
@@ -43,9 +45,9 @@ public class ListerEquipesController extends Controller {
 		JsonArray listeEquipesJson = new JsonArray();
 		for (Equipe equipe : listeEquipes) {
 			JsonObject equipeJson = new JsonObject();
-			equipeJson.addProperty("nom", equipe.getNom());
-			equipeJson.addProperty("codePin", equipe.getScore());
-
+			equipeJson.addProperty("nomEquipe", equipe.getNom());
+			equipeJson.addProperty("scoreEquipe", equipe.getScore());
+			equipeJson.addProperty("idEquipe", equipe.getId());
 			listeEquipesJson.add(equipeJson);
 		}
 		dataObject.add("listeEquipes", listeEquipesJson);
@@ -53,6 +55,8 @@ public class ListerEquipesController extends Controller {
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
+
+		return;
 	}
 
 }

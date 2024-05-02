@@ -8,6 +8,7 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
 import com.playit.backend.metier.model.Activite;
 import com.playit.backend.metier.model.ActiviteEnCours;
@@ -88,10 +89,15 @@ public class PlayITService {
 	}
 
 	public void attendreEquipes(Partie partie) {
-		if (!EtatPartie.ATTENTE_EQUIPE.peutEtreSuivantDe(partie.getEtat())) {
+		if (!EtatPartie.ATTENTE_EQUIPE_INSCRIPTION.peutEtreSuivantDe(partie.getEtat()) && !EtatPartie.ATTENTE_EQUIPE_RECONNEXION.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de passer en mode Attente Equipes");
 		}
-		partie.setEtat(EtatPartie.ATTENTE_EQUIPE);
+		if(partie.getEtat() == EtatPartie.CREEE) {
+			partie.setEtat(EtatPartie.ATTENTE_EQUIPE_INSCRIPTION);
+		} else {
+			partie.setEtat(EtatPartie.ATTENTE_EQUIPE_RECONNEXION);
+		}
+		
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -111,19 +117,27 @@ public class PlayITService {
 		this.partieRepository.saveAndFlush(partie);
 	}
 
-	public void terminerExpliquation(Partie partie) {
+	public List<Equipe> terminerExpliquation(Partie partie) {
 		if (!EtatPartie.ATTENTE_ACTIVITE.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de terminer l'explication");
 		}
 		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
 		this.partieRepository.saveAndFlush(partie);
+
+		return equipeRepository.findEquipeByPartieOrderByScoreDesc(partie);
 	}
 
+	@Transactional
 	public void mettreEnPausePartie(Partie partie) {
 		if (!EtatPartie.EN_PAUSE.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de mettre en pause");
 		}
 		partie.setEtat(EtatPartie.EN_PAUSE);
+		for(Equipe equipe : partie.getEquipes()) {
+			equipe.setEstConnecte(false);
+			this.equipeRepository.save(equipe);
+		}
+		this.equipeRepository.flush();
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -132,6 +146,11 @@ public class PlayITService {
 			throw new IllegalStateException("Impossible de terminer");
 		}
 		partie.setEtat(EtatPartie.TERMINEE);
+		for(Equipe equipe : partie.getEquipes()) {
+			equipe.setEstConnecte(false);
+			this.equipeRepository.save(equipe);
+		}
+		this.equipeRepository.flush();
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -144,13 +163,16 @@ public class PlayITService {
 	}
 
 	public Equipe inscrireEquipe(String nom, Partie partie) {
-		// TODO : vérifier que la partie est en mode Attente Equipe
+		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_INSCRIPTION) {
+			throw new IllegalStateException("Impossible d'inscrire l'equipe");
+		}
 		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nom, partie);
 		if (result.isPresent()) {
 			throw new IllegalStateException("Nom d'équipe déjà pris");
 		}
 		Equipe equipe = new Equipe();
 		equipe.setNom(nom);
+		equipe.setEstConnecte(true);
 		equipe.setScore(0);
 		equipe = this.equipeRepository.saveAndFlush(equipe);
 		partie.addEquipe(equipe);
@@ -171,6 +193,22 @@ public class PlayITService {
 			equipe.setNom(nouveauNom);
 		}
 		return this.equipeRepository.saveAndFlush(equipe);
+	}
+
+	public Equipe rejoindrePartieEquipe(Equipe equipe, Partie partie) {
+		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_RECONNEXION) {
+			throw new IllegalStateException("Impossible de reconnecter l'equipe");
+		}
+		Optional<Equipe> result = this.equipeRepository.findByIdAndPartie(equipe.getId(), partie);
+		if (result.isEmpty()) {
+			throw new IllegalStateException("Equipe non presente à la session precedente");
+		}
+		if (equipe.getEstConnecte() == true) {
+			throw new IllegalStateException("Equipe deja connecte à la session");
+		}
+		equipe.setEstConnecte(true);
+		this.equipeRepository.saveAndFlush(equipe);
+		return equipe;
 	}
 
 	public ActiviteEnCours lancerActivite(Partie partie) {

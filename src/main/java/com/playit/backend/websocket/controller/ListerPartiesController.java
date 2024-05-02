@@ -65,6 +65,8 @@ public class ListerPartiesController extends Controller {
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
+
+		return;
 	}
 
 }

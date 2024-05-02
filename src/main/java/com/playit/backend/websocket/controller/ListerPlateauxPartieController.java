@@ -47,12 +47,15 @@ public class ListerPlateauxPartieController extends Controller {
 			plateauJson.addProperty("id", plateau.getId());
 			listePlateauxJson.add(plateauJson);
 		}
+		dataObject.addProperty("idPartie", partie.getId());
 		dataObject.add("listePlateaux", listePlateauxJson);
 		response.add("data", dataObject);
 		response.addProperty("succes", true);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
+		
+		return;
 	}
 
 }

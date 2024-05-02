@@ -10,6 +10,7 @@ import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
+import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class SoumettreReponseController extends Controller {
@@ -88,12 +89,17 @@ public class SoumettreReponseController extends Controller {
 		JsonObject dataObject = new JsonObject();
 		dataObject.addProperty("scoreQuestion", score);
 		dataObject.addProperty("scoreEquipe", equipe.getScore());
+		dataObject.addProperty("idEquipe", equipe.getId());
+		dataObject.addProperty("proposition", proposition.getIntitule());
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
 
-		// TODO : envoyer un truc au maitre du jeu
+		response.addProperty("type", "notificationSoumettreReponse");
+		WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties.getMaitreDuJeuPartie(equipe.getPartie());
+		sessionMaitreDuJeu.sendMessage(responseMessage);
 
+		return;
 	}
 }

@@ -1,5 +1,7 @@
 package com.playit.backend.websocket.controller;
 
+import java.util.List;
+
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -9,6 +11,7 @@ import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Plateau;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
+import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class ChoisirPlateauController extends Controller {
@@ -58,11 +61,21 @@ public class ChoisirPlateauController extends Controller {
 			return;
 		}
 
+		dataObject.addProperty("idPlateau", plateau.getId());
+		dataObject.addProperty("nomPlateau", plateau.getNom());
 		response.addProperty("succes", true);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
+
+		response.addProperty("type", "notificationChoisirPlateau");
+		responseMessage = new TextMessage(response.toString());
+		List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
+
+		for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+			sessionEquipe.sendMessage(responseMessage);
+		}
 
 		return;
 	}

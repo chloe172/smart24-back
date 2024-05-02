@@ -58,6 +58,7 @@ public class DemarrerPartieController extends Controller {
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
 
+		// TODO : verifier que c'est utile de leur envoyer ca
 		response.addProperty("type", "notificationDemarrerPartie");
 		List<WebSocketSession> sessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
 		responseMessage = new TextMessage(response.toString());
@@ -65,6 +66,7 @@ public class DemarrerPartieController extends Controller {
 			sessionEquipe.sendMessage(responseMessage);
 		}
 
+		return;
 	}
 
 }

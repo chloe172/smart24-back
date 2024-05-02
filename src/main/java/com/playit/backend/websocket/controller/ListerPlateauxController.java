@@ -34,5 +34,7 @@ public class ListerPlateauxController extends Controller {
 		response.addProperty("succes", true);
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
+
+		return;
 	}
 }
