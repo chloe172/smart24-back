@@ -110,6 +110,7 @@ public class SoumettreReponseController extends Controller {
 		session.sendMessage(responseMessage);
 
 		response.addProperty("type", "notificationSoumettreReponse");
+		responseMessage = new TextMessage(response.toString());
 		WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties.getMaitreDuJeuPartie(equipe.getPartie());
 		sessionMaitreDuJeu.sendMessage(responseMessage);
 
