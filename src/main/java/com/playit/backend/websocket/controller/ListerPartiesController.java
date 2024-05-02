@@ -27,7 +27,6 @@ public class ListerPartiesController extends Controller {
 				.get("idMaitreDuJeu");
 
 		JsonObject response = new JsonObject();
-		JsonObject dataObject = new JsonObject();
 		response.addProperty("type", "reponseListerParties");
 		response.addProperty("succes", true);
 
@@ -66,6 +65,7 @@ public class ListerPartiesController extends Controller {
 
 			listePartiesJson.add(partieJson);
 		}
+		JsonObject dataObject = new JsonObject();
 		dataObject.add("listeParties", listePartiesJson);
 		response.add("data", dataObject);
 

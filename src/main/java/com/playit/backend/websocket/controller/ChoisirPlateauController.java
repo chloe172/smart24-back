@@ -65,7 +65,6 @@ public class ChoisirPlateauController extends Controller {
 		plateauObject.addProperty("nom", plateau.getNom());
 		JsonObject dataObject = new JsonObject();
 		dataObject.add("plateau", plateauObject);
-		response.addProperty("succes", true);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
