@@ -19,23 +19,25 @@ public class SoumettreReponseController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
 
 		Long idPartie = data.get("idPartie")
-		                    .getAsLong();
+				.getAsLong();
 		Long idProposition = data.get("idProposition")
-		                         .getAsLong();
+				.getAsLong();
 		Long idEquipe = (Long) session.getAttributes()
-		                              .get("idEquipe");
+				.get("idEquipe");
 		Long idActiviteEnCours = data.get("idActiviteEnCours")
-		                             .getAsLong();
+				.getAsLong();
 
 		JsonObject response = new JsonObject();
 		response.addProperty("type", "reponseSoumettreReponse");
+		response.addProperty("succes", true);
+
 		Partie partie = null;
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
-			response.addProperty("messageErreur", "Partie non trouvée");
-			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 404);
+			response.addProperty("messageErreur", "Partie non trouvée");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -45,9 +47,9 @@ public class SoumettreReponseController extends Controller {
 		try {
 			proposition = playITService.trouverPropositionParId(idProposition);
 		} catch (NotFoundException e) {
-			response.addProperty("messageErreur", "Proposition non trouvée");
-			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 404);
+			response.addProperty("messageErreur", "Proposition non trouvée");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -57,9 +59,9 @@ public class SoumettreReponseController extends Controller {
 		try {
 			equipe = playITService.trouverEquipeParId(idEquipe);
 		} catch (NotFoundException e) {
-			response.addProperty("messageErreur", "Equipe non trouvée");
-			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 404);
+			response.addProperty("messageErreur", "Equipe non trouvée");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -69,9 +71,9 @@ public class SoumettreReponseController extends Controller {
 		try {
 			activiteEnCours = playITService.trouverActiviteEnCoursParId(idActiviteEnCours);
 		} catch (NotFoundException e) {
-			response.addProperty("messageErreur", "Activité en cours non trouvée");
-			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 404);
+			response.addProperty("messageErreur", "Activité en cours non trouvée");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -81,21 +83,27 @@ public class SoumettreReponseController extends Controller {
 		try {
 			score = playITService.soumettreReponse(partie, equipe, proposition, activiteEnCours);
 		} catch (IllegalStateException | IllegalArgumentException e) {
-			response.addProperty("messageErreur", e.getMessage());
-			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 422);
+			response.addProperty("messageErreur", e.getMessage());
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
 		}
 
-		response.addProperty("succes", true);
-
+		JsonObject reponseObject = new JsonObject();
+		reponseObject.addProperty("score", score);
+		JsonObject equipeObject = new JsonObject();
+		equipeObject.addProperty("id", equipe.getId());
+		equipeObject.addProperty("nom", equipe.getNom());
+		equipeObject.addProperty("score", equipe.getScore());
+		reponseObject.add("equipe", equipeObject);
+		JsonObject propositionObject = new JsonObject();
+		propositionObject.addProperty("id", proposition.getId());
+		propositionObject.addProperty("intitule", proposition.getIntitule());
+		reponseObject.add("proposition", propositionObject);
 		JsonObject dataObject = new JsonObject();
-		dataObject.addProperty("scoreQuestion", score);
-		dataObject.addProperty("scoreEquipe", equipe.getScore());
-		dataObject.addProperty("idEquipe", equipe.getId());
-		dataObject.addProperty("proposition", proposition.getIntitule());
+		dataObject.add("reponse", reponseObject);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());

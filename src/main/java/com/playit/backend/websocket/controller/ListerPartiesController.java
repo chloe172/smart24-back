@@ -24,29 +24,28 @@ public class ListerPartiesController extends Controller {
 
 		MaitreDuJeu maitreDuJeu;
 		Long idMaitreDuJeu = (Long) session.getAttributes()
-		                                   .get("idMaitreDuJeu");
+				.get("idMaitreDuJeu");
 
 		JsonObject response = new JsonObject();
 		JsonObject dataObject = new JsonObject();
 		response.addProperty("type", "reponseListerParties");
+		response.addProperty("succes", true);
 
 		try {
 			maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
 		} catch (NotFoundException e) {
-			response.addProperty("messageErreur", "Maitre du jeu non trouvé");
-			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 404);
+			response.addProperty("messageErreur", "Maitre du jeu non trouvé");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
 		}
 
-		response.addProperty("succes", true);
-
 		List<Partie> listeParties = playITService.listerParties(maitreDuJeu)
-		                                         .stream()
-												 .filter(partie -> partie.getEtat() == EtatPartie.EN_PAUSE)
-												 .collect(Collectors.toList());
+				.stream()
+				.filter(partie -> partie.getEtat() == EtatPartie.EN_PAUSE)
+				.collect(Collectors.toList());
 		JsonArray listePartiesJson = new JsonArray();
 		for (Partie partie : listeParties) {
 			JsonObject partieJson = new JsonObject();
@@ -54,13 +53,13 @@ public class ListerPartiesController extends Controller {
 			partieJson.addProperty("nom", partie.getNom());
 			partieJson.addProperty("codePin", partie.getCodePin());
 			partieJson.addProperty("etat", partie.getEtat()
-			                                     .toString());
+					.toString());
 			partieJson.addProperty("date", partie.getDate()
-			                                     .toString());
+					.toString());
 			if (partie.getPlateauCourant() != null) {
 				partieJson.addProperty("dernierPlateau", partie.getPlateauCourant()
-															   .getPlateau()
-				                                               .getNom());
+						.getPlateau()
+						.getNom());
 			} else {
 				partieJson.add("dernierPlateau", JsonNull.INSTANCE);
 			}

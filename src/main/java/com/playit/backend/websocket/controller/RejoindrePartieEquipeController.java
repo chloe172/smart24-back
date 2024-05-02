@@ -15,19 +15,21 @@ import com.playit.backend.websocket.handler.SessionRole;
 
 public class RejoindrePartieEquipeController extends Controller {
 
-    public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
+	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
-        Long idPartie = data.get("idPartie")
-		                    .getAsLong();
+		Long idPartie = data.get("idPartie")
+				.getAsLong();
 		Long idEquipe = data.get("idEquipe")
-		                       .getAsLong();
+				.getAsLong();
+
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseRejoindrePartieEquipe");
+		response.addProperty("succes", true);
 
 		Partie partie = null;
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseRejoindrePartieEquipe");
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Partie non trouvée");
@@ -37,11 +39,9 @@ public class RejoindrePartieEquipeController extends Controller {
 		}
 
 		Equipe equipe = null;
-        try {
+		try {
 			equipe = playITService.trouverEquipeParId(idEquipe);
 		} catch (NotFoundException e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseRejoindrePartieEquipe");
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Equipe non trouvée");
@@ -52,8 +52,6 @@ public class RejoindrePartieEquipeController extends Controller {
 		try {
 			equipe = playITService.rejoindrePartieEquipe(equipe, partie);
 		} catch (Exception e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseRejoindrePartieEquipe");
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", e.getMessage());
@@ -63,15 +61,22 @@ public class RejoindrePartieEquipeController extends Controller {
 		}
 
 		session.getAttributes()
-		       .put("idEquipe", equipe.getId());
-		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseRejoindrePartieEquipe");
-		response.addProperty("succes", true);
+				.put("idEquipe", equipe.getId());
 
+		JsonObject equipeObject = new JsonObject();
+		equipeObject.addProperty("id", equipe.getId());
+		equipeObject.addProperty("nom", equipe.getNom());
 		JsonObject dataObject = new JsonObject();
-		dataObject.addProperty("idEquipe", equipe.getId());
-		dataObject.addProperty("nomEquipe", equipe.getNom());
-		dataObject.addProperty("idPartie", partie.getId());
+		dataObject.add("equipe", equipeObject);
+
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
+		partieObject.addProperty("etat", partie.getEtat()
+				.toString());
+		partieObject.addProperty("date", partie.getDate()
+				.toString());
+		dataObject.add("partie", partieObject);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
@@ -85,12 +90,12 @@ public class RejoindrePartieEquipeController extends Controller {
 
 		List<WebSocketSession> sessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
 		for (WebSocketSession sessionEquipe : sessionsEquipes) {
-			if(session != sessionEquipe) {
+			if (session != sessionEquipe) {
 				sessionEquipe.sendMessage(responseMessage);
 			}
 		}
-		
+
 		return;
-    }
+	}
 
 }

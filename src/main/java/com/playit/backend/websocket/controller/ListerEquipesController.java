@@ -19,14 +19,15 @@ public class ListerEquipesController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
 
 		Long idPartie = data.get("idPartie")
-		                    .getAsLong();
+				.getAsLong();
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseListerEquipes");
+		response.addProperty("succes", true);
 
 		Partie partie = null;
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseListerEquipes");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Partie non trouvée");
 			response.addProperty("codeErreur", 404);
@@ -35,18 +36,14 @@ public class ListerEquipesController extends Controller {
 			return;
 		}
 
-		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseListerEquipes");
-		response.addProperty("succes", true);
-
 		JsonObject dataObject = new JsonObject();
 		List<Equipe> listeEquipes = partie.getEquipes();
 		JsonArray listeEquipesJson = new JsonArray();
 		for (Equipe equipe : listeEquipes) {
 			JsonObject equipeJson = new JsonObject();
-			equipeJson.addProperty("nomEquipe", equipe.getNom());
-			equipeJson.addProperty("scoreEquipe", equipe.getScore());
-			equipeJson.addProperty("idEquipe", equipe.getId());
+			equipeJson.addProperty("id", equipe.getId());
+			equipeJson.addProperty("nom", equipe.getNom());
+			equipeJson.addProperty("score", equipe.getScore());
 			listeEquipesJson.add(equipeJson);
 		}
 		dataObject.add("listeEquipes", listeEquipesJson);

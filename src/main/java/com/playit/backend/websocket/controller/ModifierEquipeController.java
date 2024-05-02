@@ -16,18 +16,19 @@ public class ModifierEquipeController extends Controller {
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
 
-		JsonElement idEquipeObjet = data.get("idEquipe");
-		Long idEquipe = idEquipeObjet.getAsLong();
+		Long idEquipe = data.get("idEquipe").getAsLong();
+
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseModifierEquipe");
+		response.addProperty("succes", true);
 
 		Equipe equipe = null;
 		try {
 			equipe = playITService.trouverEquipeParId(idEquipe);
 		} catch (Exception e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseModifierEquipe");
 			response.addProperty("succes", false);
-			response.addProperty("messageErreur", "Equipe non trouvée");
 			response.addProperty("codeErreur", 404);
+			response.addProperty("messageErreur", "Equipe non trouvée");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -39,23 +40,19 @@ public class ModifierEquipeController extends Controller {
 		try {
 			equipe = playITService.modifierEquipe(equipe, nouveauNomEquipe);
 		} catch (IllegalStateException e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseModifierEquipe");
 			response.addProperty("succes", false);
-			response.addProperty("messageErreur", e.getMessage());
 			response.addProperty("codeErreur", 422);
+			response.addProperty("messageErreur", e.getMessage());
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
 		}
 
-		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseModifierEquipe");
-		response.addProperty("succes", true);
-
+		JsonObject equipeObject = new JsonObject();
+		equipeObject.addProperty("id", equipe.getId());
+		equipeObject.addProperty("nom", equipe.getNom());
 		JsonObject dataObject = new JsonObject();
-		dataObject.addProperty("idEquipe", equipe.getId());
-		dataObject.addProperty("nouveauNomEquipe", equipe.getNom());
+		dataObject.add("equipe", equipeObject);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
