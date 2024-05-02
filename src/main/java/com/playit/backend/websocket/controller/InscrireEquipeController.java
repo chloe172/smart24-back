@@ -59,6 +59,19 @@ public class InscrireEquipeController extends Controller {
 		response.addProperty("succes", true);
 
 		JsonObject dataObject = new JsonObject();
+		// TODO : mettre le json de la forme :
+		/**
+		 * {
+		 *   partie: {
+		 *     id,
+		 *     nom, ...
+		 *   },
+		 *   equipe: {
+		 *     id,
+		 *     nom, ...
+		 *   }
+		 * }
+		 */
 		dataObject.addProperty("idEquipe", equipe.getId());
 		dataObject.addProperty("nomEquipe", equipe.getNom());
 		dataObject.addProperty("idPartie", partie.getId());
