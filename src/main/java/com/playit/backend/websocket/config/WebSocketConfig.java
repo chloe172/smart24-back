@@ -2,6 +2,7 @@ package com.playit.backend.websocket.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -17,16 +18,15 @@ public class WebSocketConfig implements WebSocketConfigurer {
 	private PlayITHandler playITHandler;
 
 	@Override
-	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		WebSocketHandler handler = playITHandler;
+	public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
+		WebSocketHandler handler = this.playITHandler;
 		String socketUrl = "/socket";
 
 		registry.addHandler(handler, socketUrl)
-				.setAllowedOrigins("*")
-				.withSockJS();
+		        .setAllowedOrigins("*")
+		        .withSockJS();
 		registry.addHandler(handler, socketUrl)
-				.setAllowedOrigins("*");
-
+		        .setAllowedOrigins("*");
 	}
 
 }

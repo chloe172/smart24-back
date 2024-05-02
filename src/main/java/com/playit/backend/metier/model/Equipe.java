@@ -1,4 +1,4 @@
-package com.playit.backend.model;
+package com.playit.backend.metier.model;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -13,10 +13,12 @@ public class Equipe {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
 	private String nom;
+
 	private int score;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade= CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private Partie partie;
 
 	public Equipe() {
@@ -47,18 +49,20 @@ public class Equipe {
 	}
 
 	public void setPartie(Partie partie) {
-		// TODO : supprimer l'équipe de l'ancienne partie s'il y en avait une
+		if (this.partie != null) {
+			this.partie.removeEquipe(this);
+		}
 		this.partie = partie;
 	}
 
 	@Override
 	public String toString() {
-		return "Equipe {" + " id='" + getId() + "'" + ", nom='" + getNom() + "'" + ", score='" + getScore() + "'"
-				+ ", partie='" + getPartie() + "'" + "}";
+		return "Equipe {" + " id='" + this.getId() + "'" + ", nom='" + this.getNom() + "'" + ", score='"
+		    + this.getScore() + "'" + ", partie='" + this.getPartie() + "'" + "}";
 	}
 
-    public void ajouterScore(int scoreEquipe) {
-        this.score += scoreEquipe;
-    }
+	public void ajouterScore(int scoreEquipe) {
+		this.score += scoreEquipe;
+	}
 
 }

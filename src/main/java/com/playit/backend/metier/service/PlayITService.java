@@ -1,4 +1,4 @@
-package com.playit.backend.service;
+package com.playit.backend.metier.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -9,23 +9,23 @@ import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.playit.backend.model.Activite;
-import com.playit.backend.model.ActiviteEnCours;
-import com.playit.backend.model.Equipe;
-import com.playit.backend.model.EtatPartie;
-import com.playit.backend.model.MaitreDuJeu;
-import com.playit.backend.model.Partie;
-import com.playit.backend.model.Plateau;
-import com.playit.backend.model.Proposition;
-import com.playit.backend.model.Question;
-import com.playit.backend.model.Reponse;
+import com.playit.backend.metier.model.Activite;
+import com.playit.backend.metier.model.ActiviteEnCours;
+import com.playit.backend.metier.model.Equipe;
+import com.playit.backend.metier.model.EtatPartie;
+import com.playit.backend.metier.model.MaitreDuJeu;
+import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.model.Plateau;
+import com.playit.backend.metier.model.Proposition;
+import com.playit.backend.metier.model.Question;
+import com.playit.backend.metier.model.Reponse;
 import com.playit.backend.repository.ActiviteEnCoursRepository;
 import com.playit.backend.repository.EquipeRepository;
 import com.playit.backend.repository.MaitreDuJeuRepository;
 import com.playit.backend.repository.PartieRepository;
 import com.playit.backend.repository.PlateauRepository;
-import com.playit.backend.repository.ReponseRepository;
 import com.playit.backend.repository.PropositionRepository;
+import com.playit.backend.repository.ReponseRepository;
 
 @Service
 public class PlayITService {
@@ -53,8 +53,8 @@ public class PlayITService {
 			throw new IllegalArgumentException("Compte Maître du Jeu non trouvé");
 		}
 		if (!result.get()
-				.getMotDePasse()
-				.equals(mdp)) {
+		           .getMotDePasse()
+		           .equals(mdp)) {
 			throw new IllegalArgumentException("Erreur de mot de passe");
 		}
 		return result.get();
@@ -88,7 +88,7 @@ public class PlayITService {
 	}
 
 	public void attendreEquipes(Partie partie) {
-		if (partie.getEtat() != EtatPartie.CREEE && partie.getEtat() != EtatPartie.EN_PAUSE) {
+		if (!EtatPartie.ATTENTE_EQUIPE.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de passer en mode Attente Equipes");
 		}
 		partie.setEtat(EtatPartie.ATTENTE_EQUIPE);
@@ -96,7 +96,7 @@ public class PlayITService {
 	}
 
 	public void passerEnModeChoixPlateau(Partie partie) {
-		if(partie.getEtat() != EtatPartie.ATTENTE_EQUIPE && partie.getEtat() != EtatPartie.EXPLICATION) {
+		if (!EtatPartie.CHOIX_PLATEAU.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de passer en mode Choix Plateau");
 		}
 		partie.setEtat(EtatPartie.CHOIX_PLATEAU);
@@ -104,16 +104,23 @@ public class PlayITService {
 	}
 
 	public void passerEnModeExplication(Partie partie) {
-		if(partie.getEtat() != EtatPartie.ACTIVITE_EN_COURS) {
+		if (!EtatPartie.EXPLICATION.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de passer en mode Explication");
 		}
 		partie.setEtat(EtatPartie.EXPLICATION);
 		this.partieRepository.saveAndFlush(partie);
 	}
 
+	public void terminerExpliquation(Partie partie) {
+		if (!EtatPartie.ATTENTE_ACTIVITE.peutEtreSuivantDe(partie.getEtat())) {
+			throw new IllegalStateException("Impossible de terminer l'explication");
+		}
+		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
+		this.partieRepository.saveAndFlush(partie);
+	}
+
 	public void mettreEnPausePartie(Partie partie) {
-		if(partie.getEtat() != EtatPartie.CHOIX_PLATEAU && partie.getEtat() != EtatPartie.EXPLICATION
-			&& partie.getEtat() != EtatPartie.ATTENTE_ACTIVITE) {
+		if (!EtatPartie.EN_PAUSE.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de mettre en pause");
 		}
 		partie.setEtat(EtatPartie.EN_PAUSE);
@@ -121,8 +128,7 @@ public class PlayITService {
 	}
 
 	public void terminerPartie(Partie partie) {
-		if(partie.getEtat() != EtatPartie.CHOIX_PLATEAU && partie.getEtat() != EtatPartie.EXPLICATION
-			&& partie.getEtat() != EtatPartie.ATTENTE_ACTIVITE) {
+		if (!EtatPartie.TERMINEE.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de terminer");
 		}
 		partie.setEtat(EtatPartie.TERMINEE);
@@ -131,7 +137,7 @@ public class PlayITService {
 
 	public Partie validerCodePin(String codePin) {
 		Partie partie = this.partieRepository.findByCodePin(codePin);
-		if(partie == null) {
+		if (partie == null) {
 			throw new NotFoundException("Aucune partie avec ce code PIN");
 		}
 		return partie;
@@ -155,7 +161,7 @@ public class PlayITService {
 	public Equipe modifierEquipe(Equipe equipe, String nouveauNom) {
 		Partie partie = equipe.getPartie();
 		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nouveauNom, partie);
-		if (partie.getEtat()!=EtatPartie.CHOIX_PLATEAU && partie.getEtat()!=EtatPartie.ATTENTE_ACTIVITE) {
+		if (partie.getEtat() != EtatPartie.CHOIX_PLATEAU && partie.getEtat() != EtatPartie.ATTENTE_ACTIVITE) {
 			throw new IllegalStateException("Impossible de modifier l'equipe");
 		}
 		if (result.isPresent()) {
@@ -168,19 +174,19 @@ public class PlayITService {
 	}
 
 	public ActiviteEnCours lancerActivite(Partie partie) {
-		if(partie.getEtat() != EtatPartie.ATTENTE_ACTIVITE) {
+		if (!EtatPartie.ACTIVITE_EN_COURS.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de passer en mode Activite");
 		}
 		partie.setEtat(EtatPartie.ACTIVITE_EN_COURS);
-		
+
 		Plateau plateauCourant = partie.getPlateauCourant();
 		int indiceActiviteCourante = partie.getIndiceActivite();
 		if (indiceActiviteCourante >= plateauCourant.getListeActivites()
-				.size()) {
+		                                            .size()) {
 			throw new IllegalStateException("Il ne reste aucune activité à réaliser dans ce plateau");
 		}
 		Activite activite = plateauCourant.getListeActivites()
-				.get(indiceActiviteCourante);
+		                                  .get(indiceActiviteCourante);
 		partie.setIndiceActivite(indiceActiviteCourante + 1);
 
 		ActiviteEnCours activiteEnCours = new ActiviteEnCours();
@@ -194,8 +200,8 @@ public class PlayITService {
 	}
 
 	public int soumettreReponse(Partie partie, Equipe equipe, Proposition proposition,
-			ActiviteEnCours activiteEnCours) {
-		if(partie.getEtat() != EtatPartie.ACTIVITE_EN_COURS) {
+	    ActiviteEnCours activiteEnCours) {
+		if (partie.getEtat() != EtatPartie.ACTIVITE_EN_COURS) {
 			throw new IllegalStateException("Impossible de soumettre une réponse");
 		}
 
@@ -207,10 +213,10 @@ public class PlayITService {
 		Question question = (Question) activite;
 		Duration dureeQuestion = question.getTemps();
 		LocalDateTime tempsLimite = activiteEnCours.getDate()
-				.plus(dureeQuestion);
+		                                           .plus(dureeQuestion);
 		Reponse reponse = new Reponse();
 		if (reponse.getDateSoumission()
-				.isAfter(tempsLimite)) {
+		           .isAfter(tempsLimite)) {
 			throw new IllegalStateException("La réponse a été soumise après le temps imparti.");
 		}
 		reponse.setEquipe(equipe);
@@ -225,27 +231,21 @@ public class PlayITService {
 		return score;
 	}
 
-	public void terminerExpliquation(Partie partie) {
-		if(partie.getEtat() != EtatPartie.EXPLICATION) {
-			throw new IllegalStateException("Impossible de terminer l'explication");
-		}
-		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
-		this.partieRepository.saveAndFlush(partie);
-	}
-
 	public void choisirPlateau(Partie partie, Plateau plateau) {
 		if (!partie.getPlateaux()
-				.stream()
-				.anyMatch(p -> p.getId().equals(plateau.getId()))) {
+		           .stream()
+		           .anyMatch(p -> p.getId()
+		                           .equals(plateau.getId()))) {
 			throw new IllegalArgumentException("Le plateau n'appartient pas à la partie");
 		}
 
-		if(partie.getEtat() != EtatPartie.CHOIX_PLATEAU) {
-			throw new IllegalStateException("Impossible de demarrer partie");
+		if (partie.getEtat() != EtatPartie.CHOIX_PLATEAU) {
+			throw new IllegalStateException("Impossible de sélectionner un plateau");
 		}
 		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
 		partie.setPlateauCourant(plateau);
-		// TODO : ajouter un indice Acitivte pour chaque plateau - nouvelle entite plateau en cours		
+		// TODO : ajouter un indice Acitivte pour chaque plateau - nouvelle entite
+		// plateau en cours
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -264,33 +264,39 @@ public class PlayITService {
 	}
 
 	public Partie trouverPartieParId(Long idPartie) {
-		return this.partieRepository.findById(idPartie).orElseThrow(() -> new NotFoundException(
-			"La partie avec l'id " + idPartie + " n'existe pas"));
+		return this.partieRepository.findById(idPartie)
+		                            .orElseThrow(() -> new NotFoundException(
+		                                "La partie avec l'id " + idPartie + " n'existe pas"));
 	}
 
 	public MaitreDuJeu trouverMaitreDuJeuParId(Long idMaitreDuJeu) {
-		return this.maitreDuJeuRepository.findById(idMaitreDuJeu).orElseThrow(() -> new NotFoundException(
-			"Le maitre du jeu avec l'id " + idMaitreDuJeu + " n'existe pas"));
+		return this.maitreDuJeuRepository.findById(idMaitreDuJeu)
+		                                 .orElseThrow(() -> new NotFoundException(
+		                                     "Le maitre du jeu avec l'id " + idMaitreDuJeu + " n'existe pas"));
 	}
 
 	public Plateau trouverPlateauParId(Long idPlateau) {
-		return this.plateauRepository.findById(idPlateau).orElseThrow(() -> new NotFoundException(
-			"Le plateau avec l'id " + idPlateau + " n'existe pas"));
+		return this.plateauRepository.findById(idPlateau)
+		                             .orElseThrow(() -> new NotFoundException(
+		                                 "Le plateau avec l'id " + idPlateau + " n'existe pas"));
 	}
 
 	public Equipe trouverEquipeParId(Long idEquipe) {
-		return this.equipeRepository.findById(idEquipe).orElseThrow(() -> new NotFoundException(
-			"L'équipe avec l'id " + idEquipe + " n'existe pas"));
+		return this.equipeRepository.findById(idEquipe)
+		                            .orElseThrow(() -> new NotFoundException(
+		                                "L'équipe avec l'id " + idEquipe + " n'existe pas"));
 	}
 
 	public Proposition trouverPropositionParId(Long idProposition) {
-		return this.propositionRepository.findById(idProposition).orElseThrow(() -> new NotFoundException(
-			"La propositioni avec l'id " + idProposition + " n'existe pas"));
+		return this.propositionRepository.findById(idProposition)
+		                                 .orElseThrow(() -> new NotFoundException(
+		                                     "La propositioni avec l'id " + idProposition + " n'existe pas"));
 	}
 
 	public ActiviteEnCours trouverActiviteEnCoursParId(Long idActiviteEnCours) {
-		return this.activiteEnCoursRepository.findById(idActiviteEnCours).orElseThrow(() -> new NotFoundException(
-			"L'activité en cours avec l'id " + idActiviteEnCours + " n'existe pas"));
+		return this.activiteEnCoursRepository.findById(idActiviteEnCours)
+		                                     .orElseThrow(() -> new NotFoundException("L'activité en cours avec l'id "
+		                                         + idActiviteEnCours + " n'existe pas"));
 	}
 
 }

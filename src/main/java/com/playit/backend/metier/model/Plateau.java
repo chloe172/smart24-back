@@ -1,7 +1,7 @@
-package com.playit.backend.model;
+package com.playit.backend.metier.model;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -59,9 +59,8 @@ public class Plateau {
 
 	@Override
 	public String toString() {
-		return "Plateau {" + " id='" + getId() + "'" + ", nom='" + getNom() + "'" + ", listeActivites='"
-				+ getListeActivites()
-				+ "'" + "}";
+		return "Plateau {" + " id='" + this.getId() + "'" + ", nom='" + this.getNom() + "'" + ", listeActivites='"
+		    + this.getListeActivites() + "'" + "}";
 	}
 
 }

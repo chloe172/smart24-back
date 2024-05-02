@@ -1,4 +1,4 @@
-package com.playit.backend.model;
+package com.playit.backend.metier.model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,12 +23,12 @@ public class Partie {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
-	private int nombreEquipes;
+
 	private String codePin;
 
 	@Column(unique = true)
 	private String nom;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
 	private LocalDateTime date;
 
@@ -37,6 +37,7 @@ public class Partie {
 
 	@ManyToOne
 	private Plateau plateauCourant;
+
 	private int indiceActivite;
 
 	@ManyToMany(fetch = FetchType.EAGER)
@@ -108,6 +109,15 @@ public class Partie {
 		this.listeEquipes = equipes;
 	}
 
+	public void addEquipe(Equipe equipe) {
+		equipe.setPartie(this);
+		this.listeEquipes.add(equipe);
+	}
+
+	public void removeEquipe(Equipe equipe) {
+		this.listeEquipes.remove(equipe);
+	}
+
 	public LocalDateTime getDate() {
 		return this.date;
 	}
@@ -124,14 +134,6 @@ public class Partie {
 		this.maitreDuJeu = maitreDuJeu;
 	}
 
-	public int getNombreEquipes() {
-		return this.nombreEquipes;
-	}
-
-	public void setNombreEquipes(int nombreEquipes) {
-		this.nombreEquipes = nombreEquipes;
-	}
-
 	public EtatPartie getEtat() {
 		return this.etat;
 	}
@@ -140,14 +142,9 @@ public class Partie {
 		this.etat = etat;
 	}
 
-	public void addEquipe(Equipe equipe) {
-		equipe.setPartie(this);
-		this.listeEquipes.add(equipe);
-	}
-
 	public Activite getActiviteCourante() {
 		return this.plateauCourant.getListeActivites()
-				.get(this.indiceActivite);
+		                          .get(this.indiceActivite);
 	}
 
 }

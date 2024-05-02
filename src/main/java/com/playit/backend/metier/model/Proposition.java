@@ -1,4 +1,4 @@
-package com.playit.backend.model;
+package com.playit.backend.metier.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -52,7 +52,5 @@ public class Proposition {
 			return false;
 		return true;
 	}
-
-	
 
 }
