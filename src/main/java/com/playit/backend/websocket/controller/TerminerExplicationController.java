@@ -41,6 +41,12 @@ public class TerminerExplicationController extends Controller {
 
 		JsonObject dataObject = new JsonObject();
 
+		// TODO : le corps du IF et ce qu'il y a après sont très proches : à
+		// factoriser :
+		// Mettre uniquement le try/catch dans un if/else et le reste en dehors
+		// Il faut donc récupérer la liste des équipes dans l'ordre du score dans tous
+		// les cas
+
 		// Vérification fin plateau
 		if (partie.getPlateauCourant().estTermine()) {
 			try {

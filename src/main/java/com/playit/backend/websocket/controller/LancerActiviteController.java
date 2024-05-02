@@ -50,7 +50,6 @@ public class LancerActiviteController extends Controller {
 		try {
 			activiteEnCours = playITService.lancerActivite(partie);
 		} catch (IllegalStateException e) {
-			response.addProperty("type", "reponseLancerActivite");
 			response.addProperty("messageErreur", e.getMessage());
 			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);

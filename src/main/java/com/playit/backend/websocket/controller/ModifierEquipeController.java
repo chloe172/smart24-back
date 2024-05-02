@@ -3,7 +3,6 @@ package com.playit.backend.websocket.controller;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.service.PlayITService;
@@ -17,6 +16,7 @@ public class ModifierEquipeController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
 
 		Long idEquipe = data.get("idEquipe").getAsLong();
+		String nouveauNomEquipe = data.get("nouveauNomEquipe").getAsString();
 
 		JsonObject response = new JsonObject();
 		response.addProperty("type", "reponseModifierEquipe");
@@ -33,9 +33,6 @@ public class ModifierEquipeController extends Controller {
 			session.sendMessage(responseMessage);
 			return;
 		}
-
-		JsonElement nouveauNomEquipeObjet = data.get("nouveauNomEquipe");
-		String nouveauNomEquipe = nouveauNomEquipeObjet.getAsString();
 
 		try {
 			equipe = playITService.modifierEquipe(equipe, nouveauNomEquipe);
