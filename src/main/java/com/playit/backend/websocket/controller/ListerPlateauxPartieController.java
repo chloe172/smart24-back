@@ -20,11 +20,11 @@ public class ListerPlateauxPartieController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
 		Long idPartie = data.get("idPartie")
-		                    .getAsLong();
+				.getAsLong();
 
 		JsonObject response = new JsonObject();
-		JsonObject dataObject = new JsonObject();
 		response.addProperty("type", "reponseListerPlateaux");
+		response.addProperty("succes", true);
 
 		Partie partie;
 
@@ -33,25 +33,31 @@ public class ListerPlateauxPartieController extends Controller {
 		} catch (NotFoundException e) {
 			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Partie non trouvée");
-			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
 		}
 
-		JsonArray listePlateauxJson = new JsonArray();
+		JsonObject dataObject = new JsonObject();
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
+		partieObject.addProperty("etat", partie.getEtat()
+				.toString());
+
+		JsonArray plateauxJsonArray = new JsonArray();
 		for (PlateauEnCours plateauEnCours : partie.getPlateauxEnCours()) {
 			Plateau plateau = plateauEnCours.getPlateau();
 			JsonObject plateauJson = new JsonObject();
-			plateauJson.addProperty("nom", plateau.getNom());
 			plateauJson.addProperty("id", plateau.getId());
+			plateauJson.addProperty("nom", plateau.getNom());
 			plateauJson.addProperty("termine", plateauEnCours.estTermine());
 			plateauJson.addProperty("nombreActivites", plateauEnCours.getNombreActivites());
 			plateauJson.addProperty("nombreActivitesTerminees", plateauEnCours.getNombreActivitesTerminees());
-			listePlateauxJson.add(plateauJson);
+			plateauxJsonArray.add(plateauJson);
 		}
-		dataObject.addProperty("idPartie", partie.getId());
-		dataObject.add("listePlateaux", listePlateauxJson);
+		partieObject.add("listePlateaux", plateauxJsonArray);
+		dataObject.add("partie", partieObject);
 		response.add("data", dataObject);
 		response.addProperty("succes", true);
 

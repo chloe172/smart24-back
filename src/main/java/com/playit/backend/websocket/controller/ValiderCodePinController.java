@@ -17,14 +17,16 @@ public class ValiderCodePinController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.ANONYME);
 
 		String codePin = data.get("codePin")
-		                     .getAsString();
+				.getAsString();
+
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseValiderCodePin");
+		response.addProperty("succes", true);
 
 		Partie partie = null;
 		try {
 			partie = playITService.validerCodePin(codePin);
 		} catch (NotFoundException e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseValiderCodePin");
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", e.getMessage());
@@ -33,20 +35,21 @@ public class ValiderCodePinController extends Controller {
 			return;
 		}
 
-		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseValiderCodePin");
-		response.addProperty("succes", true);
-
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
+		partieObject.addProperty("etat", partie.getEtat()
+				.toString());
+		partieObject.addProperty("codePin", partie.getCodePin());
+		partieObject.addProperty("date", partie.getDate()
+				.toString());
 		JsonObject dataObject = new JsonObject();
-		dataObject.addProperty("idPartie", partie.getId());
-		dataObject.addProperty("nomPartie", partie.getNom());
-		dataObject.addProperty("etatPartie", partie.getEtat()
-		                                           .toString());
+		dataObject.add("partie", partieObject);
 		response.add("data", dataObject);
 
 		AssociationSessionsParties.ajouterSessionEquipeAPartie(session, partie);
 		session.getAttributes()
-		       .put("role", SessionRole.EQUIPE);
+				.put("role", SessionRole.EQUIPE);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);

@@ -17,11 +17,11 @@ public class AttendreEquipesController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
 		Long idPartie = data.get("idPartie")
-		                    .getAsLong();
+				.getAsLong();
 
 		JsonObject response = new JsonObject();
-		JsonObject dataObject = new JsonObject();
 		response.addProperty("type", "reponseAttendreEquipes");
+		response.addProperty("succes", true);
 
 		Partie partie;
 
@@ -39,7 +39,7 @@ public class AttendreEquipesController extends Controller {
 		try {
 			playITService.attendreEquipes(partie);
 			session.getAttributes()
-			       .put("idPartie", partie.getId());
+					.put("idPartie", partie.getId());
 		} catch (IllegalStateException e) {
 			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", e.getMessage());
@@ -54,11 +54,15 @@ public class AttendreEquipesController extends Controller {
 		response.addProperty("type", "reponseAttendreEquipes");
 		response.addProperty("succes", true);
 
-		String etatPartie = partie.getEtat()
-		                          .toString();
-		dataObject.addProperty("etatPartie", etatPartie);
-		dataObject.addProperty("codePin", partie.getCodePin());
-		dataObject.addProperty("idPartie", partie.getId());
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
+		partieObject.addProperty("etat", partie.getEtat()
+				.toString());
+		partieObject.addProperty("codePin", partie.getCodePin());
+
+		JsonObject dataObject = new JsonObject();
+		dataObject.add("partie", partieObject);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());

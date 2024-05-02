@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.service.NotFoundException;
@@ -19,15 +18,16 @@ public class TerminerPartieController extends Controller {
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-		JsonElement idPartieObjet = data.get("idPartie");
-		Long idPartie = idPartieObjet.getAsLong();
+		Long idPartie = data.get("idPartie").getAsLong();
+
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseTerminerPartie");
+		response.addProperty("succes", true);
 
 		Partie partie = null;
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseTerminerPartie");
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Partie non trouvée");
@@ -39,8 +39,6 @@ public class TerminerPartieController extends Controller {
 		try {
 			playITService.terminerPartie(partie);
 		} catch (IllegalStateException e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseTerminerPartie");
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", e.getMessage());
@@ -49,14 +47,16 @@ public class TerminerPartieController extends Controller {
 			return;
 		}
 
-		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseTerminerPartie");
-		response.addProperty("succes", true);
-
-		String etatPartie = partie.getEtat()
-		                          .toString();
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
+		partieObject.addProperty("etat", partie.getEtat()
+				.toString());
+		partieObject.addProperty("codePin", partie.getCodePin());
+		partieObject.addProperty("date", partie.getDate()
+				.toString());
 		JsonObject dataObject = new JsonObject();
-		dataObject.addProperty("etatPartie", etatPartie);
+		dataObject.add("partie", partieObject);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());

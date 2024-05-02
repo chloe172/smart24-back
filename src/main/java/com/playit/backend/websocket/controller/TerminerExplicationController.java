@@ -21,40 +21,48 @@ public class TerminerExplicationController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
 		Long idPartie = data.get("idPartie")
-		                    .getAsLong();
+				.getAsLong();
 
 		JsonObject response = new JsonObject();
-		JsonObject dataObject = new JsonObject();
 		response.addProperty("type", "reponseTerminerExplication");
+		response.addProperty("succes", true);
 
 		Partie partie;
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
+			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", e.getMessage());
-			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
 		}
+
+		JsonObject dataObject = new JsonObject();
 
 		// Vérification fin plateau
 		if (partie.getPlateauCourant().estTermine()) {
 			try {
 				playITService.passerEnModeChoixPlateau(partie);
 			} catch (IllegalStateException e) {
-			response.addProperty("codeErreur", 422);
-				response.addProperty("messageErreur", e.getMessage());
 				response.addProperty("succes", false);
+				response.addProperty("codeErreur", 422);
+				response.addProperty("messageErreur", e.getMessage());
 				TextMessage responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
 				return;
 			}
-			dataObject.addProperty("finPlateau", true);
-			String etatPartie = partie.getEtat()
-										.toString();
-			dataObject.addProperty("etatPartie", etatPartie);
+
+			JsonObject partieObject = new JsonObject();
+			partieObject.addProperty("id", partie.getId());
+			partieObject.addProperty("nom", partie.getNom());
+			partieObject.addProperty("etat", partie.getEtat()
+					.toString());
+			partieObject.addProperty("date", partie.getDate()
+					.toString());
+			partieObject.addProperty("finPlateau", true);
+			dataObject.add("partie", partieObject);
 			response.add("data", dataObject);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -72,21 +80,25 @@ public class TerminerExplicationController extends Controller {
 			session.sendMessage(responseMessage);
 			return;
 		}
-		response.addProperty("succes", true);
-		dataObject.addProperty("finPlateau", false);
-		dataObject.addProperty("idPartie", partie.getId());
-		String etatPartie = partie.getEtat()
-		                          .toString();
-		dataObject.addProperty("etatPartie", etatPartie);
+
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
+		partieObject.addProperty("etat", partie.getEtat()
+				.toString());
+		partieObject.addProperty("date", partie.getDate()
+				.toString());
+		partieObject.addProperty("finPlateau", false);
+		dataObject.add("partie", partieObject);
 
 		JsonArray listeEquipesJson = new JsonArray();
-		for (int i = 0; i < listeEquipes.size() ; i++) {
+		for (int i = 0; i < listeEquipes.size(); i++) {
 			Equipe equipe = listeEquipes.get(i);
 			JsonObject equipeJson = new JsonObject();
 			equipeJson.addProperty("id", equipe.getId());
 			equipeJson.addProperty("nom", equipe.getNom());
 			equipeJson.addProperty("score", equipe.getScore());
-			equipeJson.addProperty("rang", i+1);
+			equipeJson.addProperty("rang", i + 1);
 			listeEquipesJson.add(equipeJson);
 		}
 		dataObject.add("listeEquipes", listeEquipesJson);

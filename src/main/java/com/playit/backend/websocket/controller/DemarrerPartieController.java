@@ -19,14 +19,15 @@ public class DemarrerPartieController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
 		Long idPartie = data.get("idPartie")
-		                    .getAsLong();
+				.getAsLong();
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseDemarrerPartie");
+		response.addProperty("succes", true);
 
 		Partie partie = null;
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseDemarrerPartie");
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Partie non trouvée");
@@ -38,8 +39,6 @@ public class DemarrerPartieController extends Controller {
 		try {
 			playITService.passerEnModeChoixPlateau(partie);
 		} catch (Exception e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseDemarrerPartie");
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", e.getMessage());
@@ -48,13 +47,11 @@ public class DemarrerPartieController extends Controller {
 			return;
 		}
 
-		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseDemarrerPartie");
-		response.addProperty("succes", true);
-
 		JsonObject dataObject = new JsonObject();
-		dataObject.addProperty("idPartie", partie.getId());
-		dataObject.addProperty("nom", partie.getNom());
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
+		dataObject.add("partie", partieObject);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());

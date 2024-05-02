@@ -19,19 +19,19 @@ public class ListerPlateauxController extends Controller {
 
 		JsonObject response = new JsonObject();
 		response.addProperty("type", "reponseListerPlateaux");
+		response.addProperty("succes", true);
 
 		JsonObject dataObject = new JsonObject();
 		List<Plateau> listePlateaux = playITService.listerPlateaux();
 		JsonArray listePlateauxJson = new JsonArray();
 		for (Plateau plateau : listePlateaux) {
 			JsonObject plateauJson = new JsonObject();
-			plateauJson.addProperty("nom", plateau.getNom());
 			plateauJson.addProperty("id", plateau.getId());
+			plateauJson.addProperty("nom", plateau.getNom());
 			listePlateauxJson.add(plateauJson);
 		}
 		dataObject.add("listePlateaux", listePlateauxJson);
 		response.add("data", dataObject);
-		response.addProperty("succes", true);
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
 

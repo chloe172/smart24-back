@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Plateau;
@@ -19,15 +18,12 @@ public class ChoisirPlateauController extends Controller {
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-		JsonElement idPartieObjet = data.get("idPartie");
-		Long idPartie = idPartieObjet.getAsLong();
-
-		JsonElement idPlateauObjet = data.get("idPlateau");
-		Long idPlateau = idPlateauObjet.getAsLong();
+		Long idPartie = data.get("idPartie").getAsLong();
+		Long idPlateau = data.get("idPlateau").getAsLong();
 
 		JsonObject response = new JsonObject();
-		JsonObject dataObject = new JsonObject();
 		response.addProperty("type", "reponseChoisirPlateau");
+		response.addProperty("succes", true);
 
 		Partie partie;
 		try {
@@ -64,8 +60,11 @@ public class ChoisirPlateauController extends Controller {
 			return;
 		}
 
-		dataObject.addProperty("idPlateau", plateau.getId());
-		dataObject.addProperty("nomPlateau", plateau.getNom());
+		JsonObject plateauObject = new JsonObject();
+		plateauObject.addProperty("id", plateau.getId());
+		plateauObject.addProperty("nom", plateau.getNom());
+		JsonObject dataObject = new JsonObject();
+		dataObject.add("plateau", plateauObject);
 		response.addProperty("succes", true);
 		response.add("data", dataObject);
 

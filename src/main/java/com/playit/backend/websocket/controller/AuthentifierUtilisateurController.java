@@ -14,28 +14,32 @@ public class AuthentifierUtilisateurController extends Controller {
 
 	@Override
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService)
-	    throws IOException {
+			throws IOException {
 
 		String nom = data.get("nom")
-		                 .getAsString();
+				.getAsString();
 		String motDePasse = data.get("mdp")
-		                        .getAsString();
+				.getAsString();
 
 		JsonObject response = new JsonObject();
 		response.addProperty("type", "reponseAuthentifierUtilisateur");
+		response.addProperty("succes", true);
+
 		try {
 			MaitreDuJeu maitreDuJeu = playITService.authentifier(nom, motDePasse);
 			session.getAttributes()
-			       .put("role", SessionRole.MAITRE_DU_JEU);
+					.put("role", SessionRole.MAITRE_DU_JEU);
 			session.getAttributes()
-			       .put("idMaitreDuJeu", maitreDuJeu.getId());
-
-			response.addProperty("succes", true);
+					.put("idMaitreDuJeu", maitreDuJeu.getId());
 		} catch (IllegalArgumentException e) {
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", "Nom ou mot de passe incorrect");
 		}
+
+		JsonObject dataObject = new JsonObject();
+		response.add("data", dataObject);
+
 		TextMessage responseMessage = new TextMessage(response.toString());
 		System.out.println("Message sent: " + responseMessage.getPayload());
 		session.sendMessage(responseMessage);

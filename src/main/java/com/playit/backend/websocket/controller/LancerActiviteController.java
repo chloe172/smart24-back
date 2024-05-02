@@ -30,13 +30,13 @@ public class LancerActiviteController extends Controller {
 		Long idPartie = idPartieObjet.getAsLong();
 
 		JsonObject response = new JsonObject();
-		JsonObject dataObject = new JsonObject();
+		response.addProperty("type", "reponseLancerActivite");
+		response.addProperty("succes", true);
 
 		Partie partie;
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
-			response.addProperty("type", "reponseLancerActivite");
 			response.addProperty("messageErreur", "Partie non trouvée");
 			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
@@ -59,26 +59,29 @@ public class LancerActiviteController extends Controller {
 			return;
 		}
 
-		Activite activite = activiteEnCours.getActivite();
-
-		response.addProperty("succes", true);
-
 		List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
+		JsonObject dataObject = new JsonObject();
 
+		Activite activite = activiteEnCours.getActivite();
 		if (activite instanceof Question) {
 			Question question = (Question) activite;
-			JsonArray listePropositionsJson = new JsonArray();
-			dataObject.addProperty("intitule", question.getIntitule());
+			JsonObject questionJson = new JsonObject();
+			questionJson.addProperty("id", question.getId());
+			questionJson.addProperty("intitule", question.getIntitule());
+			questionJson.addProperty("temps", question.getTemps()
+					.toSeconds());
 
+			JsonArray listePropositionsJson = new JsonArray();
 			if (question instanceof QuestionQCM) {
 				List<Proposition> listePropositions = ((QuestionQCM) activite).getListePropositions();
 				for (Proposition proposition : listePropositions) {
 					JsonObject propositionJson = new JsonObject();
-					propositionJson.addProperty("intitule", proposition.getIntitule());
 					propositionJson.addProperty("id", proposition.getId());
+					propositionJson.addProperty("intitule", proposition.getIntitule());
 					listePropositionsJson.add(propositionJson);
 				}
-				dataObject.add("listePropositions", listePropositionsJson);
+				questionJson.add("listePropositions", listePropositionsJson);
+				dataObject.add("question", questionJson);
 				response.add("data", dataObject);
 
 				// Envoi du message aux equipes
@@ -102,7 +105,8 @@ public class LancerActiviteController extends Controller {
 					propositionJson.addProperty("intitule", proposition.getIntitule());
 					listePropositionsJson.add(propositionJson);
 				}
-				dataObject.add("listePropositions", listePropositionsJson);
+				questionJson.add("listePropositions", listePropositionsJson);
+				dataObject.add("question", questionJson);
 				response.add("data", dataObject);
 
 				// Envoi du message aux equipes
@@ -124,38 +128,36 @@ public class LancerActiviteController extends Controller {
 				Long dureeQuestionMillis = dureeQuestion.toMillis();
 				try {
 					Thread.sleep(dureeQuestionMillis);
-				} catch (InterruptedException e) {}
+				} catch (InterruptedException e) {
+				}
+
+				response.addProperty("type", "notificationReponseActivite");
 
 				playITService.passerEnModeExplication(partie);
 
 				Proposition bonneProposition = question.getBonneProposition();
-				JsonObject bonnePropositionJson = new JsonObject();
-				bonnePropositionJson.addProperty("intitule", bonneProposition.getIntitule());
-				bonnePropositionJson.addProperty("id", bonneProposition.getId());
-				
-				JsonObject envoiBonneReponse = new JsonObject();
-				envoiBonneReponse.add("data", bonnePropositionJson);
-				envoiBonneReponse.addProperty("succes", true);
+				JsonObject bonnePropositionObject = new JsonObject();
+				bonnePropositionObject.addProperty("id", bonneProposition.getId());
+				bonnePropositionObject.addProperty("intitule", bonneProposition.getIntitule());
+				questionJson.add("bonneProposition", bonnePropositionObject);
 
-				// Envoi du message aux equipes
-				envoiBonneReponse.addProperty("type", "notificationReponseActivite");
-				TextMessage bonnePropositionMessage = new TextMessage(envoiBonneReponse.toString());
+				// Envoi du message aux equipes : bonne proposition uniquement
+				TextMessage bonnePropositionMessage = new TextMessage(response.toString());
 				for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
 					try {
 						sessionEquipe.sendMessage(bonnePropositionMessage);
-					} catch (Exception e) {}
+					} catch (Exception e) {
+					}
 				}
 
-				// Envoi au maitre du jeu
-				bonnePropositionJson.addProperty("explication", question.getExplication());
-				bonnePropositionJson.addProperty("intitule", bonneProposition.getIntitule());
-				bonnePropositionJson.addProperty("id", bonneProposition.getId());
-				envoiBonneReponse.add("data", bonnePropositionJson);
-				bonnePropositionMessage = new TextMessage(envoiBonneReponse.toString());
+				// Envoi au maitre du jeu : bonne proposition et explication
+				questionJson.addProperty("explication", question.getExplication());
+				bonnePropositionMessage = new TextMessage(response.toString());
 				try {
 					session.sendMessage(bonnePropositionMessage);
-				} catch (Exception e) {}
-				
+				} catch (Exception e) {
+				}
+
 			}, "finQuestionTimer");
 			finQuestionTimer.start();
 

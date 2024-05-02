@@ -20,16 +20,18 @@ public class InscrireEquipeController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
 
 		Long idPartie = data.get("idPartie")
-		                    .getAsLong();
+				.getAsLong();
 		String nomEquipe = data.get("nomEquipe")
-		                       .getAsString();
+				.getAsString();
+
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseInscrireEquipe");
+		response.addProperty("succes", true);
 
 		Partie partie = null;
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseInscrireEquipe");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Partie non trouvée");
 			response.addProperty("codeErreur", 404);
@@ -42,8 +44,6 @@ public class InscrireEquipeController extends Controller {
 		try {
 			equipe = playITService.inscrireEquipe(nomEquipe, partie);
 		} catch (Exception e) {
-			JsonObject response = new JsonObject();
-			response.addProperty("type", "reponseInscrireEquipe");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", e.getMessage());
 			response.addProperty("codeErreur", 422);
@@ -53,28 +53,18 @@ public class InscrireEquipeController extends Controller {
 		}
 
 		session.getAttributes()
-		       .put("idEquipe", equipe.getId());
-		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseInscrireEquipe");
-		response.addProperty("succes", true);
+				.put("idEquipe", equipe.getId());
 
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
 		JsonObject dataObject = new JsonObject();
-		// TODO : mettre le json de la forme :
-		/**
-		 * {
-		 *   partie: {
-		 *     id,
-		 *     nom, ...
-		 *   },
-		 *   equipe: {
-		 *     id,
-		 *     nom, ...
-		 *   }
-		 * }
-		 */
-		dataObject.addProperty("idEquipe", equipe.getId());
-		dataObject.addProperty("nomEquipe", equipe.getNom());
-		dataObject.addProperty("idPartie", partie.getId());
+		dataObject.add("partie", partieObject);
+
+		JsonObject equipeObject = new JsonObject();
+		equipeObject.addProperty("id", equipe.getId());
+		equipeObject.addProperty("nom", equipe.getNom());
+		dataObject.add("equipe", equipeObject);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
@@ -87,7 +77,7 @@ public class InscrireEquipeController extends Controller {
 
 		List<WebSocketSession> sessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
 		for (WebSocketSession sessionEquipe : sessionsEquipes) {
-			if(session != sessionEquipe) {
+			if (session != sessionEquipe) {
 				sessionEquipe.sendMessage(responseMessage);
 			}
 		}

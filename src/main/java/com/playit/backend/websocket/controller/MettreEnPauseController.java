@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.service.NotFoundException;
@@ -19,21 +18,19 @@ public class MettreEnPauseController extends Controller {
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-		JsonObject response = new JsonObject();
-		JsonObject dataObject = new JsonObject();
+		Long idPartie = data.get("idPartie").getAsLong();
 
-		JsonElement idPartieObjet = data.get("idPartie");
-		Long idPartie = idPartieObjet.getAsLong();
+		JsonObject response = new JsonObject();
+		response.addProperty("type", "reponseMettreEnPausePartie");
+		response.addProperty("succes", true);
 
 		Partie partie = null;
-
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
-			response.addProperty("type", "reponseMettreEnPausePartie");
 			response.addProperty("succes", false);
-			response.addProperty("messageErreur", "Partie non trouvée");
 			response.addProperty("codeErreur", 404);
+			response.addProperty("messageErreur", "Partie non trouvée");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -42,22 +39,24 @@ public class MettreEnPauseController extends Controller {
 		try {
 			playITService.mettreEnPausePartie(partie);
 		} catch (IllegalStateException e) {
-			response.addProperty("type", "reponseMettreEnPausePartie");
-			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", e.getMessage());
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
 		}
 
-		response.addProperty("type", "reponseMettreEnPausePartie");
-		response.addProperty("succes", true);
-
-		String etatPartie = partie.getEtat()
-		                          .toString();
-		dataObject.addProperty("etatPartie", etatPartie);
-		dataObject.addProperty("idPartie", idPartie);
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
+		partieObject.addProperty("etat", partie.getEtat()
+				.toString());
+		partieObject.addProperty("codePin", partie.getCodePin());
+		partieObject.addProperty("date", partie.getDate()
+				.toString());
+		JsonObject dataObject = new JsonObject();
+		dataObject.add("partie", partieObject);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
@@ -68,17 +67,17 @@ public class MettreEnPauseController extends Controller {
 		responseMessage = new TextMessage(response.toString());
 		for (WebSocketSession sessionEquipe : sessionsEquipes) {
 			sessionEquipe.getAttributes()
-			             .remove("idEquipe");
+					.remove("idEquipe");
 			sessionEquipe.getAttributes()
-			             .put("role", SessionRole.ANONYME);
+					.put("role", SessionRole.ANONYME);
 			sessionEquipe.sendMessage(responseMessage);
 		}
 
 		session.getAttributes()
-		       .remove("idPartie");
+				.remove("idPartie");
 
 		AssociationSessionsParties.enleverPartie(partie);
-		
+
 		return;
 	}
 

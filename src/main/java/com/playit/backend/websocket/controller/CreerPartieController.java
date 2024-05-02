@@ -24,14 +24,13 @@ public class CreerPartieController extends Controller {
 		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
 		Long idMaitreDuJeu = (Long) session.getAttributes()
-		                                   .get("idMaitreDuJeu");
+				.get("idMaitreDuJeu");
 
 		JsonObject response = new JsonObject();
-		JsonObject dataObject = new JsonObject();
-		response.addProperty("type", "reponseListerPlateauxPartie");
+		response.addProperty("type", "reponseCreerPartie");
+		response.addProperty("succes", true);
 
 		MaitreDuJeu maitreDuJeu;
-
 		try {
 			maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
 		} catch (NotFoundException e) {
@@ -43,11 +42,9 @@ public class CreerPartieController extends Controller {
 			return;
 		}
 
-		JsonElement nomPartieObjet = data.get("nomPartie");
-		String nomPartie = nomPartieObjet.getAsString();
-
+		String nomPartie = data.get("nomPartie").getAsString();
 		JsonArray listePlateauxJson = data.get("plateaux")
-		                                  .getAsJsonArray();
+				.getAsJsonArray();
 		List<Plateau> listePlateaux = new ArrayList<>();
 
 		for (JsonElement plateauJson : listePlateauxJson) {
@@ -70,17 +67,17 @@ public class CreerPartieController extends Controller {
 		session.getAttributes().put("idPartie", partie.getId());
 		AssociationSessionsParties.associerSessionMaitreDuJeuAPartie(session, partie);
 		AssociationSessionsParties.ajouterPartie(partie);
-		
-		response.addProperty("type", "reponseCreerPartie");
-		response.addProperty("succes", true);
 
-		dataObject.addProperty("idPartie", partie.getId());
-		String etatPartie = partie.getEtat()
-		                          .toString();
-		dataObject.addProperty("etatPartie", etatPartie);
-		dataObject.addProperty("codePin", partie.getCodePin());
-		dataObject.addProperty("nom", partie.getNom());
-		dataObject.addProperty("date", partie.getDate().toString());
+		JsonObject partieObject = new JsonObject();
+		partieObject.addProperty("id", partie.getId());
+		partieObject.addProperty("nom", partie.getNom());
+		partieObject.addProperty("etat", partie.getEtat()
+				.toString());
+		partieObject.addProperty("codePin", partie.getCodePin());
+		partieObject.addProperty("date", partie.getDate()
+				.toString());
+		JsonObject dataObject = new JsonObject();
+		dataObject.add("partie", partieObject);
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
