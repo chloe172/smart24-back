@@ -10,6 +10,7 @@ import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
+import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class SoumettreReponseController extends Controller {
@@ -33,6 +34,7 @@ public class SoumettreReponseController extends Controller {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
 			response.addProperty("messageErreur", "Partie non trouvée");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -44,6 +46,7 @@ public class SoumettreReponseController extends Controller {
 			proposition = playITService.trouverPropositionParId(idProposition);
 		} catch (NotFoundException e) {
 			response.addProperty("messageErreur", "Proposition non trouvée");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -55,6 +58,7 @@ public class SoumettreReponseController extends Controller {
 			equipe = playITService.trouverEquipeParId(idEquipe);
 		} catch (NotFoundException e) {
 			response.addProperty("messageErreur", "Equipe non trouvée");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -66,6 +70,7 @@ public class SoumettreReponseController extends Controller {
 			activiteEnCours = playITService.trouverActiviteEnCoursParId(idActiviteEnCours);
 		} catch (NotFoundException e) {
 			response.addProperty("messageErreur", "Activité en cours non trouvée");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -77,6 +82,7 @@ public class SoumettreReponseController extends Controller {
 			score = playITService.soumettreReponse(partie, equipe, proposition, activiteEnCours);
 		} catch (IllegalStateException | IllegalArgumentException e) {
 			response.addProperty("messageErreur", e.getMessage());
+			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -88,12 +94,17 @@ public class SoumettreReponseController extends Controller {
 		JsonObject dataObject = new JsonObject();
 		dataObject.addProperty("scoreQuestion", score);
 		dataObject.addProperty("scoreEquipe", equipe.getScore());
+		dataObject.addProperty("idEquipe", equipe.getId());
+		dataObject.addProperty("proposition", proposition.getIntitule());
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
 
-		// TODO : envoyer un truc au maitre du jeu
+		response.addProperty("type", "notificationSoumettreReponse");
+		WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties.getMaitreDuJeuPartie(equipe.getPartie());
+		sessionMaitreDuJeu.sendMessage(responseMessage);
 
+		return;
 	}
 }

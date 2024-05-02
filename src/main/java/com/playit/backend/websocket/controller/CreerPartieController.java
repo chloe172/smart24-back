@@ -36,6 +36,7 @@ public class CreerPartieController extends Controller {
 			maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
 		} catch (NotFoundException e) {
 			response.addProperty("messageErreur", "Maitre du jeu non trouvé");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -58,17 +59,18 @@ public class CreerPartieController extends Controller {
 		Partie partie;
 		try {
 			partie = playITService.creerPartie(nomPartie, maitreDuJeu, listePlateaux);
-			session.getAttributes()
-			       .put("idPartie", partie.getId());
 		} catch (IllegalStateException e) {
 			response.addProperty("messageErreur", "Partie non créée : " + e.getMessage());
+			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
 		}
+		session.getAttributes().put("idPartie", partie.getId());
 		AssociationSessionsParties.associerSessionMaitreDuJeuAPartie(session, partie);
-
+		AssociationSessionsParties.ajouterPartie(partie);
+		
 		response.addProperty("type", "reponseCreerPartie");
 		response.addProperty("succes", true);
 
@@ -76,10 +78,14 @@ public class CreerPartieController extends Controller {
 		String etatPartie = partie.getEtat()
 		                          .toString();
 		dataObject.addProperty("etatPartie", etatPartie);
+		dataObject.addProperty("codePin", partie.getCodePin());
+		dataObject.addProperty("nom", partie.getNom());
+		dataObject.addProperty("date", partie.getDate().toString());
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
+		return;
 	}
 
 }

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,9 +13,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
@@ -33,15 +34,13 @@ public class Partie {
 	private LocalDateTime date;
 
 	@Enumerated(EnumType.STRING)
-	private EtatPartie etat = EtatPartie.CREEE;
+	private EtatPartie etat = EtatPartie.ATTENTE_EQUIPE_INSCRIPTION;
 
-	@ManyToOne
-	private Plateau plateauCourant;
+	@OneToOne(cascade = CascadeType.ALL)
+	private PlateauEnCours plateauCourant;
 
-	private int indiceActivite;
-
-	@ManyToMany(fetch = FetchType.EAGER)
-	private List<Plateau> listePlateaux = new ArrayList<>();
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "partie")
+	private List<PlateauEnCours> listePlateauxEnCours = new ArrayList<>();
 
 	@OneToMany(mappedBy = "partie", fetch = FetchType.EAGER)
 	private List<Equipe> listeEquipes = new ArrayList<>();
@@ -69,14 +68,6 @@ public class Partie {
 		this.codePin = codePin;
 	}
 
-	public int getIndiceActivite() {
-		return this.indiceActivite;
-	}
-
-	public void setIndiceActivite(int indiceActivite) {
-		this.indiceActivite = indiceActivite;
-	}
-
 	public String getNom() {
 		return this.nom;
 	}
@@ -85,20 +76,16 @@ public class Partie {
 		this.nom = nom;
 	}
 
-	public Plateau getPlateauCourant() {
+	public PlateauEnCours getPlateauCourant() {
 		return this.plateauCourant;
 	}
 
-	public void setPlateauCourant(Plateau plateauCourant) {
+	public void setPlateauCourant(PlateauEnCours plateauCourant) {
 		this.plateauCourant = plateauCourant;
 	}
 
-	public List<Plateau> getPlateaux() {
-		return this.listePlateaux;
-	}
-
-	public void setPlateaux(List<Plateau> plateaux) {
-		this.listePlateaux = plateaux;
+	public List<PlateauEnCours> getPlateauxEnCours() {
+		return this.listePlateauxEnCours;
 	}
 
 	public List<Equipe> getEquipes() {
@@ -142,9 +129,10 @@ public class Partie {
 		this.etat = etat;
 	}
 
-	public Activite getActiviteCourante() {
-		return this.plateauCourant.getListeActivites()
-		                          .get(this.indiceActivite);
+	public void setPlateaux(List<Plateau> listePlateaux) {
+		for (Plateau plateau : listePlateaux) {
+			this.listePlateauxEnCours.add(new PlateauEnCours(plateau, this));
+		}
 	}
 
 }

@@ -16,6 +16,7 @@ import com.playit.backend.metier.model.EtatPartie;
 import com.playit.backend.metier.model.MaitreDuJeu;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Plateau;
+import com.playit.backend.metier.model.PlateauEnCours;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.model.Question;
 import com.playit.backend.metier.model.Reponse;
@@ -23,6 +24,7 @@ import com.playit.backend.repository.ActiviteEnCoursRepository;
 import com.playit.backend.repository.EquipeRepository;
 import com.playit.backend.repository.MaitreDuJeuRepository;
 import com.playit.backend.repository.PartieRepository;
+import com.playit.backend.repository.PlateauEnCoursRepository;
 import com.playit.backend.repository.PlateauRepository;
 import com.playit.backend.repository.PropositionRepository;
 import com.playit.backend.repository.ReponseRepository;
@@ -46,6 +48,8 @@ public class PlayITService {
 	private ActiviteEnCoursRepository activiteEnCoursRepository;
 	@Autowired
 	private PropositionRepository propositionRepository;
+	@Autowired
+	private PlateauEnCoursRepository plateauEnCoursRepository;
 
 	public MaitreDuJeu authentifier(String login, String mdp) {
 		Optional<MaitreDuJeu> result = this.maitreDuJeuRepository.findByNom(login);
@@ -58,10 +62,6 @@ public class PlayITService {
 			throw new IllegalArgumentException("Erreur de mot de passe");
 		}
 		return result.get();
-	}
-
-	public List<Plateau> listerPlateauxDansPartie(Partie partie) {
-		return partie.getPlateaux();
 	}
 
 	public List<Plateau> listerPlateaux() {
@@ -88,10 +88,13 @@ public class PlayITService {
 	}
 
 	public void attendreEquipes(Partie partie) {
-		if (!EtatPartie.ATTENTE_EQUIPE.peutEtreSuivantDe(partie.getEtat())) {
+		if (!EtatPartie.ATTENTE_EQUIPE_RECONNEXION.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de passer en mode Attente Equipes");
 		}
-		partie.setEtat(EtatPartie.ATTENTE_EQUIPE);
+		if(partie.getEtat() == EtatPartie.EN_PAUSE) {
+			partie.setEtat(EtatPartie.ATTENTE_EQUIPE_RECONNEXION);
+		}
+		
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -111,12 +114,14 @@ public class PlayITService {
 		this.partieRepository.saveAndFlush(partie);
 	}
 
-	public void terminerExpliquation(Partie partie) {
+	public List<Equipe> terminerExpliquation(Partie partie) {
 		if (!EtatPartie.ATTENTE_ACTIVITE.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de terminer l'explication");
 		}
 		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
 		this.partieRepository.saveAndFlush(partie);
+
+		return equipeRepository.findEquipeByPartieOrderByScoreDesc(partie);
 	}
 
 	public void mettreEnPausePartie(Partie partie) {
@@ -124,6 +129,10 @@ public class PlayITService {
 			throw new IllegalStateException("Impossible de mettre en pause");
 		}
 		partie.setEtat(EtatPartie.EN_PAUSE);
+		for(Equipe equipe : partie.getEquipes()) {
+			equipe.setEstConnecte(false);
+			this.equipeRepository.saveAndFlush(equipe);
+		}
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -132,6 +141,11 @@ public class PlayITService {
 			throw new IllegalStateException("Impossible de terminer");
 		}
 		partie.setEtat(EtatPartie.TERMINEE);
+		for(Equipe equipe : partie.getEquipes()) {
+			equipe.setEstConnecte(false);
+			this.equipeRepository.save(equipe);
+		}
+		this.equipeRepository.flush();
 		this.partieRepository.saveAndFlush(partie);
 	}
 
@@ -144,18 +158,21 @@ public class PlayITService {
 	}
 
 	public Equipe inscrireEquipe(String nom, Partie partie) {
-		// TODO : vérifier que la partie est en mode Attente Equipe
+		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_INSCRIPTION) {
+			throw new IllegalStateException("Impossible d'inscrire l'equipe");
+		}
 		Optional<Equipe> result = this.equipeRepository.findByNomAndPartie(nom, partie);
 		if (result.isPresent()) {
 			throw new IllegalStateException("Nom d'équipe déjà pris");
 		}
 		Equipe equipe = new Equipe();
 		equipe.setNom(nom);
+		equipe.setEstConnecte(true);
 		equipe.setScore(0);
-		equipe = this.equipeRepository.saveAndFlush(equipe);
+		this.equipeRepository.saveAndFlush(equipe);
 		partie.addEquipe(equipe);
 		this.partieRepository.saveAndFlush(partie);
-		return equipe;
+		return this.equipeRepository.saveAndFlush(equipe);
 	}
 
 	public Equipe modifierEquipe(Equipe equipe, String nouveauNom) {
@@ -173,26 +190,39 @@ public class PlayITService {
 		return this.equipeRepository.saveAndFlush(equipe);
 	}
 
+	public Equipe rejoindrePartieEquipe(Equipe equipe, Partie partie) {
+		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_RECONNEXION) {
+			throw new IllegalStateException("Impossible de reconnecter l'equipe");
+		}
+		Optional<Equipe> result = this.equipeRepository.findByIdAndPartie(equipe.getId(), partie);
+		if (result.isEmpty()) {
+			throw new IllegalStateException("Equipe non presente à la session precedente");
+		}
+		if (equipe.getEstConnecte() == true) {
+			throw new IllegalStateException("Equipe deja connecte à la session");
+		}
+		equipe.setEstConnecte(true);
+		this.equipeRepository.saveAndFlush(equipe);
+		return equipe;
+	}
+
 	public ActiviteEnCours lancerActivite(Partie partie) {
 		if (!EtatPartie.ACTIVITE_EN_COURS.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de passer en mode Activite");
 		}
 		partie.setEtat(EtatPartie.ACTIVITE_EN_COURS);
 
-		Plateau plateauCourant = partie.getPlateauCourant();
-		int indiceActiviteCourante = partie.getIndiceActivite();
-		if (indiceActiviteCourante >= plateauCourant.getListeActivites()
-		                                            .size()) {
+		PlateauEnCours plateauCourant = partie.getPlateauCourant();
+		Activite activite = plateauCourant.getProchaineActivite();
+		if (activite == null) {
 			throw new IllegalStateException("Il ne reste aucune activité à réaliser dans ce plateau");
 		}
-		Activite activite = plateauCourant.getListeActivites()
-		                                  .get(indiceActiviteCourante);
-		partie.setIndiceActivite(indiceActiviteCourante + 1);
 
 		ActiviteEnCours activiteEnCours = new ActiviteEnCours();
 		activiteEnCours.setPartie(partie);
 		activiteEnCours.setActivite(activite);
 
+		this.plateauEnCoursRepository.saveAndFlush(plateauCourant);
 		this.activiteEnCoursRepository.saveAndFlush(activiteEnCours);
 		this.partieRepository.saveAndFlush(partie);
 
@@ -232,20 +262,23 @@ public class PlayITService {
 	}
 
 	public void choisirPlateau(Partie partie, Plateau plateau) {
-		if (!partie.getPlateaux()
-		           .stream()
-		           .anyMatch(p -> p.getId()
-		                           .equals(plateau.getId()))) {
-			throw new IllegalArgumentException("Le plateau n'appartient pas à la partie");
-		}
-
 		if (partie.getEtat() != EtatPartie.CHOIX_PLATEAU) {
 			throw new IllegalStateException("Impossible de sélectionner un plateau");
 		}
+
+		PlateauEnCours plateauEnCours = partie.getPlateauxEnCours()
+		                                      .stream()
+		                                      .filter(p -> p.getPlateau().getId()
+		                                                    .equals(plateau.getId()))
+		                                      .findFirst()
+		                                      .orElseThrow(() -> new IllegalArgumentException("Le plateau n'appartient pas à la partie"))	;
+
+		if (plateauEnCours.estTermine()) {
+			throw new IllegalStateException("Le plateau est déjà terminé");
+		}
+
 		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
-		partie.setPlateauCourant(plateau);
-		// TODO : ajouter un indice Acitivte pour chaque plateau - nouvelle entite
-		// plateau en cours
+		partie.setPlateauCourant(plateauEnCours);
 		this.partieRepository.saveAndFlush(partie);
 	}
 

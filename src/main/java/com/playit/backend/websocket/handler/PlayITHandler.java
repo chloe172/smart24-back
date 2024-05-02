@@ -23,11 +23,13 @@ import com.playit.backend.websocket.controller.CreerPartieController;
 import com.playit.backend.websocket.controller.DemarrerPartieController;
 import com.playit.backend.websocket.controller.InscrireEquipeController;
 import com.playit.backend.websocket.controller.LancerActiviteController;
+import com.playit.backend.websocket.controller.ListerEquipesController;
 import com.playit.backend.websocket.controller.ListerPartiesController;
 import com.playit.backend.websocket.controller.ListerPlateauxController;
 import com.playit.backend.websocket.controller.ListerPlateauxPartieController;
 import com.playit.backend.websocket.controller.MettreEnPauseController;
 import com.playit.backend.websocket.controller.ModifierEquipeController;
+import com.playit.backend.websocket.controller.RejoindrePartieEquipeController;
 import com.playit.backend.websocket.controller.SoumettreReponseController;
 import com.playit.backend.websocket.controller.TerminerExplicationController;
 import com.playit.backend.websocket.controller.TerminerPartieController;
@@ -70,6 +72,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 			response.addProperty("type", "erreur");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Message invalide : JSON invalide");
+			response.addProperty("codeErreur", 400);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -78,6 +81,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 			response.addProperty("type", "erreur");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Message invalide : type ou data manquant");
+			response.addProperty("codeErreur", 400);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -86,12 +90,12 @@ public class PlayITHandler extends TextWebSocketHandler {
 			response.addProperty("type", "erreur");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Message invalide : type ou data invalide");
+			response.addProperty("codeErreur", 400);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
 		}
 
-		// TODO : ajouter les codes d'erreur (codeErreur)
 		Controller controller = null;
 		switch (type) {
 		case "authentifierUtilisateur": {
@@ -135,7 +139,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 			break;
 		}
 		case "listerEquipes": {
-			controller = new ListerPartiesController();
+			controller = new ListerEquipesController();
 			break;
 		}
 		case "inscrireEquipe": {
@@ -162,6 +166,10 @@ public class PlayITHandler extends TextWebSocketHandler {
 			controller = new TerminerExplicationController();
 			break;
 		}
+		case "rejoindrePartieEquipe": {
+			controller = new RejoindrePartieEquipeController();
+			break;
+		}
 		}
 
 		if (controller != null) {
@@ -175,6 +183,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 				JsonObject response = new JsonObject();
 				response.addProperty("type", reponseType);
 				response.addProperty("succes", false);
+				response.addProperty("codeErreur", 403);
 				response.addProperty("messageErreur", "Vous n'avez pas les droits pour effectuer cette action");
 				TextMessage responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
@@ -185,6 +194,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 			JsonObject response = new JsonObject();
 			response.addProperty("type", "erreur");
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 400);
 			response.addProperty("messageErreur", "Type de message inconnu : " + type);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);

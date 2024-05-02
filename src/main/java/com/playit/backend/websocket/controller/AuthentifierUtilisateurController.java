@@ -33,12 +33,14 @@ public class AuthentifierUtilisateurController extends Controller {
 			response.addProperty("succes", true);
 		} catch (IllegalArgumentException e) {
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", "Nom ou mot de passe incorrect");
 		}
 		TextMessage responseMessage = new TextMessage(response.toString());
 		System.out.println("Message sent: " + responseMessage.getPayload());
 		session.sendMessage(responseMessage);
 
+		return;
 	}
 
 }

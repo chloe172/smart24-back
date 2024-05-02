@@ -27,6 +27,7 @@ public class ModifierEquipeController extends Controller {
 			response.addProperty("type", "reponseModifierEquipe");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Equipe non trouvée");
+			response.addProperty("codeErreur", 404);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -42,6 +43,7 @@ public class ModifierEquipeController extends Controller {
 			response.addProperty("type", "reponseModifierEquipe");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", e.getMessage());
+			response.addProperty("codeErreur", 422);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -52,6 +54,7 @@ public class ModifierEquipeController extends Controller {
 		response.addProperty("succes", true);
 
 		JsonObject dataObject = new JsonObject();
+		dataObject.addProperty("idEquipe", equipe.getId());
 		dataObject.addProperty("nouveauNomEquipe", equipe.getNom());
 		response.add("data", dataObject);
 
@@ -61,5 +64,7 @@ public class ModifierEquipeController extends Controller {
 		response.addProperty("type", "notificationModifierEquipe");
 		WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties.getMaitreDuJeuPartie(equipe.getPartie());
 		sessionMaitreDuJeu.sendMessage(responseMessage);
+
+		return;
 	}
 }

@@ -53,7 +53,7 @@ public class Reponse {
 			Duration tempsRestant = Duration.between(finQuestion, this.dateSoumission);
 			long coefficient = tempsRestant.dividedBy(dureeQuestion);
 
-			this.scoreEquipe += coefficient * (scoreMax / 2);
+			this.scoreEquipe += coefficient * (scoreMax / 2.0);
 		} else {
 			this.scoreEquipe = 0;
 		}

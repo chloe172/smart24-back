@@ -51,7 +51,7 @@ public class PlayItBackendApplication {
 		sb.append("Partie créée : ");
 		sb.append(partie.getNom());
 		sb.append(" avec ");
-		sb.append(partie.getPlateaux()
+		sb.append(partie.getPlateauxEnCours()
 		                .size());
 		sb.append(" plateaux");
 		sb.append("<br>");
