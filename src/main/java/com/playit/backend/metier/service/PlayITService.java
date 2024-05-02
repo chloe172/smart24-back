@@ -88,12 +88,10 @@ public class PlayITService {
 	}
 
 	public void attendreEquipes(Partie partie) {
-		if (!EtatPartie.ATTENTE_EQUIPE_INSCRIPTION.peutEtreSuivantDe(partie.getEtat()) && !EtatPartie.ATTENTE_EQUIPE_RECONNEXION.peutEtreSuivantDe(partie.getEtat())) {
+		if (!EtatPartie.ATTENTE_EQUIPE_RECONNEXION.peutEtreSuivantDe(partie.getEtat())) {
 			throw new IllegalStateException("Impossible de passer en mode Attente Equipes");
 		}
-		if(partie.getEtat() == EtatPartie.CREEE) {
-			partie.setEtat(EtatPartie.ATTENTE_EQUIPE_INSCRIPTION);
-		} else {
+		if(partie.getEtat() == EtatPartie.EN_PAUSE) {
 			partie.setEtat(EtatPartie.ATTENTE_EQUIPE_RECONNEXION);
 		}
 		

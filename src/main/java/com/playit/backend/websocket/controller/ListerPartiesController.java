@@ -1,6 +1,7 @@
 package com.playit.backend.websocket.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -8,6 +9,7 @@ import org.springframework.web.socket.WebSocketSession;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.playit.backend.metier.model.EtatPartie;
 import com.playit.backend.metier.model.MaitreDuJeu;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.service.NotFoundException;
@@ -40,7 +42,10 @@ public class ListerPartiesController extends Controller {
 
 		response.addProperty("succes", true);
 
-		List<Partie> listeParties = playITService.listerParties(maitreDuJeu);
+		List<Partie> listeParties = playITService.listerParties(maitreDuJeu)
+		                                         .stream()
+												 .filter(partie -> partie.getEtat() == EtatPartie.EN_PAUSE)
+												 .collect(Collectors.toList());
 		JsonArray listePartiesJson = new JsonArray();
 		for (Partie partie : listeParties) {
 			JsonObject partieJson = new JsonObject();

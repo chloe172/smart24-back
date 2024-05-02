@@ -14,6 +14,7 @@ import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Plateau;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
+import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class CreerPartieController extends Controller {
@@ -64,6 +65,8 @@ public class CreerPartieController extends Controller {
 			session.sendMessage(responseMessage);
 			return;
 		}
+		session.getAttributes().put("idPartie", partie.getId());
+		AssociationSessionsParties.associerSessionMaitreDuJeuAPartie(session, partie);
 		
 		response.addProperty("type", "reponseCreerPartie");
 		response.addProperty("succes", true);
@@ -72,6 +75,9 @@ public class CreerPartieController extends Controller {
 		String etatPartie = partie.getEtat()
 		                          .toString();
 		dataObject.addProperty("etatPartie", etatPartie);
+		dataObject.addProperty("codePin", partie.getCodePin());
+		dataObject.addProperty("nom", partie.getNom());
+		dataObject.addProperty("date", partie.getDate().toString());
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
