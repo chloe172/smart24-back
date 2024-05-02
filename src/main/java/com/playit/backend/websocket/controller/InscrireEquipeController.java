@@ -57,6 +57,7 @@ public class InscrireEquipeController extends Controller {
 		JsonObject dataObject = new JsonObject();
 		dataObject.addProperty("idEquipe", equipe.getId());
 		dataObject.addProperty("nomEquipe", equipe.getNom());
+		dataObject.addProperty("idPartie", partie.getId());
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
@@ -66,6 +67,8 @@ public class InscrireEquipeController extends Controller {
 		WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties.getMaitreDuJeuPartie(partie);
 		responseMessage = new TextMessage(response.toString());
 		sessionMaitreDuJeu.sendMessage(responseMessage);
+
+		// TODO : est ce qu'on envoie aussi la notification a toutes les autres equipes
 
 	}
 
