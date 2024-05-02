@@ -34,6 +34,7 @@ public class ChoisirPlateauController extends Controller {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
 			response.addProperty("messageErreur", "Partie non trouvée");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -45,6 +46,7 @@ public class ChoisirPlateauController extends Controller {
 			plateau = playITService.trouverPlateauParId(idPlateau);
 		} catch (NotFoundException e) {
 			response.addProperty("messageErreur", "Plateau non trouvé");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -55,6 +57,7 @@ public class ChoisirPlateauController extends Controller {
 			playITService.choisirPlateau(partie, plateau);
 		} catch (IllegalArgumentException | IllegalStateException e) {
 			response.addProperty("messageErreur", e.getMessage());
+			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);

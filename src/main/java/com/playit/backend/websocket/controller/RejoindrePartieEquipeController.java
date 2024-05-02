@@ -1,5 +1,7 @@
 package com.playit.backend.websocket.controller;
 
+import java.util.List;
+
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -27,6 +29,7 @@ public class RejoindrePartieEquipeController extends Controller {
 			JsonObject response = new JsonObject();
 			response.addProperty("type", "reponseRejoindrePartieEquipe");
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Partie non trouvée");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -40,6 +43,7 @@ public class RejoindrePartieEquipeController extends Controller {
 			JsonObject response = new JsonObject();
 			response.addProperty("type", "reponseRejoindrePartieEquipe");
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Equipe non trouvée");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -51,6 +55,7 @@ public class RejoindrePartieEquipeController extends Controller {
 			JsonObject response = new JsonObject();
 			response.addProperty("type", "reponseRejoindrePartieEquipe");
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", e.getMessage());
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -78,7 +83,12 @@ public class RejoindrePartieEquipeController extends Controller {
 		responseMessage = new TextMessage(response.toString());
 		sessionMaitreDuJeu.sendMessage(responseMessage);
 
-		// TODO : est ce qu'on envoie aussi la notification a toutes les autres equipes
+		List<WebSocketSession> sessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
+		for (WebSocketSession sessionEquipe : sessionsEquipes) {
+			if(session != sessionEquipe) {
+				sessionEquipe.sendMessage(responseMessage);
+			}
+		}
 		
 		return;
     }

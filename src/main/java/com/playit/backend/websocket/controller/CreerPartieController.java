@@ -36,6 +36,7 @@ public class CreerPartieController extends Controller {
 			maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
 		} catch (NotFoundException e) {
 			response.addProperty("messageErreur", "Maitre du jeu non trouvé");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -60,6 +61,7 @@ public class CreerPartieController extends Controller {
 			partie = playITService.creerPartie(nomPartie, maitreDuJeu, listePlateaux);
 		} catch (IllegalStateException e) {
 			response.addProperty("messageErreur", "Partie non créée : " + e.getMessage());
+			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -67,6 +69,7 @@ public class CreerPartieController extends Controller {
 		}
 		session.getAttributes().put("idPartie", partie.getId());
 		AssociationSessionsParties.associerSessionMaitreDuJeuAPartie(session, partie);
+		AssociationSessionsParties.ajouterPartie(partie);
 		
 		response.addProperty("type", "reponseCreerPartie");
 		response.addProperty("succes", true);

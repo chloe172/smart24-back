@@ -31,6 +31,7 @@ public class TerminerExplicationController extends Controller {
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
+			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", e.getMessage());
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
@@ -39,26 +40,25 @@ public class TerminerExplicationController extends Controller {
 		}
 
 		// Vérification fin plateau
-		if (partie.getPlateauCourant()
-		          .getListeActivites()
-		          .size() == partie.getIndiceActivite()) {
+		if (partie.getPlateauCourant().estTermine()) {
 			try {
 				playITService.passerEnModeChoixPlateau(partie);
-				dataObject.addProperty("finPlateau", true);
-				String etatPartie = partie.getEtat()
-				                          .toString();
-				dataObject.addProperty("etatPartie", etatPartie);
-				response.add("data", dataObject);
-				TextMessage responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
-				return;
 			} catch (IllegalStateException e) {
+			response.addProperty("codeErreur", 422);
 				response.addProperty("messageErreur", e.getMessage());
 				response.addProperty("succes", false);
 				TextMessage responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
 				return;
 			}
+			dataObject.addProperty("finPlateau", true);
+			String etatPartie = partie.getEtat()
+										.toString();
+			dataObject.addProperty("etatPartie", etatPartie);
+			response.add("data", dataObject);
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
 		}
 
 		List<Equipe> listeEquipes = null;
@@ -66,6 +66,7 @@ public class TerminerExplicationController extends Controller {
 			listeEquipes = playITService.terminerExpliquation(partie);
 		} catch (Exception e) {
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", e.getMessage());
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);

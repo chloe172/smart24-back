@@ -33,6 +33,7 @@ public class MettreEnPauseController extends Controller {
 			response.addProperty("type", "reponseMettreEnPausePartie");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Partie non trouvée");
+			response.addProperty("codeErreur", 404);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -42,6 +43,7 @@ public class MettreEnPauseController extends Controller {
 			playITService.mettreEnPausePartie(partie);
 		} catch (IllegalStateException e) {
 			response.addProperty("type", "reponseMettreEnPausePartie");
+			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", e.getMessage());
 			TextMessage responseMessage = new TextMessage(response.toString());

@@ -31,6 +31,7 @@ public class ListerEquipesController extends Controller {
 			response.addProperty("type", "reponseListerEquipes");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Partie non trouvée");
+			response.addProperty("codeErreur", 404);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;

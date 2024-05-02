@@ -1,5 +1,7 @@
 package com.playit.backend.websocket.controller;
 
+import java.util.List;
+
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -30,6 +32,7 @@ public class InscrireEquipeController extends Controller {
 			response.addProperty("type", "reponseInscrireEquipe");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Partie non trouvée");
+			response.addProperty("codeErreur", 404);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -43,6 +46,7 @@ public class InscrireEquipeController extends Controller {
 			response.addProperty("type", "reponseInscrireEquipe");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", e.getMessage());
+			response.addProperty("codeErreur", 422);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -68,7 +72,12 @@ public class InscrireEquipeController extends Controller {
 		responseMessage = new TextMessage(response.toString());
 		sessionMaitreDuJeu.sendMessage(responseMessage);
 
-		// TODO : est ce qu'on envoie aussi la notification a toutes les autres equipes
+		List<WebSocketSession> sessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
+		for (WebSocketSession sessionEquipe : sessionsEquipes) {
+			if(session != sessionEquipe) {
+				sessionEquipe.sendMessage(responseMessage);
+			}
+		}
 
 		return;
 	}

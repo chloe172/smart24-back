@@ -1,6 +1,7 @@
 package com.playit.backend.websocket.controller;
 
 import java.util.List;
+import java.time.Duration;
 
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -37,6 +38,7 @@ public class LancerActiviteController extends Controller {
 		} catch (NotFoundException e) {
 			response.addProperty("type", "reponseLancerActivite");
 			response.addProperty("messageErreur", "Partie non trouvée");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -50,6 +52,7 @@ public class LancerActiviteController extends Controller {
 		} catch (IllegalStateException e) {
 			response.addProperty("type", "reponseLancerActivite");
 			response.addProperty("messageErreur", e.getMessage());
+			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -58,7 +61,6 @@ public class LancerActiviteController extends Controller {
 
 		Activite activite = activiteEnCours.getActivite();
 
-		response.addProperty("type", "");
 		response.addProperty("succes", true);
 
 		List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
@@ -116,20 +118,50 @@ public class LancerActiviteController extends Controller {
 				responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
 			}
-			// TODO : lancer un timer sur la durée de la question pour envoyer la réponse
-			// après/mettre fin aux réponses
-			// et passer la partie en état EXPLICATION
-			/**
-			 * A envoyer : - bonne réponse aux équipes et maitre du jeu - les explications
-			 * au maitre du jeu
-			 */
-			Thread.sleep(10000);
-			playITService.passerEnModeExplication(partie);
+
+			Thread finQuestionTimer = new Thread(() -> {
+				Duration dureeQuestion = question.getTemps();
+				Long dureeQuestionMillis = dureeQuestion.toMillis();
+				try {
+					Thread.sleep(dureeQuestionMillis);
+				} catch (InterruptedException e) {}
+
+				playITService.passerEnModeExplication(partie);
+
+				Proposition bonneProposition = question.getBonneProposition();
+				JsonObject bonnePropositionJson = new JsonObject();
+				bonnePropositionJson.addProperty("intitule", bonneProposition.getIntitule());
+				bonnePropositionJson.addProperty("id", bonneProposition.getId());
+				
+				JsonObject envoiBonneReponse = new JsonObject();
+				envoiBonneReponse.add("data", bonnePropositionJson);
+				envoiBonneReponse.addProperty("succes", true);
+
+				// Envoi du message aux equipes
+				envoiBonneReponse.addProperty("type", "notificationReponseActivite");
+				TextMessage bonnePropositionMessage = new TextMessage(envoiBonneReponse.toString());
+				for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+					try {
+						sessionEquipe.sendMessage(bonnePropositionMessage);
+					} catch (Exception e) {}
+				}
+
+				// Envoi au maitre du jeu
+				bonnePropositionJson.addProperty("explication", question.getExplication());
+				bonnePropositionJson.addProperty("intitule", bonneProposition.getIntitule());
+				bonnePropositionJson.addProperty("id", bonneProposition.getId());
+				envoiBonneReponse.add("data", bonnePropositionJson);
+				bonnePropositionMessage = new TextMessage(envoiBonneReponse.toString());
+				try {
+					session.sendMessage(bonnePropositionMessage);
+				} catch (Exception e) {}
+				
+			}, "finQuestionTimer");
+			finQuestionTimer.start();
+
 		} else {
 			// mini jeu
 		}
-
-		return;
 
 	}
 

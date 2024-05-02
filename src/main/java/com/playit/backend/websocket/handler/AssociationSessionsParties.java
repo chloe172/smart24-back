@@ -48,6 +48,11 @@ public class AssociationSessionsParties {
 		                    .remove(session);
 	}
 
+	public static void ajouterPartie(Partie partie) {
+		Long idPartie = partie.getId();
+		equipesParPartie.put(idPartie, new ArrayList<>());
+	}
+
 	public static void enleverPartie(Partie partie) {
 		Long idPartie = partie.getId();
 		equipesParPartie.remove(idPartie);

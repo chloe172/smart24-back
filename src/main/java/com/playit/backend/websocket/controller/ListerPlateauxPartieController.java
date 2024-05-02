@@ -1,7 +1,5 @@
 package com.playit.backend.websocket.controller;
 
-import java.util.List;
-
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -9,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Plateau;
+import com.playit.backend.metier.model.PlateauEnCours;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.SessionRole;
@@ -32,6 +31,7 @@ public class ListerPlateauxPartieController extends Controller {
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
+			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Partie non trouvée");
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
@@ -39,12 +39,15 @@ public class ListerPlateauxPartieController extends Controller {
 			return;
 		}
 
-		List<Plateau> listePlateaux = playITService.listerPlateauxDansPartie(partie);
 		JsonArray listePlateauxJson = new JsonArray();
-		for (Plateau plateau : listePlateaux) {
+		for (PlateauEnCours plateauEnCours : partie.getPlateauxEnCours()) {
+			Plateau plateau = plateauEnCours.getPlateau();
 			JsonObject plateauJson = new JsonObject();
 			plateauJson.addProperty("nom", plateau.getNom());
 			plateauJson.addProperty("id", plateau.getId());
+			plateauJson.addProperty("termine", plateauEnCours.estTermine());
+			plateauJson.addProperty("nombreActivites", plateauEnCours.getNombreActivites());
+			plateauJson.addProperty("nombreActivitesTerminees", plateauEnCours.getNombreActivitesTerminees());
 			listePlateauxJson.add(plateauJson);
 		}
 		dataObject.addProperty("idPartie", partie.getId());
@@ -54,7 +57,7 @@ public class ListerPlateauxPartieController extends Controller {
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
-		
+
 		return;
 	}
 

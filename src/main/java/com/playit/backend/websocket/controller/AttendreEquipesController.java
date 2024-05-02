@@ -28,6 +28,7 @@ public class AttendreEquipesController extends Controller {
 		try {
 			partie = playITService.trouverPartieParId(idPartie);
 		} catch (NotFoundException e) {
+			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Partie non trouvée");
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
@@ -40,6 +41,7 @@ public class AttendreEquipesController extends Controller {
 			session.getAttributes()
 			       .put("idPartie", partie.getId());
 		} catch (IllegalStateException e) {
+			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", e.getMessage());
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
@@ -47,6 +49,7 @@ public class AttendreEquipesController extends Controller {
 			return;
 		}
 		AssociationSessionsParties.associerSessionMaitreDuJeuAPartie(session, partie);
+		AssociationSessionsParties.ajouterPartie(partie);
 
 		response.addProperty("type", "reponseAttendreEquipes");
 		response.addProperty("succes", true);

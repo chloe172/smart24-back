@@ -16,6 +16,7 @@ import com.playit.backend.metier.model.EtatPartie;
 import com.playit.backend.metier.model.MaitreDuJeu;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Plateau;
+import com.playit.backend.metier.model.PlateauEnCours;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.model.Question;
 import com.playit.backend.metier.model.Reponse;
@@ -23,6 +24,7 @@ import com.playit.backend.repository.ActiviteEnCoursRepository;
 import com.playit.backend.repository.EquipeRepository;
 import com.playit.backend.repository.MaitreDuJeuRepository;
 import com.playit.backend.repository.PartieRepository;
+import com.playit.backend.repository.PlateauEnCoursRepository;
 import com.playit.backend.repository.PlateauRepository;
 import com.playit.backend.repository.PropositionRepository;
 import com.playit.backend.repository.ReponseRepository;
@@ -46,6 +48,8 @@ public class PlayITService {
 	private ActiviteEnCoursRepository activiteEnCoursRepository;
 	@Autowired
 	private PropositionRepository propositionRepository;
+	@Autowired
+	private PlateauEnCoursRepository plateauEnCoursRepository;
 
 	public MaitreDuJeu authentifier(String login, String mdp) {
 		Optional<MaitreDuJeu> result = this.maitreDuJeuRepository.findByNom(login);
@@ -58,10 +62,6 @@ public class PlayITService {
 			throw new IllegalArgumentException("Erreur de mot de passe");
 		}
 		return result.get();
-	}
-
-	public List<Plateau> listerPlateauxDansPartie(Partie partie) {
-		return partie.getPlateaux();
 	}
 
 	public List<Plateau> listerPlateaux() {
@@ -212,20 +212,17 @@ public class PlayITService {
 		}
 		partie.setEtat(EtatPartie.ACTIVITE_EN_COURS);
 
-		Plateau plateauCourant = partie.getPlateauCourant();
-		int indiceActiviteCourante = partie.getIndiceActivite();
-		if (indiceActiviteCourante >= plateauCourant.getListeActivites()
-		                                            .size()) {
+		PlateauEnCours plateauCourant = partie.getPlateauCourant();
+		Activite activite = plateauCourant.getProchaineActivite();
+		if (activite == null) {
 			throw new IllegalStateException("Il ne reste aucune activité à réaliser dans ce plateau");
 		}
-		Activite activite = plateauCourant.getListeActivites()
-		                                  .get(indiceActiviteCourante);
-		partie.setIndiceActivite(indiceActiviteCourante + 1);
 
 		ActiviteEnCours activiteEnCours = new ActiviteEnCours();
 		activiteEnCours.setPartie(partie);
 		activiteEnCours.setActivite(activite);
 
+		this.plateauEnCoursRepository.saveAndFlush(plateauCourant);
 		this.activiteEnCoursRepository.saveAndFlush(activiteEnCours);
 		this.partieRepository.saveAndFlush(partie);
 
@@ -265,20 +262,23 @@ public class PlayITService {
 	}
 
 	public void choisirPlateau(Partie partie, Plateau plateau) {
-		if (!partie.getPlateaux()
-		           .stream()
-		           .anyMatch(p -> p.getId()
-		                           .equals(plateau.getId()))) {
-			throw new IllegalArgumentException("Le plateau n'appartient pas à la partie");
-		}
-
 		if (partie.getEtat() != EtatPartie.CHOIX_PLATEAU) {
 			throw new IllegalStateException("Impossible de sélectionner un plateau");
 		}
+
+		PlateauEnCours plateauEnCours = partie.getPlateauxEnCours()
+		                                      .stream()
+		                                      .filter(p -> p.getPlateau().getId()
+		                                                    .equals(plateau.getId()))
+		                                      .findFirst()
+		                                      .orElseThrow(() -> new IllegalArgumentException("Le plateau n'appartient pas à la partie"))	;
+
+		if (plateauEnCours.estTermine()) {
+			throw new IllegalStateException("Le plateau est déjà terminé");
+		}
+
 		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
-		partie.setPlateauCourant(plateau);
-		// TODO : ajouter un indice Acitivte pour chaque plateau - nouvelle entite
-		// plateau en cours
+		partie.setPlateauCourant(plateauEnCours);
 		this.partieRepository.saveAndFlush(partie);
 	}
 

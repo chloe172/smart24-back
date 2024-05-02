@@ -34,6 +34,7 @@ public class ListerPartiesController extends Controller {
 			maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
 		} catch (NotFoundException e) {
 			response.addProperty("messageErreur", "Maitre du jeu non trouvé");
+			response.addProperty("codeErreur", 404);
 			response.addProperty("succes", false);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -58,6 +59,7 @@ public class ListerPartiesController extends Controller {
 			                                     .toString());
 			if (partie.getPlateauCourant() != null) {
 				partieJson.addProperty("dernierPlateau", partie.getPlateauCourant()
+															   .getPlateau()
 				                                               .getNom());
 			} else {
 				partieJson.add("dernierPlateau", JsonNull.INSTANCE);

@@ -72,6 +72,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 			response.addProperty("type", "erreur");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Message invalide : JSON invalide");
+			response.addProperty("codeErreur", 400);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -80,6 +81,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 			response.addProperty("type", "erreur");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Message invalide : type ou data manquant");
+			response.addProperty("codeErreur", 400);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
@@ -88,12 +90,12 @@ public class PlayITHandler extends TextWebSocketHandler {
 			response.addProperty("type", "erreur");
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", "Message invalide : type ou data invalide");
+			response.addProperty("codeErreur", 400);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
 		}
 
-		// TODO : ajouter les codes d'erreur (codeErreur)
 		Controller controller = null;
 		switch (type) {
 		case "authentifierUtilisateur": {
@@ -181,6 +183,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 				JsonObject response = new JsonObject();
 				response.addProperty("type", reponseType);
 				response.addProperty("succes", false);
+				response.addProperty("codeErreur", 403);
 				response.addProperty("messageErreur", "Vous n'avez pas les droits pour effectuer cette action");
 				TextMessage responseMessage = new TextMessage(response.toString());
 				session.sendMessage(responseMessage);
@@ -191,6 +194,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 			JsonObject response = new JsonObject();
 			response.addProperty("type", "erreur");
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 400);
 			response.addProperty("messageErreur", "Type de message inconnu : " + type);
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);

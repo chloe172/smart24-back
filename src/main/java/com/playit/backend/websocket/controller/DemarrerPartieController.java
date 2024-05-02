@@ -28,6 +28,7 @@ public class DemarrerPartieController extends Controller {
 			JsonObject response = new JsonObject();
 			response.addProperty("type", "reponseDemarrerPartie");
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", "Partie non trouvée");
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -40,6 +41,7 @@ public class DemarrerPartieController extends Controller {
 			JsonObject response = new JsonObject();
 			response.addProperty("type", "reponseDemarrerPartie");
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 422);
 			response.addProperty("messageErreur", e.getMessage());
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
@@ -58,15 +60,12 @@ public class DemarrerPartieController extends Controller {
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
 
-		// TODO : verifier que c'est utile de leur envoyer ca
 		response.addProperty("type", "notificationDemarrerPartie");
-		List<WebSocketSession> sessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
 		responseMessage = new TextMessage(response.toString());
+		List<WebSocketSession> sessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
 		for (WebSocketSession sessionEquipe : sessionsEquipes) {
 			sessionEquipe.sendMessage(responseMessage);
 		}
-
-		return;
 	}
 
 }

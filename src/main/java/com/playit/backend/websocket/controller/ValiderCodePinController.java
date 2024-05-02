@@ -26,6 +26,7 @@ public class ValiderCodePinController extends Controller {
 			JsonObject response = new JsonObject();
 			response.addProperty("type", "reponseValiderCodePin");
 			response.addProperty("succes", false);
+			response.addProperty("codeErreur", 404);
 			response.addProperty("messageErreur", e.getMessage());
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
