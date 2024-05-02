@@ -50,7 +50,6 @@ public class LancerActiviteController extends Controller {
 		try {
 			activiteEnCours = playITService.lancerActivite(partie);
 		} catch (IllegalStateException e) {
-			response.addProperty("type", "reponseLancerActivite");
 			response.addProperty("messageErreur", e.getMessage());
 			response.addProperty("codeErreur", 422);
 			response.addProperty("succes", false);
@@ -72,56 +71,37 @@ public class LancerActiviteController extends Controller {
 					.toSeconds());
 
 			JsonArray listePropositionsJson = new JsonArray();
+			List<Proposition> listePropositions = null;
 			if (question instanceof QuestionQCM) {
-				List<Proposition> listePropositions = ((QuestionQCM) activite).getListePropositions();
-				for (Proposition proposition : listePropositions) {
-					JsonObject propositionJson = new JsonObject();
-					propositionJson.addProperty("id", proposition.getId());
-					propositionJson.addProperty("intitule", proposition.getIntitule());
-					listePropositionsJson.add(propositionJson);
-				}
-				questionJson.add("listePropositions", listePropositionsJson);
-				dataObject.add("question", questionJson);
-				response.add("data", dataObject);
-
-				// Envoi du message aux equipes
-				response.addProperty("type", "notificationLancerActivite");
-				TextMessage responseMessage = new TextMessage(response.toString());
-				for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
-					sessionEquipe.sendMessage(responseMessage);
-				}
-
-				// Envoi du message au maitre du jeu
-				response.addProperty("type", "reponseLancerActivite");
-				response.add("data", dataObject);
-				responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
-
+				listePropositions = ((QuestionQCM) activite).getListePropositions();
 			} else if (question instanceof QuestionVraiFaux) {
-				List<Proposition> listePropositions = ((QuestionVraiFaux) activite).getListePropositions();
-				for (Proposition proposition : listePropositions) {
-					JsonObject propositionJson = new JsonObject();
-					propositionJson.addProperty("id", proposition.getId());
-					propositionJson.addProperty("intitule", proposition.getIntitule());
-					listePropositionsJson.add(propositionJson);
-				}
-				questionJson.add("listePropositions", listePropositionsJson);
-				dataObject.add("question", questionJson);
-				response.add("data", dataObject);
-
-				// Envoi du message aux equipes
-				response.addProperty("type", "notificationLancerActivite");
-				TextMessage responseMessage = new TextMessage(response.toString());
-				for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
-					sessionEquipe.sendMessage(responseMessage);
-				}
-
-				// Envoi du message au maitre du jeu
-				response.addProperty("type", "reponseLancerActivite");
-				response.add("data", dataObject);
-				responseMessage = new TextMessage(response.toString());
-				session.sendMessage(responseMessage);
+				listePropositions = ((QuestionVraiFaux) activite).getListePropositions();
+			} else {
+				throw new IllegalStateException("Type de question inconnu");
 			}
+
+			for (Proposition proposition : listePropositions) {
+				JsonObject propositionJson = new JsonObject();
+				propositionJson.addProperty("id", proposition.getId());
+				propositionJson.addProperty("intitule", proposition.getIntitule());
+				listePropositionsJson.add(propositionJson);
+			}
+			questionJson.add("listePropositions", listePropositionsJson);
+			dataObject.add("question", questionJson);
+			response.add("data", dataObject);
+
+			// Envoi du message aux equipes
+			response.addProperty("type", "notificationLancerActivite");
+			TextMessage responseMessage = new TextMessage(response.toString());
+			for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+				sessionEquipe.sendMessage(responseMessage);
+			}
+
+			// Envoi du message au maitre du jeu
+			response.addProperty("type", "reponseLancerActivite");
+			response.add("data", dataObject);
+			responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
 
 			Thread finQuestionTimer = new Thread(() -> {
 				Duration dureeQuestion = question.getTemps();
