@@ -88,6 +88,7 @@ public class LancerActiviteController extends Controller {
 			}
 			questionJson.add("listePropositions", listePropositionsJson);
 			dataObject.add("question", questionJson);
+			dataObject.addProperty("idActiviteEnCours", activiteEnCours.getId());
 			response.add("data", dataObject);
 
 			// Envoi du message aux equipes

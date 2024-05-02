@@ -36,6 +36,10 @@ public class ActiviteEnCours {
 	@OrderBy("dateSoumission")
 	private List<Reponse> listeReponses = new ArrayList<>();
 
+	public Long getId() {
+		return id;
+	}
+
 	public LocalDateTime getDate() {
 		return date;
 	}
