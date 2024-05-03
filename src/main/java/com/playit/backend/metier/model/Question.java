@@ -52,6 +52,12 @@ public class Question extends Activite {
 		this.temps = temps;
 	}
 
+	@Override
+	public void setDifficulte(DifficulteActivite difficulteActivite) {
+		super.setDifficulte(difficulteActivite);
+		this.score = difficulte.getPoints();
+	}
+
 	public int getScore() {
 		return this.score;
 	}
