@@ -42,6 +42,7 @@ public class TerminerExplicationController extends Controller {
 		List<Equipe> listeEquipes = null;
 
 		// Vérification fin plateau
+		boolean finPlateau = partie.getPlateauCourant().estTermine();
 		if (partie.getPlateauCourant().estTermine()) {
 			try {
 				playITService.passerEnModeChoixPlateau(partie);
@@ -75,7 +76,7 @@ public class TerminerExplicationController extends Controller {
 				.toString());
 		partieObject.addProperty("date", partie.getDate()
 				.toString());
-		partieObject.addProperty("finPlateau", false);
+		partieObject.addProperty("finPlateau", finPlateau);
 		JsonObject dataObject = new JsonObject();
 		dataObject.add("partie", partieObject);
 

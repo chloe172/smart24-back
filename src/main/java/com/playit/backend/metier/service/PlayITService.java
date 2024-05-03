@@ -238,6 +238,12 @@ public class PlayITService {
 			throw new IllegalStateException("L'activité n'est pas une question !");
 		}
 
+		Optional<Reponse> reponseExistante = this.reponseRepository.findByEquipeAndActiviteEnCours(equipe,
+				activiteEnCours);
+		if (reponseExistante.isPresent()) {
+			throw new IllegalStateException("L'équipe a déjà soumis une réponse pour cette activité");
+		}
+
 		Question question = (Question) activite;
 		Duration dureeQuestion = question.getTemps();
 		LocalDateTime tempsLimite = activiteEnCours.getDate()
