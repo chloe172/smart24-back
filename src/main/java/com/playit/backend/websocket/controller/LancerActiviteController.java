@@ -11,6 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playit.backend.metier.model.Activite;
 import com.playit.backend.metier.model.ActiviteEnCours;
+import com.playit.backend.metier.model.MiniJeu;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.model.Question;
@@ -80,20 +81,8 @@ public class LancerActiviteController extends Controller {
 			questionJson.add("listePropositions", listePropositionsJson);
 			dataObject.add("question", questionJson);
 			dataObject.addProperty("idActiviteEnCours", activiteEnCours.getId());
+			dataObject.addProperty("typeActivite", "question");
 			response.add("data", dataObject);
-
-			// Envoi du message aux equipes
-			response.addProperty("type", "notificationLancerActivite");
-			TextMessage responseMessage = new TextMessage(response.toString());
-			for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
-				sessionEquipe.sendMessage(responseMessage);
-			}
-
-			// Envoi du message au maitre du jeu
-			response.addProperty("type", "reponseLancerActivite");
-			response.add("data", dataObject);
-			responseMessage = new TextMessage(response.toString());
-			session.sendMessage(responseMessage);
 
 			Thread finQuestionTimer = new Thread(() -> {
 				Duration dureeQuestion = question.getTemps();
@@ -138,9 +127,31 @@ public class LancerActiviteController extends Controller {
 			}, "finQuestionTimer");
 			finQuestionTimer.start();
 
-		} else {
-			// mini jeu
+		} else { // mini jeu
+			MiniJeu miniJeu = (MiniJeu) activite;
+
+			JsonObject miniJeuJson = new JsonObject();
+			miniJeuJson.addProperty("id", miniJeu.getId());
+			miniJeuJson.addProperty("intitule", miniJeu.getIntitule());
+			miniJeuJson.addProperty("code", miniJeu.getCode());
+			dataObject.add("miniJeu", miniJeuJson);
+			dataObject.addProperty("idActiviteEnCours", activiteEnCours.getId());
+			dataObject.addProperty("typeActivite", "minijeu");
+			response.add("data", dataObject);
 		}
+
+		// Envoi du message aux equipes
+		response.addProperty("type", "notificationLancerActivite");
+		TextMessage responseMessage = new TextMessage(response.toString());
+		for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+			sessionEquipe.sendMessage(responseMessage);
+		}
+
+		// Envoi du message au maitre du jeu
+		response.addProperty("type", "reponseLancerActivite");
+		response.add("data", dataObject);
+		responseMessage = new TextMessage(response.toString());
+		session.sendMessage(responseMessage);
 
 	}
 
