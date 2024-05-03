@@ -14,8 +14,6 @@ import com.playit.backend.metier.model.ActiviteEnCours;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.model.Question;
-import com.playit.backend.metier.model.QuestionQCM;
-import com.playit.backend.metier.model.QuestionVraiFaux;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.AssociationSessionsParties;
@@ -71,14 +69,7 @@ public class LancerActiviteController extends Controller {
 					.toSeconds());
 
 			JsonArray listePropositionsJson = new JsonArray();
-			List<Proposition> listePropositions = null;
-			if (question instanceof QuestionQCM) {
-				listePropositions = ((QuestionQCM) activite).getListePropositions();
-			} else if (question instanceof QuestionVraiFaux) {
-				listePropositions = ((QuestionVraiFaux) activite).getListePropositions();
-			} else {
-				throw new IllegalStateException("Type de question inconnu");
-			}
+			List<Proposition> listePropositions = question.getListePropositions();
 
 			for (Proposition proposition : listePropositions) {
 				JsonObject propositionJson = new JsonObject();

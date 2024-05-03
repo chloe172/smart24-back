@@ -1,13 +1,17 @@
 package com.playit.backend.metier.model;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 @Entity
-public abstract class Question extends Activite {
+public class Question extends Activite {
 	protected String explication;
 
 	protected Duration temps = Duration.ofSeconds(30);
@@ -17,13 +21,19 @@ public abstract class Question extends Activite {
 	@OneToOne(cascade = CascadeType.PERSIST)
 	protected Proposition bonneProposition;
 
-	protected Question() {
+	@OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+	private List<Proposition> listePropositions = new ArrayList<>();
+
+	public Question() {
 	}
 
-	protected Question(DifficulteActivite difficulte, String intitule, int numeroActivite, String explication) {
-		super(difficulte, intitule, numeroActivite);
+	public Question(DifficulteActivite difficulteActivite, String intitule, int numeroActivite, String explication,
+			List<Proposition> propositions, Proposition bonneProposition) {
+		super(difficulteActivite, intitule, numeroActivite);
 		this.explication = explication;
 		this.score = difficulte.getPoints();
+		this.listePropositions = propositions;
+		this.bonneProposition = bonneProposition;
 	}
 
 	public String getExplication() {
@@ -56,6 +66,14 @@ public abstract class Question extends Activite {
 
 	public void setBonneProposition(Proposition bonneProposition) {
 		this.bonneProposition = bonneProposition;
+	}
+
+	public void addProposition(Proposition proposition) {
+		this.listePropositions.add(proposition);
+	}
+
+	public List<Proposition> getListePropositions() {
+		return this.listePropositions;
 	}
 
 }
