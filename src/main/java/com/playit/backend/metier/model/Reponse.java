@@ -44,7 +44,7 @@ public class Reponse {
 		if (bonneProposition.equals(this.proposition)) {
 			int scoreMax = question.getScore();
 			this.scoreEquipe = scoreMax / 2;
-			
+
 			LocalDateTime debutQuestion = this.activiteEnCours.getDate();
 			Duration dureeQuestion = question.getTemps();
 			LocalDateTime finQuestion = debutQuestion.plus(dureeQuestion);
@@ -108,7 +108,7 @@ public class Reponse {
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.activiteEnCours, this.dateSoumission, this.equipe, this.id, this.proposition,
-		                    this.scoreEquipe);
+				this.scoreEquipe);
 	}
 
 	@Override
@@ -121,9 +121,10 @@ public class Reponse {
 		}
 		Reponse other = (Reponse) obj;
 		return Objects.equals(this.activiteEnCours, other.activiteEnCours)
-		    && Objects.equals(this.dateSoumission, other.dateSoumission) && Objects.equals(this.equipe, other.equipe)
-		    && Objects.equals(this.id, other.id) && Objects.equals(this.proposition, other.proposition)
-		    && this.scoreEquipe == other.scoreEquipe;
+				&& Objects.equals(this.dateSoumission, other.dateSoumission)
+				&& Objects.equals(this.equipe, other.equipe)
+				&& Objects.equals(this.id, other.id) && Objects.equals(this.proposition, other.proposition)
+				&& this.scoreEquipe == other.scoreEquipe;
 	}
 
 }
