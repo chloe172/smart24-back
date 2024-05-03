@@ -15,11 +15,26 @@ import com.playit.backend.websocket.handler.SessionRole;
 
 public class RejoindrePartieEquipeController extends Controller {
 
+	@Override
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
 		this.userHasRoleOrThrow(session, SessionRole.EQUIPE);
+
+		Long idEquipe = (Long) session.getAttributes()
+				.get("idEquipe");
+		if (idEquipe != null) {
+			JsonObject response = new JsonObject();
+			response.addProperty("type", "reponseInscrireEquipe");
+			response.addProperty("succes", false);
+			response.addProperty("messageErreur", "Vous êtes déjà inscrit dans une équipe");
+			response.addProperty("codeErreur", 422);
+			TextMessage responseMessage = new TextMessage(response.toString());
+			session.sendMessage(responseMessage);
+			return;
+		}
+
 		Long idPartie = data.get("idPartie")
 				.getAsLong();
-		Long idEquipe = data.get("idEquipe")
+		idEquipe = data.get("idEquipe")
 				.getAsLong();
 
 		JsonObject response = new JsonObject();
