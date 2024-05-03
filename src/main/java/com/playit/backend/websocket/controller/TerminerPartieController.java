@@ -62,13 +62,7 @@ public class TerminerPartieController extends Controller {
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
 
-		response.addProperty("type", "notificationTerminerPartie");
-		responseMessage = new TextMessage(response.toString());
-		List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
-
-		for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
-			sessionEquipe.sendMessage(responseMessage);
-		}
+		
 	}
 
 }
