@@ -167,7 +167,7 @@ public class PlayITService {
 		equipe.setNom(nom);
 		equipe.setEstConnecte(true);
 		equipe.setScore(0);
-		this.equipeRepository.saveAndFlush(equipe);
+		equipe = this.equipeRepository.saveAndFlush(equipe);
 		partie.addEquipe(equipe);
 		this.partieRepository.saveAndFlush(partie);
 		return this.equipeRepository.saveAndFlush(equipe);
