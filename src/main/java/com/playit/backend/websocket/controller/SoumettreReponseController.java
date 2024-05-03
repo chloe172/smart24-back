@@ -147,6 +147,24 @@ public class SoumettreReponseController extends Controller {
 
 			// Envoi au maitre du jeu : bonne proposition et explication
 			questionJson.addProperty("explication", question.getExplication());
+			JsonArray listeEquipesJson = new JsonArray();
+			List<Equipe> listeEquipes = playITService.obtenirEquipesParRang(partie);
+			for (int i = 0; i < listeEquipes.size(); i++) {
+				Equipe e = listeEquipes.get(i);
+				JsonObject equipeJson = new JsonObject();
+				equipeJson.addProperty("id", e.getId());
+				equipeJson.addProperty("nom", e.getNom());
+				equipeJson.addProperty("score", e.getScore());
+				if(i==0) {
+					equipeJson.addProperty("rang", "1er");
+				} else {
+					equipeJson.addProperty("rang", i+1+"ème");
+				}
+
+				listeEquipesJson.add(equipeJson);
+			}
+			dataObject.add("listeEquipes", listeEquipesJson);
+			notification.add("data", dataObject);
 			bonnePropositionMessage = new TextMessage(notification.toString());
 			WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties.getMaitreDuJeuPartie(partie);
 			sessionMaitreDuJeu.sendMessage(bonnePropositionMessage);
