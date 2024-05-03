@@ -18,6 +18,7 @@ import com.playit.backend.metier.model.Question;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.AssociationSessionsParties;
+import com.playit.backend.websocket.handler.PartieThreadAttente;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class LancerActiviteController extends Controller {
@@ -48,6 +49,7 @@ public class LancerActiviteController extends Controller {
 		ActiviteEnCours activiteEnCours;
 		try {
 			activiteEnCours = playITService.lancerActivite(partie);
+			// TODO : vérifier qu'il y a un plateau sélectionné
 		} catch (IllegalStateException e) {
 			response.addProperty("messageErreur", e.getMessage());
 			response.addProperty("codeErreur", 422);
@@ -90,6 +92,7 @@ public class LancerActiviteController extends Controller {
 				try {
 					Thread.sleep(dureeQuestionMillis);
 				} catch (InterruptedException e) {
+					return;
 				}
 
 				response.addProperty("type", "notificationReponseActivite");
@@ -125,6 +128,7 @@ public class LancerActiviteController extends Controller {
 				}
 
 			}, "finQuestionTimer");
+			PartieThreadAttente.addThread(partie, finQuestionTimer);
 			finQuestionTimer.start();
 
 		} else { // mini jeu

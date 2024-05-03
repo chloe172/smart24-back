@@ -340,4 +340,12 @@ public class PlayITService {
 		return this.equipeRepository.findAllByPartieOrderByScoreDesc(partie);
 	}
 
+	public boolean verifierSoumissionParToutesLesEquipes(ActiviteEnCours activiteEnCours) {
+		Partie partie = activiteEnCours.getPartie();
+		int nombreEquipes = partie.getEquipes().size();
+		int nombreReponses = activiteEnCours.getListeReponses().size();
+
+		return nombreReponses == nombreEquipes;
+	}
+
 }

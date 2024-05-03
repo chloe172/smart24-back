@@ -1,16 +1,21 @@
 package com.playit.backend.websocket.controller;
 
+import java.util.List;
+
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.playit.backend.metier.model.ActiviteEnCours;
 import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Proposition;
+import com.playit.backend.metier.model.Question;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.AssociationSessionsParties;
+import com.playit.backend.websocket.handler.PartieThreadAttente;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class SoumettreReponseController extends Controller {
@@ -89,6 +94,62 @@ public class SoumettreReponseController extends Controller {
 			TextMessage responseMessage = new TextMessage(response.toString());
 			session.sendMessage(responseMessage);
 			return;
+		}
+
+		boolean arreter = playITService.verifierSoumissionParToutesLesEquipes(activiteEnCours);
+		if (arreter) {
+			System.out.println("Toutes les équipes ont soumis leur réponse");
+			PartieThreadAttente.stopThread(partie);
+			JsonObject notification = new JsonObject();
+			notification.addProperty("type", "notificationReponseActivite");
+			notification.addProperty("succes", true);
+
+			playITService.passerEnModeExplication(partie);
+			Question question = (Question) activiteEnCours.getActivite();
+
+			JsonObject questionJson = new JsonObject();
+			questionJson.addProperty("id", question.getId());
+			questionJson.addProperty("intitule", question.getIntitule());
+			questionJson.addProperty("temps", question.getTemps()
+					.toSeconds());
+
+			JsonArray listePropositionsJson = new JsonArray();
+			List<Proposition> listePropositions = question.getListePropositions();
+
+			for (Proposition p : listePropositions) {
+				JsonObject propositionJson = new JsonObject();
+				propositionJson.addProperty("id", p.getId());
+				propositionJson.addProperty("intitule", p.getIntitule());
+				listePropositionsJson.add(propositionJson);
+			}
+			questionJson.add("listePropositions", listePropositionsJson);
+			Proposition bonneProposition = question.getBonneProposition();
+			JsonObject bonnePropositionObject = new JsonObject();
+			bonnePropositionObject.addProperty("id", bonneProposition.getId());
+			bonnePropositionObject.addProperty("intitule", bonneProposition.getIntitule());
+			questionJson.add("bonneProposition", bonnePropositionObject);
+			JsonObject dataObject = new JsonObject();
+			dataObject.add("question", questionJson);
+			dataObject.addProperty("idActiviteEnCours", activiteEnCours.getId());
+			dataObject.addProperty("typeActivite", "question");
+			dataObject.add("question", questionJson);
+			notification.add("data", dataObject);
+
+			// Envoi du message aux equipes : bonne proposition uniquement
+			questionJson.add("bonneProposition", bonnePropositionObject);
+			dataObject.add("question", questionJson);
+			notification.add("data", dataObject);
+			TextMessage bonnePropositionMessage = new TextMessage(notification.toString());
+			List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
+			for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+				sessionEquipe.sendMessage(bonnePropositionMessage);
+			}
+
+			// Envoi au maitre du jeu : bonne proposition et explication
+			questionJson.addProperty("explication", question.getExplication());
+			bonnePropositionMessage = new TextMessage(notification.toString());
+			WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties.getMaitreDuJeuPartie(partie);
+			sessionMaitreDuJeu.sendMessage(bonnePropositionMessage);
 		}
 
 		JsonObject reponseObject = new JsonObject();
