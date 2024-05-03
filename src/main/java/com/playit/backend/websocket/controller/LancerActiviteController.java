@@ -13,6 +13,7 @@ import com.playit.backend.metier.model.Activite;
 import com.playit.backend.metier.model.ActiviteEnCours;
 import com.playit.backend.metier.model.MiniJeu;
 import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.model.Question;
 import com.playit.backend.metier.service.NotFoundException;
@@ -98,15 +99,14 @@ public class LancerActiviteController extends Controller {
 				response.addProperty("type", "notificationReponseActivite");
 
 				playITService.passerEnModeExplication(partie);
-
+				Partie finPartie = playITService.trouverPartieParId(idPartie);
+			
 				Proposition bonneProposition = question.getBonneProposition();
 				JsonObject bonnePropositionObject = new JsonObject();
 				bonnePropositionObject.addProperty("id", bonneProposition.getId());
 				bonnePropositionObject.addProperty("intitule", bonneProposition.getIntitule());
 				questionJson.add("bonneProposition", bonnePropositionObject);
-				dataObject.add("question", questionJson);
-				response.add("data", dataObject);
-
+				
 				// Envoi du message aux equipes : bonne proposition uniquement
 				questionJson.add("bonneProposition", bonnePropositionObject);
 				dataObject.add("question", questionJson);
@@ -121,6 +121,25 @@ public class LancerActiviteController extends Controller {
 
 				// Envoi au maitre du jeu : bonne proposition et explication
 				questionJson.addProperty("explication", question.getExplication());
+				JsonArray listeEquipesJson = new JsonArray();
+				List<Equipe> listeEquipes = playITService.obtenirEquipesParRang(finPartie);
+				for (int i = 0; i < listeEquipes.size(); i++) {
+					Equipe equipe = listeEquipes.get(i);
+					JsonObject equipeJson = new JsonObject();
+					equipeJson.addProperty("id", equipe.getId());
+					equipeJson.addProperty("nom", equipe.getNom());
+					equipeJson.addProperty("score", equipe.getScore());
+					if(i==0) {
+						equipeJson.addProperty("rang", "1er");
+					} else {
+						equipeJson.addProperty("rang", i+1+"ème");
+					}
+
+					listeEquipesJson.add(equipeJson);
+				}
+				dataObject.add("listeEquipes", listeEquipesJson);
+				response.add("data", dataObject);
+
 				bonnePropositionMessage = new TextMessage(response.toString());
 				try {
 					session.sendMessage(bonnePropositionMessage);
