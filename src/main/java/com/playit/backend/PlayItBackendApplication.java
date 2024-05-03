@@ -17,14 +17,10 @@ import com.playit.backend.metier.model.Plateau;
 import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.repository.MaitreDuJeuRepository;
 import com.playit.backend.repository.PlateauRepository;
-import com.playit.backend.repository.QuestionRepository;
 
 @SpringBootApplication
 @RestController
 public class PlayItBackendApplication {
-	@Autowired
-	QuestionRepository questionRepository;
-
 	@Autowired
 	PlateauRepository plateauRepository;
 	@Autowired
@@ -45,14 +41,14 @@ public class PlayItBackendApplication {
 		listePlateaux.add(plateauCyber);
 
 		MaitreDuJeu maitre = this.maitreDuJeuRepository.findAll()
-		                                               .get(0);
+				.get(0);
 		Partie partie = this.playITService.creerPartie("Stage seconde", maitre, listePlateaux);
 		StringBuilder sb = new StringBuilder();
 		sb.append("Partie créée : ");
 		sb.append(partie.getNom());
 		sb.append(" avec ");
 		sb.append(partie.getPlateauxEnCours()
-		                .size());
+				.size());
 		sb.append(" plateaux");
 		sb.append("<br>");
 		sb.append("Code PIN : ");

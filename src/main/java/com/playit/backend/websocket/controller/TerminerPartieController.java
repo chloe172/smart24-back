@@ -1,7 +1,5 @@
 package com.playit.backend.websocket.controller;
 
-import java.util.List;
-
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -9,7 +7,6 @@ import com.google.gson.JsonObject;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
-import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class TerminerPartieController extends Controller {
@@ -61,8 +58,6 @@ public class TerminerPartieController extends Controller {
 
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
-
-		
 	}
 
 }
