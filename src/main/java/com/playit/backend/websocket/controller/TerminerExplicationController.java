@@ -87,6 +87,7 @@ public class TerminerExplicationController extends Controller {
 			equipeJson.addProperty("id", equipe.getId());
 			equipeJson.addProperty("nom", equipe.getNom());
 			equipeJson.addProperty("score", equipe.getScore());
+			equipeJson.addProperty("avatar", equipe.getAvatar().toString());
 			equipeJson.addProperty("rang", i + 1);
 			listeEquipesJson.add(equipeJson);
 		}

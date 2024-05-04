@@ -81,6 +81,7 @@ public class InscrireEquipeController extends Controller {
 		JsonObject equipeObject = new JsonObject();
 		equipeObject.addProperty("id", equipe.getId());
 		equipeObject.addProperty("nom", equipe.getNom());
+		equipeObject.addProperty("avatar", equipe.getAvatar().toString());
 		dataObject.add("equipe", equipeObject);
 		response.add("data", dataObject);
 
