@@ -6,6 +6,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.google.gson.JsonObject;
+import com.playit.backend.metier.model.Avatar;
 import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.service.NotFoundException;
@@ -36,6 +37,8 @@ public class InscrireEquipeController extends Controller {
 				.getAsLong();
 		String nomEquipe = data.get("nomEquipe")
 				.getAsString();
+		String avatarName = data.get("avatar")
+				.getAsString();
 
 		JsonObject response = new JsonObject();
 		response.addProperty("type", "reponseInscrireEquipe");
@@ -55,7 +58,8 @@ public class InscrireEquipeController extends Controller {
 
 		Equipe equipe = null;
 		try {
-			equipe = playITService.inscrireEquipe(nomEquipe, partie);
+			Avatar avatar = Avatar.valueOf(avatarName);
+			equipe = playITService.inscrireEquipe(nomEquipe, avatar, partie);
 		} catch (Exception e) {
 			response.addProperty("succes", false);
 			response.addProperty("messageErreur", e.getMessage());
@@ -77,6 +81,7 @@ public class InscrireEquipeController extends Controller {
 		JsonObject equipeObject = new JsonObject();
 		equipeObject.addProperty("id", equipe.getId());
 		equipeObject.addProperty("nom", equipe.getNom());
+		equipeObject.addProperty("avatar", equipe.getAvatar().toString());
 		dataObject.add("equipe", equipeObject);
 		response.add("data", dataObject);
 

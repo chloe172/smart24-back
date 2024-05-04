@@ -102,13 +102,13 @@ public class LancerActiviteController extends Controller {
 
 				playITService.passerEnModeExplication(partie);
 				Partie finPartie = playITService.trouverPartieParId(idPartie);
-			
+
 				Proposition bonneProposition = question.getBonneProposition();
 				JsonObject bonnePropositionObject = new JsonObject();
 				bonnePropositionObject.addProperty("id", bonneProposition.getId());
 				bonnePropositionObject.addProperty("intitule", bonneProposition.getIntitule());
 				questionJson.add("bonneProposition", bonnePropositionObject);
-				
+
 				// Envoi du message aux equipes : bonne proposition uniquement
 				questionJson.add("bonneProposition", bonnePropositionObject);
 				dataObject.add("question", questionJson);
@@ -145,10 +145,11 @@ public class LancerActiviteController extends Controller {
 					equipeJson.addProperty("id", equipe.getId());
 					equipeJson.addProperty("nom", equipe.getNom());
 					equipeJson.addProperty("score", equipe.getScore());
-					if(i==0) {
+					equipeJson.addProperty("avatar", equipe.getAvatar().toString());
+					if (i == 0) {
 						equipeJson.addProperty("rang", "1er");
 					} else {
-						equipeJson.addProperty("rang", i+1+"ème");
+						equipeJson.addProperty("rang", i + 1 + "ème");
 					}
 
 					listeEquipesJson.add(equipeJson);

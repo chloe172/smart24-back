@@ -15,6 +15,6 @@ public interface EquipeRepository extends JpaRepository<Equipe, Long> {
 
 	Optional<Equipe> findByIdAndPartie(@Param("idEquipe") Long idEquipe, @Param("partie") Partie partie);
 
-	List<Equipe> findAllByPartieOrderByScoreDesc(@Param("partie") Partie partie);
+	List<Equipe> findAllByPartieAndEstConnecteTrueOrderByScoreDesc(@Param("partie") Partie partie);
 
 }

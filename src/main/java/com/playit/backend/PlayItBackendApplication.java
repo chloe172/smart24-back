@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.playit.backend.metier.model.ActiviteEnCours;
+import com.playit.backend.metier.model.Avatar;
 import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.EtatPartie;
 import com.playit.backend.metier.model.MaitreDuJeu;
@@ -57,8 +58,8 @@ public class PlayItBackendApplication {
 		sb.append("Code PIN : ");
 		sb.append(partie.getCodePin());
 
-		Equipe e1 = this.playITService.inscrireEquipe("Equipe 1", partie);
-		Equipe e2 = this.playITService.inscrireEquipe("Equipe 2", partie);
+		Equipe e1 = this.playITService.inscrireEquipe("Equipe 1", Avatar.HIBOU, partie);
+		Equipe e2 = this.playITService.inscrireEquipe("Equipe 2", Avatar.ORNITHORYNQUE, partie);
 
 		partie.setEtat(EtatPartie.EN_PAUSE);
 		this.partieRepository.saveAndFlush(partie);

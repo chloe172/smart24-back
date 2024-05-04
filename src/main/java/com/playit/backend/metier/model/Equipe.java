@@ -2,6 +2,8 @@ package com.playit.backend.metier.model;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,13 +17,16 @@ public class Equipe {
 	private Long id;
 
 	private String nom;
-	
+
 	private Boolean estConnecte;
 
 	private int score;
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private Partie partie;
+
+	@Enumerated(EnumType.STRING)
+	private Avatar avatar;
 
 	public Equipe() {
 	}
@@ -65,14 +70,16 @@ public class Equipe {
 		this.partie = partie;
 	}
 
-	@Override
-	public String toString() {
-		return "Equipe {" + " id='" + this.getId() + "'" + ", nom='" + this.getNom() + "'" + ", score='"
-		    + this.getScore() + "'" + ", partie='" + this.getPartie() + "'" + "}";
-	}
-
 	public void ajouterScore(int scoreEquipe) {
 		this.score += scoreEquipe;
+	}
+
+	public Avatar getAvatar() {
+		return this.avatar;
+	}
+
+	public void setAvatar(Avatar avatar) {
+		this.avatar = avatar;
 	}
 
 }

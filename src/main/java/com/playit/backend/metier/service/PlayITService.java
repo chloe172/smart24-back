@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.playit.backend.metier.model.Activite;
 import com.playit.backend.metier.model.ActiviteEnCours;
+import com.playit.backend.metier.model.Avatar;
 import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.EtatPartie;
 import com.playit.backend.metier.model.MaitreDuJeu;
@@ -159,7 +160,7 @@ public class PlayITService {
 		return partie;
 	}
 
-	public Equipe inscrireEquipe(String nom, Partie partie) {
+	public Equipe inscrireEquipe(String nom, Avatar avatar, Partie partie) {
 		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_INSCRIPTION) {
 			throw new IllegalStateException("Impossible d'inscrire l'equipe");
 		}
@@ -169,6 +170,7 @@ public class PlayITService {
 		}
 		Equipe equipe = new Equipe();
 		equipe.setNom(nom);
+		equipe.setAvatar(avatar);
 		equipe.setEstConnecte(true);
 		equipe.setScore(0);
 		equipe = this.equipeRepository.saveAndFlush(equipe);
@@ -341,12 +343,12 @@ public class PlayITService {
 	}
 
 	public List<Equipe> obtenirEquipesParRang(Partie partie) {
-		return this.equipeRepository.findAllByPartieOrderByScoreDesc(partie);
+		return this.equipeRepository.findAllByPartieAndEstConnecteTrueOrderByScoreDesc(partie);
 	}
 
 	public List<ScorePlateau> obtenirEquipesParRang(Partie partie, Plateau plateau) {
 		List<Pair<Equipe, Integer>> scores = new ArrayList<>();
-		for (Equipe e : partie.getEquipes()) {
+		for (Equipe e : partie.getEquipesConnectees()) {
 			Integer score = this.reponseRepository.findScoreByEquipeAndPlateau(e.getId(), plateau.getId());
 			if (score == null) {
 				score = 0;
@@ -372,7 +374,7 @@ public class PlayITService {
 
 	public boolean verifierSoumissionParToutesLesEquipes(ActiviteEnCours activiteEnCours) {
 		Partie partie = activiteEnCours.getPartie();
-		int nombreEquipes = partie.getEquipes().size();
+		int nombreEquipes = partie.getEquipesConnectees().size();
 		int nombreReponses = activiteEnCours.getListeReponses().size();
 
 		return nombreReponses == nombreEquipes;
