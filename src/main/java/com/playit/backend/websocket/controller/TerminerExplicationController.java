@@ -99,7 +99,12 @@ public class TerminerExplicationController extends Controller {
 			equipeJson.addProperty("nom", score.getEquipe()
 					.getNom());
 			equipeJson.addProperty("score", score.getScore());
-			equipeJson.addProperty("rang", score.getRang());
+			if(score.getRang()==1){
+				equipeJson.addProperty("rang", score.getRang()+ "er");
+			} else {
+				equipeJson.addProperty("rang", score.getRang()+"ème");
+			}
+			
 			listeEquipesJson.add(equipeJson);
 		}
 		dataObjectMdj.add("listeEquipes", listeEquipesJson);
@@ -131,7 +136,7 @@ public class TerminerExplicationController extends Controller {
 			if (rang == 1) {
 				equipeObject.addProperty("rang", "1er");
 			} else {
-				equipeObject.addProperty("rang", rang + "eme");
+				equipeObject.addProperty("rang", rang + "ème");
 			}
 			JsonArray badgesArray = new JsonArray();
 			for (Map.Entry<Plateau, List<ScorePlateau>> entry : mapScore.entrySet()) {
@@ -146,7 +151,13 @@ public class TerminerExplicationController extends Controller {
 
 				JsonObject badgeObject = new JsonObject();
 				badgeObject.addProperty("plateau", p.getNom());
-				if (score != null && finPlateau) {
+
+				PlateauEnCours pec = partie.getPlateauxEnCours()
+						.stream()
+						.filter(p1 -> p1.getPlateau().getId().equals(p.getId()))
+						.findFirst()
+						.orElse(null);
+				if (score != null && pec.estTermine()) {
 					badgeObject.addProperty("rang", score.getCouleurBadge());
 				} else {
 					badgeObject.addProperty("rang", "noir");
