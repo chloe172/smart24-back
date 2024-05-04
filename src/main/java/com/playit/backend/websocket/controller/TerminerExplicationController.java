@@ -105,10 +105,8 @@ public class TerminerExplicationController extends Controller {
 			} else {
 				equipeJson.addProperty("rang", score.getRang()+"ème");
 			}
-			
 			equipeJson.addProperty("avatar", score.getEquipe()
 					.getAvatar().toString());
-			equipeJson.addProperty("rang", i);
 			listeEquipesJson.add(equipeJson);
 			i++;
 		}
@@ -131,6 +129,8 @@ public class TerminerExplicationController extends Controller {
 			equipeObject.addProperty("id", equipe.getId());
 			equipeObject.addProperty("nom", equipe.getNom());
 			equipeObject.addProperty("score", equipe.getScore());
+			equipeObject.addProperty("avatar", equipe
+					.getAvatar().toString());
 			int rang = listeScorePlateauEnCours.stream()
 					.filter(s -> s.getEquipe()
 							.getId()
