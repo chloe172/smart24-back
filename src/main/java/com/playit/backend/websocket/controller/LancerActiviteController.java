@@ -22,6 +22,8 @@ import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.PartieThreadAttente;
 import com.playit.backend.websocket.handler.SessionRole;
 
+import jakarta.websocket.Decoder.Text;
+
 public class LancerActiviteController extends Controller {
 
 	public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
@@ -111,8 +113,22 @@ public class LancerActiviteController extends Controller {
 				questionJson.add("bonneProposition", bonnePropositionObject);
 				dataObject.add("question", questionJson);
 				response.add("data", dataObject);
-				TextMessage bonnePropositionMessage = new TextMessage(response.toString());
+				
 				for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+					Long idEquipe = (Long) sessionEquipe.getAttributes().get("idEquipe");
+					Equipe equipe = null;
+					try {
+						equipe = playITService.trouverEquipeParId(idEquipe);
+					} catch (NotFoundException e) {
+						return;
+					}
+					System.out.print("equipe"+equipe.getId());
+					JsonObject equipeJson = new JsonObject();
+					equipeJson.addProperty("id", equipe.getId());
+					equipeJson.addProperty("nom", equipe.getNom());
+					equipeJson.addProperty("score", equipe.getScore());
+					dataObject.add("equipe", equipeJson);
+					TextMessage bonnePropositionMessage = new TextMessage(response.toString());
 					try {
 						sessionEquipe.sendMessage(bonnePropositionMessage);
 					} catch (Exception e) {
@@ -141,7 +157,7 @@ public class LancerActiviteController extends Controller {
 				dataObject.add("listeEquipes", listeEquipesJson);
 				response.add("data", dataObject);
 
-				bonnePropositionMessage = new TextMessage(response.toString());
+				TextMessage bonnePropositionMessage = new TextMessage(response.toString());
 				try {
 					session.sendMessage(bonnePropositionMessage);
 				} catch (Exception e) {

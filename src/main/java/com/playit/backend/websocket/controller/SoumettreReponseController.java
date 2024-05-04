@@ -136,13 +136,22 @@ public class SoumettreReponseController extends Controller {
 			notification.add("data", dataObject);
 
 			// Envoi du message aux equipes : bonne proposition uniquement
+			List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
 			questionJson.add("bonneProposition", bonnePropositionObject);
 			dataObject.add("question", questionJson);
 			notification.add("data", dataObject);
-			TextMessage bonnePropositionMessage = new TextMessage(notification.toString());
-			List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
+			
 			for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
-				sessionEquipe.sendMessage(bonnePropositionMessage);
+				JsonObject equipeJson = new JsonObject();
+				equipeJson.addProperty("id", equipe.getId());
+				equipeJson.addProperty("nom", equipe.getNom());
+				equipeJson.addProperty("score", equipe.getScore());
+				dataObject.add("equipe", equipeJson);
+				TextMessage bonnePropositionMessage = new TextMessage(notification.toString());
+				try {
+					sessionEquipe.sendMessage(bonnePropositionMessage);
+				} catch (Exception e) {
+				}
 			}
 
 			// Envoi au maitre du jeu : bonne proposition et explication
@@ -166,7 +175,7 @@ public class SoumettreReponseController extends Controller {
 			}
 			dataObject.add("listeEquipes", listeEquipesJson);
 			notification.add("data", dataObject);
-			bonnePropositionMessage = new TextMessage(notification.toString());
+			TextMessage bonnePropositionMessage = new TextMessage(notification.toString());
 			WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties.getMaitreDuJeuPartie(partie);
 			sessionMaitreDuJeu.sendMessage(bonnePropositionMessage);
 		}
