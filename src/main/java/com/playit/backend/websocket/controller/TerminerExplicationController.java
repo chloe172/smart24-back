@@ -121,6 +121,18 @@ public class TerminerExplicationController extends Controller {
 			equipeObject.addProperty("id", equipe.getId());
 			equipeObject.addProperty("nom", equipe.getNom());
 			equipeObject.addProperty("score", equipe.getScore());
+			int rang = listeScorePlateauEnCours.stream()
+					.filter(s -> s.getEquipe()
+							.getId()
+							.equals(idEquipe))
+					.findFirst()
+					.map(ScorePlateau::getRang)
+					.orElse(0);
+			if (rang == 1) {
+				equipeObject.addProperty("rang", "1er");
+			} else {
+				equipeObject.addProperty("rang", rang + "eme");
+			}
 			JsonArray badgesArray = new JsonArray();
 			for (Map.Entry<Plateau, List<ScorePlateau>> entry : mapScore.entrySet()) {
 				Plateau p = entry.getKey();
