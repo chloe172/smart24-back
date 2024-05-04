@@ -105,6 +105,12 @@ public class Partie {
 		this.listeEquipes.remove(equipe);
 	}
 
+	public List<Equipe> getEquipesConnectees() {
+		return this.listeEquipes.stream()
+				.filter(Equipe::getEstConnecte)
+				.toList();
+	}
+
 	public LocalDateTime getDate() {
 		return this.date;
 	}
