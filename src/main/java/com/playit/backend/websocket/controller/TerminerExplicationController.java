@@ -100,10 +100,13 @@ public class TerminerExplicationController extends Controller {
 			equipeJson.addProperty("nom", score.getEquipe()
 					.getNom());
 			equipeJson.addProperty("score", score.getScore());
-			equipeJson.addProperty("rang", score.getRang());
+			if(score.getRang()==1){
+				equipeJson.addProperty("rang", score.getRang()+ "er");
+			} else {
+				equipeJson.addProperty("rang", score.getRang()+"ème");
+			}
 			equipeJson.addProperty("avatar", score.getEquipe()
 					.getAvatar().toString());
-			equipeJson.addProperty("rang", i);
 			listeEquipesJson.add(equipeJson);
 			i++;
 		}
@@ -126,6 +129,20 @@ public class TerminerExplicationController extends Controller {
 			equipeObject.addProperty("id", equipe.getId());
 			equipeObject.addProperty("nom", equipe.getNom());
 			equipeObject.addProperty("score", equipe.getScore());
+			equipeObject.addProperty("avatar", equipe
+					.getAvatar().toString());
+			int rang = listeScorePlateauEnCours.stream()
+					.filter(s -> s.getEquipe()
+							.getId()
+							.equals(idEquipe))
+					.findFirst()
+					.map(ScorePlateau::getRang)
+					.orElse(0);
+			if (rang == 1) {
+				equipeObject.addProperty("rang", "1er");
+			} else {
+				equipeObject.addProperty("rang", rang + "ème");
+			}
 			JsonArray badgesArray = new JsonArray();
 			for (Map.Entry<Plateau, List<ScorePlateau>> entry : mapScore.entrySet()) {
 				Plateau p = entry.getKey();
@@ -139,7 +156,13 @@ public class TerminerExplicationController extends Controller {
 
 				JsonObject badgeObject = new JsonObject();
 				badgeObject.addProperty("plateau", p.getNom());
-				if (score != null && finPlateau) {
+
+				PlateauEnCours pec = partie.getPlateauxEnCours()
+						.stream()
+						.filter(p1 -> p1.getPlateau().getId().equals(p.getId()))
+						.findFirst()
+						.orElse(null);
+				if (score != null && pec.estTermine()) {
 					badgeObject.addProperty("rang", score.getCouleurBadge());
 				} else {
 					badgeObject.addProperty("rang", "noir");
