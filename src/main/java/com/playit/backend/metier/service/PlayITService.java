@@ -2,11 +2,13 @@ package com.playit.backend.metier.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import com.playit.backend.metier.model.Activite;
@@ -21,6 +23,7 @@ import com.playit.backend.metier.model.PlateauEnCours;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.model.Question;
 import com.playit.backend.metier.model.Reponse;
+import com.playit.backend.metier.model.ScorePlateau;
 import com.playit.backend.repository.ActiviteEnCoursRepository;
 import com.playit.backend.repository.EquipeRepository;
 import com.playit.backend.repository.MaitreDuJeuRepository;
@@ -150,7 +153,8 @@ public class PlayITService {
 
 	public Partie validerCodePin(String codePin) {
 		Partie partie = this.partieRepository.findByCodePin(codePin);
-		if (partie == null) {
+		if (partie == null || !(partie.getEtat() == EtatPartie.ATTENTE_EQUIPE_INSCRIPTION
+				|| partie.getEtat() == EtatPartie.ATTENTE_EQUIPE_RECONNEXION)) {
 			throw new NotFoundException("Aucune partie avec ce code PIN");
 		}
 		return partie;
@@ -340,6 +344,32 @@ public class PlayITService {
 
 	public List<Equipe> obtenirEquipesParRang(Partie partie) {
 		return this.equipeRepository.findAllByPartieOrderByScoreDesc(partie);
+	}
+
+	public List<ScorePlateau> obtenirEquipesParRang(Partie partie, Plateau plateau) {
+		List<Pair<Equipe, Integer>> scores = new ArrayList<>();
+		for (Equipe e : partie.getEquipes()) {
+			Integer score = this.reponseRepository.findScoreByEquipeAndPlateau(e.getId(), plateau.getId());
+			if (score == null) {
+				score = 0;
+			}
+			scores.add(Pair.of(e, score));
+		}
+		scores.sort((p1, p2) -> p2.getSecond()
+				.compareTo(p1.getSecond()));
+
+		List<ScorePlateau> scoresPlateaux = new ArrayList<>();
+		Integer rang = 1;
+		for (Pair<Equipe, Integer> pair : scores) {
+			ScorePlateau scorePlateau = new ScorePlateau();
+			scorePlateau.setEquipe(pair.getFirst());
+			scorePlateau.setScore(pair.getSecond());
+			scorePlateau.setRang(rang);
+			scoresPlateaux.add(scorePlateau);
+			rang++;
+		}
+
+		return scoresPlateaux;
 	}
 
 	public boolean verifierSoumissionParToutesLesEquipes(ActiviteEnCours activiteEnCours) {
