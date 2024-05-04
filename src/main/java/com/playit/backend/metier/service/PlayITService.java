@@ -341,7 +341,7 @@ public class PlayITService {
 	}
 
 	public List<Equipe> obtenirEquipesParRang(Partie partie) {
-		return this.equipeRepository.findAllByPartieOrderByScoreDesc(partie);
+		return this.equipeRepository.findAllByPartieAndEstConnecteTrueOrderByScoreDesc(partie);
 	}
 
 	public List<ScorePlateau> obtenirEquipesParRang(Partie partie, Plateau plateau) {
