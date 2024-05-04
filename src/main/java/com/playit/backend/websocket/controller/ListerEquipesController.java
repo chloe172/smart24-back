@@ -45,6 +45,7 @@ public class ListerEquipesController extends Controller {
 			equipeJson.addProperty("id", equipe.getId());
 			equipeJson.addProperty("nom", equipe.getNom());
 			equipeJson.addProperty("score", equipe.getScore());
+			equipeJson.addProperty("avatar", equipe.getAvatar().toString());
 			if (equipe.getEstConnecte()) {
 				listeEquipesConnecteesJson.add(equipeJson);
 			} else {

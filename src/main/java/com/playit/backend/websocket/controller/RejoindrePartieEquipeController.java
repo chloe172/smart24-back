@@ -82,6 +82,7 @@ public class RejoindrePartieEquipeController extends Controller {
 		equipeObject.addProperty("id", equipe.getId());
 		equipeObject.addProperty("nom", equipe.getNom());
 		equipeObject.addProperty("score", equipe.getScore());
+		equipeObject.addProperty("avatar", equipe.getAvatar().toString());
 		JsonObject dataObject = new JsonObject();
 		dataObject.add("equipe", equipeObject);
 
