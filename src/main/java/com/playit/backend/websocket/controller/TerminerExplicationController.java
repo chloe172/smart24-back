@@ -43,7 +43,7 @@ public class TerminerExplicationController extends Controller {
 
 		// Vérification fin plateau
 		boolean finPlateau = partie.getPlateauCourant().estTermine();
-		if (partie.getPlateauCourant().estTermine()) {
+		if (finPlateau) {
 			try {
 				playITService.passerEnModeChoixPlateau(partie);
 			} catch (IllegalStateException e) {

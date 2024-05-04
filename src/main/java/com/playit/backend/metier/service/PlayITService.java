@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.playit.backend.metier.model.Activite;
 import com.playit.backend.metier.model.ActiviteEnCours;
+import com.playit.backend.metier.model.Avatar;
 import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.EtatPartie;
 import com.playit.backend.metier.model.MaitreDuJeu;
@@ -155,7 +156,7 @@ public class PlayITService {
 		return partie;
 	}
 
-	public Equipe inscrireEquipe(String nom, Partie partie) {
+	public Equipe inscrireEquipe(String nom, Avatar avatar, Partie partie) {
 		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_INSCRIPTION) {
 			throw new IllegalStateException("Impossible d'inscrire l'equipe");
 		}
@@ -165,6 +166,7 @@ public class PlayITService {
 		}
 		Equipe equipe = new Equipe();
 		equipe.setNom(nom);
+		equipe.setAvatar(avatar);
 		equipe.setEstConnecte(true);
 		equipe.setScore(0);
 		equipe = this.equipeRepository.saveAndFlush(equipe);
