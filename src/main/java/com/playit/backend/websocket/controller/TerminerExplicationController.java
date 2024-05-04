@@ -100,6 +100,9 @@ public class TerminerExplicationController extends Controller {
 					.getNom());
 			equipeJson.addProperty("score", score.getScore());
 			equipeJson.addProperty("rang", score.getRang());
+			equipeJson.addProperty("avatar", score.getEquipe()
+					.getAvatar().toString());
+			equipeJson.addProperty("rang", i + 1);
 			listeEquipesJson.add(equipeJson);
 		}
 		dataObjectMdj.add("listeEquipes", listeEquipesJson);

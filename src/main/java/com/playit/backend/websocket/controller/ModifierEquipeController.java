@@ -48,6 +48,7 @@ public class ModifierEquipeController extends Controller {
 		JsonObject equipeObject = new JsonObject();
 		equipeObject.addProperty("id", equipe.getId());
 		equipeObject.addProperty("nom", equipe.getNom());
+		equipeObject.addProperty("avatar", equipe.getAvatar().toString());
 		JsonObject dataObject = new JsonObject();
 		dataObject.add("equipe", equipeObject);
 		response.add("data", dataObject);

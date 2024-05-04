@@ -155,10 +155,11 @@ public class SoumettreReponseController extends Controller {
 				equipeJson.addProperty("id", e.getId());
 				equipeJson.addProperty("nom", e.getNom());
 				equipeJson.addProperty("score", e.getScore());
-				if(i==0) {
+				equipeJson.addProperty("avatar", e.getAvatar().toString());
+				if (i == 0) {
 					equipeJson.addProperty("rang", "1er");
 				} else {
-					equipeJson.addProperty("rang", i+1+"ème");
+					equipeJson.addProperty("rang", i + 1 + "ème");
 				}
 
 				listeEquipesJson.add(equipeJson);
