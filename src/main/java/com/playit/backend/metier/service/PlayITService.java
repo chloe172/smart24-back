@@ -343,12 +343,12 @@ public class PlayITService {
 	}
 
 	public List<Equipe> obtenirEquipesParRang(Partie partie) {
-		return this.equipeRepository.findAllByPartieOrderByScoreDesc(partie);
+		return this.equipeRepository.findAllByPartieAndEstConnecteTrueOrderByScoreDesc(partie);
 	}
 
 	public List<ScorePlateau> obtenirEquipesParRang(Partie partie, Plateau plateau) {
 		List<Pair<Equipe, Integer>> scores = new ArrayList<>();
-		for (Equipe e : partie.getEquipes()) {
+		for (Equipe e : partie.getEquipesConnectees()) {
 			Integer score = this.reponseRepository.findScoreByEquipeAndPlateau(e.getId(), plateau.getId());
 			if (score == null) {
 				score = 0;
@@ -374,7 +374,7 @@ public class PlayITService {
 
 	public boolean verifierSoumissionParToutesLesEquipes(ActiviteEnCours activiteEnCours) {
 		Partie partie = activiteEnCours.getPartie();
-		int nombreEquipes = partie.getEquipes().size();
+		int nombreEquipes = partie.getEquipesConnectees().size();
 		int nombreReponses = activiteEnCours.getListeReponses().size();
 
 		return nombreReponses == nombreEquipes;
