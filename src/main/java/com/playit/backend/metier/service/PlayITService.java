@@ -149,7 +149,7 @@ public class PlayITService {
 
 	public Partie validerCodePin(String codePin) {
 		Partie partie = this.partieRepository.findByCodePin(codePin);
-		if (partie == null) {
+		if (partie == null || !(partie.getEtat()==EtatPartie.ATTENTE_EQUIPE_INSCRIPTION || partie.getEtat()==EtatPartie.ATTENTE_EQUIPE_RECONNEXION) ) {
 			throw new NotFoundException("Aucune partie avec ce code PIN");
 		}
 		return partie;
