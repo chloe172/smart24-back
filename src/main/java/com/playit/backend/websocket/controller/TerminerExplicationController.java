@@ -1,14 +1,19 @@
 package com.playit.backend.websocket.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Equipe;
+import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.model.Plateau;
+import com.playit.backend.metier.model.PlateauEnCours;
+import com.playit.backend.metier.model.ScorePlateau;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.AssociationSessionsParties;
@@ -39,11 +44,9 @@ public class TerminerExplicationController extends Controller {
 			return;
 		}
 
-		List<Equipe> listeEquipes = null;
-
 		// Vérification fin plateau
 		boolean finPlateau = partie.getPlateauCourant().estTermine();
-		if (partie.getPlateauCourant().estTermine()) {
+		if (finPlateau) {
 			try {
 				playITService.passerEnModeChoixPlateau(partie);
 			} catch (IllegalStateException e) {
@@ -67,7 +70,14 @@ public class TerminerExplicationController extends Controller {
 			}
 		}
 
-		listeEquipes = playITService.obtenirEquipesParRang(partie);
+		Plateau plateau = partie.getPlateauCourant().getPlateau();
+		Map<Plateau, List<ScorePlateau>> mapScore = new HashMap<>();
+		for (Plateau p : partie.getPlateauxEnCours().stream()
+				.map(PlateauEnCours::getPlateau)
+				.toList()) {
+			List<ScorePlateau> listeScore = playITService.obtenirEquipesParRang(partie, p);
+			mapScore.put(p, listeScore);
+		}
 
 		JsonObject partieObject = new JsonObject();
 		partieObject.addProperty("id", partie.getId());
@@ -77,30 +87,65 @@ public class TerminerExplicationController extends Controller {
 		partieObject.addProperty("date", partie.getDate()
 				.toString());
 		partieObject.addProperty("finPlateau", finPlateau);
-		JsonObject dataObject = new JsonObject();
-		dataObject.add("partie", partieObject);
+		JsonObject dataObjectMdj = new JsonObject();
+		dataObjectMdj.add("partie", partieObject);
 
 		JsonArray listeEquipesJson = new JsonArray();
-		for (int i = 0; i < listeEquipes.size(); i++) {
-			Equipe equipe = listeEquipes.get(i);
+		List<ScorePlateau> listeScorePlateauEnCours = mapScore.get(plateau);
+		for (ScorePlateau score : listeScorePlateauEnCours) {
 			JsonObject equipeJson = new JsonObject();
-			equipeJson.addProperty("id", equipe.getId());
-			equipeJson.addProperty("nom", equipe.getNom());
-			equipeJson.addProperty("score", equipe.getScore());
-			equipeJson.addProperty("rang", i + 1);
+			equipeJson.addProperty("id", score.getEquipe()
+					.getId());
+			equipeJson.addProperty("nom", score.getEquipe()
+					.getNom());
+			equipeJson.addProperty("score", score.getScore());
+			equipeJson.addProperty("rang", score.getRang());
 			listeEquipesJson.add(equipeJson);
 		}
-		dataObject.add("listeEquipes", listeEquipesJson);
-		response.add("data", dataObject);
-
+		dataObjectMdj.add("listeEquipes", listeEquipesJson);
+		response.add("data", dataObjectMdj);
 		TextMessage responseMessage = new TextMessage(response.toString());
 		session.sendMessage(responseMessage);
 
-		response.addProperty("type", "notificationTerminerExplication");
-		responseMessage = new TextMessage(response.toString());
-		List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
+		// Envoi aux équipes :
 
+		JsonObject dataObjectEquipe = new JsonObject();
+		dataObjectEquipe.add("partie", partieObject);
+		List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
 		for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+			Long idEquipe = (Long) sessionEquipe.getAttributes()
+					.get("idEquipe");
+			Equipe equipe = playITService.trouverEquipeParId(idEquipe);
+
+			JsonObject equipeObject = new JsonObject();
+			equipeObject.addProperty("id", equipe.getId());
+			equipeObject.addProperty("nom", equipe.getNom());
+			equipeObject.addProperty("score", equipe.getScore());
+			JsonArray badgesArray = new JsonArray();
+			for (Map.Entry<Plateau, List<ScorePlateau>> entry : mapScore.entrySet()) {
+				Plateau p = entry.getKey();
+				List<ScorePlateau> listeScore = entry.getValue();
+				ScorePlateau score = listeScore.stream()
+						.filter(s -> s.getEquipe()
+								.getId()
+								.equals(idEquipe))
+						.findFirst()
+						.orElse(null);
+
+				JsonObject badgeObject = new JsonObject();
+				badgeObject.addProperty("plateau", p.getNom());
+				if (score != null && finPlateau) {
+					badgeObject.addProperty("rang", score.getCouleurBadge());
+				} else {
+					badgeObject.addProperty("rang", "noir");
+				}
+				badgesArray.add(badgeObject);
+			}
+			equipeObject.add("badges", badgesArray);
+			dataObjectEquipe.add("equipe", equipeObject);
+			response.add("data", dataObjectEquipe);
+			response.addProperty("type", "notificationTerminerExplication");
+			responseMessage = new TextMessage(response.toString());
 			sessionEquipe.sendMessage(responseMessage);
 		}
 
