@@ -28,7 +28,7 @@ public class SoumettreScoreMiniJeuController extends Controller {
         Partie partie = equipe.getPartie();
 
         JsonObject response = new JsonObject();
-        response.addProperty("type", "reponseSoumettreScoreMiniJeu");
+        response.addProperty("type", "reponseSoumettreScoreMinijeu");
         response.addProperty("succes", true);
         try {
             activiteEnCours = playITService.trouverActiviteEnCoursParId(idActiviteEnCours);
@@ -56,7 +56,7 @@ public class SoumettreScoreMiniJeuController extends Controller {
         session.sendMessage(responseMessage);
 
         JsonObject notification = new JsonObject();
-        notification.addProperty("type", "notificationScoreMiniJeu");
+        notification.addProperty("type", "notificationSoumettreScoreMinijeu");
         notification.addProperty("succes", true);
         JsonObject dataNotification = new JsonObject();
         JsonObject equipeObject = new JsonObject();
