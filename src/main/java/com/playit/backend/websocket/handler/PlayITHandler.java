@@ -14,10 +14,12 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.EtatPartie;
 import com.playit.backend.metier.model.MaitreDuJeu;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.service.PlayITService;
+import com.playit.backend.repository.EquipeRepository;
 import com.playit.backend.repository.PartieRepository;
 import com.playit.backend.websocket.RoleUtilisateurException;
 import com.playit.backend.websocket.controller.AttendreEquipesController;
@@ -40,6 +42,7 @@ import com.playit.backend.websocket.controller.SoumettreScoreMiniJeuController;
 import com.playit.backend.websocket.controller.TerminerExplicationController;
 import com.playit.backend.websocket.controller.TerminerMiniJeuController;
 import com.playit.backend.websocket.controller.TerminerPartieController;
+import com.playit.backend.websocket.controller.TokenController;
 import com.playit.backend.websocket.controller.ValiderCodePinController;
 
 @Component
@@ -49,6 +52,8 @@ public class PlayITHandler extends TextWebSocketHandler {
 	PlayITService playITService;
 	@Autowired
 	PartieRepository partieRepository;
+	@Autowired
+	EquipeRepository equipeRepository;
 
 	@Override
 	public void afterConnectionEstablished(@NonNull WebSocketSession session) throws IOException {
@@ -63,8 +68,9 @@ public class PlayITHandler extends TextWebSocketHandler {
 		System.out.println("Session closed: " + session.getId());
 		AssociationSessionsParties.retirerSession(session);
 
-		if (session.getAttributes()
-				.get("role") == SessionRole.MAITRE_DU_JEU) {
+		SessionRole role = (SessionRole) session.getAttributes()
+				.get("role");
+		if (role == SessionRole.MAITRE_DU_JEU) {
 			Long idMaitreDuJeu = (Long) session.getAttributes()
 					.get("idMaitreDuJeu");
 			MaitreDuJeu maitreDuJeu = playITService.trouverMaitreDuJeuParId(idMaitreDuJeu);
@@ -87,6 +93,10 @@ public class PlayITHandler extends TextWebSocketHandler {
 						.getEquipesParPartie(partieCourante);
 				TextMessage responseMessage = new TextMessage(response.toString());
 				for (WebSocketSession sessionEquipe : sessionsEquipes) {
+					Long idEquipe = (Long) sessionEquipe.getAttributes().get("idEquipe");
+					Equipe equipe = playITService.trouverEquipeParId(idEquipe);
+					equipe.setEstConnecte(false);
+					equipeRepository.saveAndFlush(equipe);
 					sessionEquipe.getAttributes()
 							.remove("idEquipe");
 					sessionEquipe.getAttributes()
@@ -94,6 +104,14 @@ public class PlayITHandler extends TextWebSocketHandler {
 					sessionEquipe.sendMessage(responseMessage);
 				}
 			}
+		} else if (role == SessionRole.EQUIPE) {
+			Long idEquipe = (Long) session.getAttributes()
+					.get("idEquipe");
+			Equipe equipe = playITService.trouverEquipeParId(idEquipe);
+			equipe.setEstConnecte(false);
+			equipeRepository.saveAndFlush(equipe);
+			session.getAttributes().put("role", SessionRole.ANONYME);
+			session.getAttributes().remove("idEquipe");
 		}
 	}
 
@@ -217,8 +235,13 @@ public class PlayITHandler extends TextWebSocketHandler {
 				controller = new SoumettreScoreMiniJeuController();
 				break;
 			}
+			case "token": {
+				controller = new TokenController();
+				break;
+			}
 			case "terminerMinijeu": {
 				controller = new TerminerMiniJeuController();
+				break;
 			}
 		}
 

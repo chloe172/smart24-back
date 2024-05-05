@@ -41,7 +41,6 @@ public class AuthentifierUtilisateurController extends Controller {
 		response.add("data", dataObject);
 
 		TextMessage responseMessage = new TextMessage(response.toString());
-		System.out.println("Message sent: " + responseMessage.getPayload());
 		session.sendMessage(responseMessage);
 
 		return;

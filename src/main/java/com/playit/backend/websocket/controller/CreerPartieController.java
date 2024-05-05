@@ -49,7 +49,17 @@ public class CreerPartieController extends Controller {
 
 		for (JsonElement plateauJson : listePlateauxJson) {
 			Long idPlateau = plateauJson.getAsLong();
-			Plateau plateau = playITService.trouverPlateauParId(idPlateau);
+			Plateau plateau = null;
+			try {
+				plateau = playITService.trouverPlateauParId(idPlateau);
+			} catch (NotFoundException e) {
+				response.addProperty("messageErreur", "Plateau non trouvé");
+				response.addProperty("codeErreur", 404);
+				response.addProperty("succes", false);
+				TextMessage responseMessage = new TextMessage(response.toString());
+				session.sendMessage(responseMessage);
+				return;
+			}
 			listePlateaux.add(plateau);
 		}
 
@@ -71,11 +81,9 @@ public class CreerPartieController extends Controller {
 		JsonObject partieObject = new JsonObject();
 		partieObject.addProperty("id", partie.getId());
 		partieObject.addProperty("nom", partie.getNom());
-		partieObject.addProperty("etat", partie.getEtat()
-				.toString());
+		partieObject.addProperty("etat", partie.getEtat().toString());
 		partieObject.addProperty("codePin", partie.getCodePin());
-		partieObject.addProperty("date", partie.getDate()
-				.toString());
+		partieObject.addProperty("date", partie.getDate().toString());
 		JsonObject dataObject = new JsonObject();
 		dataObject.add("partie", partieObject);
 		response.add("data", dataObject);

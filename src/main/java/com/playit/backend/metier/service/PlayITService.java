@@ -9,6 +9,7 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.playit.backend.metier.model.Activite;
@@ -60,14 +61,18 @@ public class PlayITService {
 	@Autowired
 	private SoumissionMiniJeuRepository soumissionMiniJeuRepository;
 
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
 	public MaitreDuJeu authentifier(String login, String mdp) {
 		Optional<MaitreDuJeu> result = this.maitreDuJeuRepository.findByNom(login);
 		if (result.isEmpty()) {
 			throw new IllegalArgumentException("Compte Maître du Jeu non trouvé");
 		}
-		if (!result.get()
-				.getMotDePasse()
-				.equals(mdp)) {
+		String motDePasseEncode = result.get().getMotDePasseEncode();
+		boolean matches = this.passwordEncoder.matches(mdp, motDePasseEncode);
+
+		if (!matches) {
 			throw new IllegalArgumentException("Erreur de mot de passe");
 		}
 		return result.get();
@@ -197,14 +202,14 @@ public class PlayITService {
 
 	public Equipe rejoindrePartieEquipe(Equipe equipe, Partie partie) {
 		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_RECONNEXION) {
-			throw new IllegalStateException("Impossible de reconnecter l'equipe");
+			throw new IllegalStateException("Impossible de reconnecter l'équipe");
 		}
 		Optional<Equipe> result = this.equipeRepository.findByIdAndPartie(equipe.getId(), partie);
 		if (result.isEmpty()) {
-			throw new IllegalStateException("Equipe non presente à la session precedente");
+			throw new IllegalStateException("Equipe non présente à la session précédente");
 		}
 		if (equipe.getEstConnecte() == true) {
-			throw new IllegalStateException("Equipe deja connecte à la session");
+			throw new IllegalStateException("Equipe déjà connecté à la session");
 		}
 		equipe.setEstConnecte(true);
 		this.equipeRepository.saveAndFlush(equipe);
