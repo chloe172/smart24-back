@@ -13,7 +13,7 @@ public interface SoumissionMiniJeuRepository extends JpaRepository<SoumissionMin
 
     Optional<SoumissionMiniJeu> findByMiniJeuAndEquipe(MiniJeu miniJeu, Equipe equipe);
 
-    @Query(value = "SELECT SUM(s.score) as score FROM equipe e JOIN soumission_mini_jeu s ON e.id = s.equipe_id JOIN activite_en_cours aec ON r.activite_en_cours_id = aec.id JOIN question q ON aec.activite_id = q.id JOIN plateau p ON q.plateau_id = p.id WHERE e.id = ? AND p.id = ?", nativeQuery = true)
+    @Query(value = "SELECT SUM(s.score) as score FROM equipe e JOIN soumission_mini_jeu s ON e.id = s.equipe_id JOIN mini_jeu mj ON s.mini_jeu_id = mj.id JOIN plateau p ON mj.plateau_id = p.id WHERE e.id = ? AND p.id = ?", nativeQuery = true)
     Optional<Integer> findScoreByEquipeAndPlateau(Long id, Long id2);
 
 }
