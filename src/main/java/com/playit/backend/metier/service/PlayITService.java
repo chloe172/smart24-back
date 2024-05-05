@@ -77,11 +77,6 @@ public class PlayITService {
 	}
 
 	public Partie creerPartie(String nom, MaitreDuJeu maitre, List<Plateau> listePlateaux) {
-		Optional<Partie> result = this.partieRepository.findByNom(nom);
-		if (result.isPresent()) {
-			throw new IllegalStateException("Nom de partie déjà pris");
-		}
-
 		Partie partie = new Partie(nom);
 		partie.setPlateaux(listePlateaux);
 		partie.setMaitreDuJeu(maitre);
