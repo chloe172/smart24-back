@@ -86,6 +86,7 @@ public class LancerActiviteController extends Controller {
 			questionJson.add("listePropositions", listePropositionsJson);
 			dataObject.add("question", questionJson);
 			dataObject.addProperty("idActiviteEnCours", activiteEnCours.getId());
+			dataObject.addProperty("nomPlateauCourant", partie.getPlateauCourant().getPlateau().getNom());
 			dataObject.addProperty("typeActivite", "question");
 			response.add("data", dataObject);
 

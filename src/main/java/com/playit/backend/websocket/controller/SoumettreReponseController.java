@@ -135,6 +135,7 @@ public class SoumettreReponseController extends Controller {
 			dataObject.addProperty("idActiviteEnCours", activiteEnCours.getId());
 			dataObject.addProperty("typeActivite", "question");
 			dataObject.add("question", questionJson);
+			dataObject.addProperty("nomPlateauCourant", partie.getPlateauCourant().getPlateau().getNom());
 			notification.add("data", dataObject);
 
 			// Envoi du message aux equipes : bonne proposition uniquement
@@ -146,14 +147,21 @@ public class SoumettreReponseController extends Controller {
 			List<ScorePlateau> listeScore = playITService.obtenirEquipesParRang(partie, plateau);
 
 			for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
+				Long id = (Long) sessionEquipe.getAttributes().get("idEquipe");
+				Equipe equipeSession = null;
+				try {
+					equipeSession = playITService.trouverEquipeParId(id);
+				} catch (NotFoundException e) {
+					continue;
+				}
+				final Equipe equipeSessinoFinal = equipeSession;
 				JsonObject equipeJson = new JsonObject();
-				equipeJson.addProperty("id", equipe.getId());
-				equipeJson.addProperty("nom", equipe.getNom());
-				final Equipe e = equipe;
+				equipeJson.addProperty("id", equipeSessinoFinal.getId());
+				equipeJson.addProperty("nom", equipeSessinoFinal.getNom());
 				int scoreEquipePlateauCourant = listeScore.stream()
 						.filter(s -> s.getEquipe()
 								.getId()
-								.equals(e.getId()))
+								.equals(equipeSessinoFinal.getId()))
 						.findFirst()
 						.get()
 						.getScore();
