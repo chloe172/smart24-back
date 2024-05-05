@@ -13,16 +13,16 @@ import com.playit.backend.metier.model.Activite;
 import com.playit.backend.metier.model.ActiviteEnCours;
 import com.playit.backend.metier.model.MiniJeu;
 import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.model.Plateau;
 import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.model.Question;
+import com.playit.backend.metier.model.ScorePlateau;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.AssociationSessionsParties;
 import com.playit.backend.websocket.handler.PartieThreadAttente;
 import com.playit.backend.websocket.handler.SessionRole;
-
-import jakarta.websocket.Decoder.Text;
 
 public class LancerActiviteController extends Controller {
 
@@ -102,6 +102,8 @@ public class LancerActiviteController extends Controller {
 
 				playITService.passerEnModeExplication(partie);
 				Partie finPartie = playITService.trouverPartieParId(idPartie);
+				Plateau plateau = partie.getPlateauCourant().getPlateau();
+				List<ScorePlateau> listeScore = playITService.obtenirEquipesParRang(partie, plateau);
 
 				Proposition bonneProposition = question.getBonneProposition();
 				JsonObject bonnePropositionObject = new JsonObject();
@@ -113,20 +115,25 @@ public class LancerActiviteController extends Controller {
 				questionJson.add("bonneProposition", bonnePropositionObject);
 				dataObject.add("question", questionJson);
 				response.add("data", dataObject);
-				
+
 				for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
 					Long idEquipe = (Long) sessionEquipe.getAttributes().get("idEquipe");
 					Equipe equipe = null;
 					try {
 						equipe = playITService.trouverEquipeParId(idEquipe);
 					} catch (NotFoundException e) {
-						return;
+						continue;
 					}
-					System.out.print("equipe"+equipe.getId());
 					JsonObject equipeJson = new JsonObject();
 					equipeJson.addProperty("id", equipe.getId());
 					equipeJson.addProperty("nom", equipe.getNom());
-					equipeJson.addProperty("score", equipe.getScore());
+					final Equipe finalEquipe = equipe; // Pour fix un problème de portée askip
+					int score = listeScore.stream()
+							.filter(scorePlateau -> scorePlateau.getEquipe().getId().equals(finalEquipe.getId()))
+							.findFirst()
+							.map(ScorePlateau::getScore)
+							.orElse(0);
+					equipeJson.addProperty("score", score);
 					dataObject.add("equipe", equipeJson);
 					TextMessage bonnePropositionMessage = new TextMessage(response.toString());
 					try {
@@ -144,7 +151,12 @@ public class LancerActiviteController extends Controller {
 					JsonObject equipeJson = new JsonObject();
 					equipeJson.addProperty("id", equipe.getId());
 					equipeJson.addProperty("nom", equipe.getNom());
-					equipeJson.addProperty("score", equipe.getScore());
+					int score = listeScore.stream()
+							.filter(scorePlateau -> scorePlateau.getEquipe().getId().equals(equipe.getId()))
+							.findFirst()
+							.map(ScorePlateau::getScore)
+							.orElse(0);
+					equipeJson.addProperty("score", score);
 					equipeJson.addProperty("avatar", equipe.getAvatar().toString());
 					if (i == 0) {
 						equipeJson.addProperty("rang", "1er");
