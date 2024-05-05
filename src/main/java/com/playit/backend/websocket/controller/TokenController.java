@@ -36,7 +36,6 @@ public class TokenController extends Controller {
             WebSocketSession associatedSession = TokenSessionAssociation.getSession(token);
             if (associatedSession == null) {
                 TokenSessionAssociation.addSession(session);
-                TokenSessionAssociation.addSession(associatedSession);
                 JsonObject response = new JsonObject();
                 response.addProperty("type", "reponseToken");
                 response.addProperty("succes", false);

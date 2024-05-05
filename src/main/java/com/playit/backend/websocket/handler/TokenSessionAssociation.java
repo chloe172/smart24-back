@@ -11,7 +11,7 @@ public class TokenSessionAssociation {
 
     public static String addSession(WebSocketSession session) {
         for (Map.Entry<String, WebSocketSession> entry : tokenSessionMap.entrySet()) {
-            if (entry.getValue().equals(session)) {
+            if (session.equals(entry.getValue())) {
                 return entry.getKey();
             }
         }
