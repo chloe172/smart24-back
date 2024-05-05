@@ -186,7 +186,7 @@ public class LancerActiviteController extends Controller {
 			miniJeuJson.addProperty("id", miniJeu.getId());
 			miniJeuJson.addProperty("intitule", miniJeu.getIntitule());
 			miniJeuJson.addProperty("code", miniJeu.getCode());
-			dataObject.add("miniJeu", miniJeuJson);
+			dataObject.add("minijeu", miniJeuJson);
 			dataObject.addProperty("idActiviteEnCours", activiteEnCours.getId());
 			dataObject.addProperty("typeActivite", "minijeu");
 			response.add("data", dataObject);
