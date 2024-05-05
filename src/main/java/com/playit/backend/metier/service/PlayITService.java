@@ -202,14 +202,14 @@ public class PlayITService {
 
 	public Equipe rejoindrePartieEquipe(Equipe equipe, Partie partie) {
 		if (partie.getEtat() != EtatPartie.ATTENTE_EQUIPE_RECONNEXION) {
-			throw new IllegalStateException("Impossible de reconnecter l'equipe");
+			throw new IllegalStateException("Impossible de reconnecter l'équipe");
 		}
 		Optional<Equipe> result = this.equipeRepository.findByIdAndPartie(equipe.getId(), partie);
 		if (result.isEmpty()) {
-			throw new IllegalStateException("Equipe non presente à la session precedente");
+			throw new IllegalStateException("Equipe non présente à la session précédente");
 		}
 		if (equipe.getEstConnecte() == true) {
-			throw new IllegalStateException("Equipe deja connecte à la session");
+			throw new IllegalStateException("Equipe déjà connecté à la session");
 		}
 		equipe.setEstConnecte(true);
 		this.equipeRepository.saveAndFlush(equipe);
