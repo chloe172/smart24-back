@@ -9,19 +9,13 @@ import org.springframework.web.socket.WebSocketSession;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.playit.backend.metier.model.Activite;
-import com.playit.backend.metier.model.ActiviteEnCours;
 import com.playit.backend.metier.model.Equipe;
-import com.playit.backend.metier.model.MiniJeu;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Plateau;
-import com.playit.backend.metier.model.Proposition;
-import com.playit.backend.metier.model.Question;
 import com.playit.backend.metier.model.ScorePlateau;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.AssociationSessionsParties;
-import com.playit.backend.websocket.handler.PartieThreadAttente;
 import com.playit.backend.websocket.handler.SessionRole;
 
 public class TerminerMiniJeuController extends Controller {
@@ -33,7 +27,7 @@ public class TerminerMiniJeuController extends Controller {
 		Long idPartie = idPartieObjet.getAsLong();
 
 		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseTerminerMiniJeu");
+		response.addProperty("type", "reponseTerminerMinijeu");
 		response.addProperty("succes", true);
 
 		Partie partie;

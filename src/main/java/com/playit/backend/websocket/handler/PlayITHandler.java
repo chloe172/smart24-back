@@ -217,7 +217,7 @@ public class PlayITHandler extends TextWebSocketHandler {
 				controller = new SoumettreScoreMiniJeuController();
 				break;
 			}
-			case "terminerMiniJeu": {
+			case "terminerMinijeu": {
 				controller = new TerminerMiniJeuController();
 			}
 		}
