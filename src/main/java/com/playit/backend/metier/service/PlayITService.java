@@ -9,6 +9,7 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.playit.backend.metier.model.Activite;
@@ -60,14 +61,18 @@ public class PlayITService {
 	@Autowired
 	private SoumissionMiniJeuRepository soumissionMiniJeuRepository;
 
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
 	public MaitreDuJeu authentifier(String login, String mdp) {
 		Optional<MaitreDuJeu> result = this.maitreDuJeuRepository.findByNom(login);
 		if (result.isEmpty()) {
 			throw new IllegalArgumentException("Compte Maître du Jeu non trouvé");
 		}
-		if (!result.get()
-				.getMotDePasse()
-				.equals(mdp)) {
+		String motDePasseEncode = result.get().getMotDePasseEncode();
+		boolean matches = this.passwordEncoder.matches(mdp, motDePasseEncode);
+
+		if (!matches) {
 			throw new IllegalArgumentException("Erreur de mot de passe");
 		}
 		return result.get();

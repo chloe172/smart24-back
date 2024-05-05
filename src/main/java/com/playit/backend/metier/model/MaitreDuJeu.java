@@ -17,7 +17,7 @@ public class MaitreDuJeu {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	private String nom;
-	private String motDePasse;
+	private String motDePasseEncode;
 
 	@OneToMany(mappedBy = "maitreDuJeu", fetch = FetchType.EAGER)
 	private List<Partie> listeParties = new ArrayList<>();
@@ -27,7 +27,7 @@ public class MaitreDuJeu {
 
 	public MaitreDuJeu(String nom, String motDePasse) {
 		this.nom = nom;
-		this.motDePasse = motDePasse;
+		this.motDePasseEncode = motDePasse;
 	}
 
 	public Long getId() {
@@ -42,12 +42,12 @@ public class MaitreDuJeu {
 		this.nom = nom;
 	}
 
-	public String getMotDePasse() {
-		return this.motDePasse;
+	public String getMotDePasseEncode() {
+		return this.motDePasseEncode;
 	}
 
-	public void setMotDePasse(String motDePasse) {
-		this.motDePasse = motDePasse;
+	public void setMotDePasseEncode(String motDePasse) {
+		this.motDePasseEncode = motDePasse;
 	}
 
 	public List<Partie> getListeParties() {
