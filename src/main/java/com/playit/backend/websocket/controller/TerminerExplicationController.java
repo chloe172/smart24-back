@@ -92,7 +92,6 @@ public class TerminerExplicationController extends Controller {
 
 		JsonArray listeEquipesJson = new JsonArray();
 		List<ScorePlateau> listeScorePlateauEnCours = mapScore.get(plateau);
-		int i = 1;
 		for (ScorePlateau score : listeScorePlateauEnCours) {
 			JsonObject equipeJson = new JsonObject();
 			equipeJson.addProperty("id", score.getEquipe()
@@ -100,15 +99,14 @@ public class TerminerExplicationController extends Controller {
 			equipeJson.addProperty("nom", score.getEquipe()
 					.getNom());
 			equipeJson.addProperty("score", score.getScore());
-			if(score.getRang()==1){
-				equipeJson.addProperty("rang", score.getRang()+ "er");
+			if (score.getRang() == 1) {
+				equipeJson.addProperty("rang", score.getRang() + "er");
 			} else {
-				equipeJson.addProperty("rang", score.getRang()+"ème");
+				equipeJson.addProperty("rang", score.getRang() + "ème");
 			}
 			equipeJson.addProperty("avatar", score.getEquipe()
 					.getAvatar().toString());
 			listeEquipesJson.add(equipeJson);
-			i++;
 		}
 		dataObjectMdj.add("listeEquipes", listeEquipesJson);
 		response.add("data", dataObjectMdj);

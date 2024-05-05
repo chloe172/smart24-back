@@ -10,8 +10,10 @@ import com.google.gson.JsonObject;
 import com.playit.backend.metier.model.ActiviteEnCours;
 import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.Partie;
+import com.playit.backend.metier.model.Plateau;
 import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.model.Question;
+import com.playit.backend.metier.model.ScorePlateau;
 import com.playit.backend.metier.service.NotFoundException;
 import com.playit.backend.metier.service.PlayITService;
 import com.playit.backend.websocket.handler.AssociationSessionsParties;
@@ -140,17 +142,27 @@ public class SoumettreReponseController extends Controller {
 			questionJson.add("bonneProposition", bonnePropositionObject);
 			dataObject.add("question", questionJson);
 			notification.add("data", dataObject);
-			
+			Plateau plateau = partie.getPlateauCourant().getPlateau();
+			List<ScorePlateau> listeScore = playITService.obtenirEquipesParRang(partie, plateau);
+
 			for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
 				JsonObject equipeJson = new JsonObject();
 				equipeJson.addProperty("id", equipe.getId());
 				equipeJson.addProperty("nom", equipe.getNom());
-				equipeJson.addProperty("score", equipe.getScore());
+				final Equipe e = equipe;
+				int scoreEquipePlateauCourant = listeScore.stream()
+						.filter(s -> s.getEquipe()
+								.getId()
+								.equals(e.getId()))
+						.findFirst()
+						.get()
+						.getScore();
+				equipeJson.addProperty("score", scoreEquipePlateauCourant);
 				dataObject.add("equipe", equipeJson);
 				TextMessage bonnePropositionMessage = new TextMessage(notification.toString());
 				try {
 					sessionEquipe.sendMessage(bonnePropositionMessage);
-				} catch (Exception e) {
+				} catch (Exception ex) {
 				}
 			}
 
@@ -163,7 +175,14 @@ public class SoumettreReponseController extends Controller {
 				JsonObject equipeJson = new JsonObject();
 				equipeJson.addProperty("id", e.getId());
 				equipeJson.addProperty("nom", e.getNom());
-				equipeJson.addProperty("score", e.getScore());
+				int scoreEquipePlateauCourant = listeScore.stream()
+						.filter(scorePlateau -> scorePlateau.getEquipe()
+								.getId()
+								.equals(e.getId()))
+						.findFirst()
+						.get()
+						.getScore();
+				equipeJson.addProperty("score", scoreEquipePlateauCourant);
 				equipeJson.addProperty("avatar", e.getAvatar().toString());
 				if (i == 0) {
 					equipeJson.addProperty("rang", "1er");
