@@ -87,6 +87,7 @@ public class TerminerExplicationController extends Controller {
 		partieObject.addProperty("date", partie.getDate()
 				.toString());
 		partieObject.addProperty("finPlateau", finPlateau);
+		partieObject.addProperty("nomPlateauCourant", partie.getPlateauCourant().getPlateau().getNom());
 		JsonObject dataObjectMdj = new JsonObject();
 		dataObjectMdj.add("partie", partieObject);
 
