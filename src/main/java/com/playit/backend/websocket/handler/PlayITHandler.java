@@ -92,6 +92,10 @@ public class PlayITHandler extends TextWebSocketHandler {
 						.getEquipesParPartie(partieCourante);
 				TextMessage responseMessage = new TextMessage(response.toString());
 				for (WebSocketSession sessionEquipe : sessionsEquipes) {
+					Long idEquipe = (Long) sessionEquipe.getAttributes().get("idEquipe");
+					Equipe equipe = playITService.trouverEquipeParId(idEquipe);
+					equipe.setEstConnecte(false);
+					equipeRepository.saveAndFlush(equipe);
 					sessionEquipe.getAttributes()
 							.remove("idEquipe");
 					sessionEquipe.getAttributes()
@@ -105,6 +109,8 @@ public class PlayITHandler extends TextWebSocketHandler {
 			Equipe equipe = playITService.trouverEquipeParId(idEquipe);
 			equipe.setEstConnecte(false);
 			equipeRepository.saveAndFlush(equipe);
+			session.getAttributes().put("role", SessionRole.ANONYME);
+			session.getAttributes().remove("idEquipe");
 		}
 	}
 
