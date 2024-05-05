@@ -3,6 +3,7 @@ package com.playit.backend.metier.model;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,7 +19,7 @@ public class MaitreDuJeu {
 	private String nom;
 	private String motDePasse;
 
-	@OneToMany(mappedBy = "maitreDuJeu")
+	@OneToMany(mappedBy = "maitreDuJeu", fetch = FetchType.EAGER)
 	private List<Partie> listeParties = new ArrayList<>();
 
 	public MaitreDuJeu() {
