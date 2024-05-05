@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,7 +26,6 @@ public class Partie {
 
 	private String codePin;
 
-	@Column(unique = true)
 	private String nom;
 
 	@Temporal(TemporalType.TIMESTAMP)
