@@ -1,6 +1,7 @@
 package com.playit.backend.config;
 
 import java.io.FileInputStream;
+import java.text.DecimalFormat;
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
@@ -124,7 +125,13 @@ public class ExcelParser {
                     int percentage = (int) (numericValue * 100);
                     return String.valueOf(percentage) + "%";
                 } else {
-                    return String.valueOf(numericValue);
+                    String format;
+                    if (numericValue % 1 == 0) {
+                        format = "#";
+                    } else {
+                        format = "#.##";
+                    }
+                    return new DecimalFormat(format).format(numericValue);
                 }
             }
 
