@@ -54,8 +54,8 @@ public class ExcelParser {
                     String explication = getCellAString(row.getCell(8));
                     // Lire la premiere colonne, selon le type, créer la question ou le mini-jeu
 
-                    switch (type) {
-                        case "Question":
+                    switch (type.toLowerCase()) {
+                        case "question":
                             DifficulteActivite difficulte = DifficulteActivite.getDifficulteFromString(niveau);
                             Question question = new Question();
                             question.setDifficulte(difficulte);
@@ -86,7 +86,7 @@ public class ExcelParser {
                             System.out.println(path + " : Question " + intitule + " ajoutée");
                             break;
 
-                        case "Mini jeu":
+                        case "mini jeu":
                             MiniJeu miniJeu = new MiniJeu();
                             miniJeu.setDifficulte(DifficulteActivite.getDifficulteFromString(niveau));
                             miniJeu.setIntitule(intitule);
