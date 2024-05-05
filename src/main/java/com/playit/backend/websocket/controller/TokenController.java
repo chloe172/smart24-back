@@ -55,6 +55,8 @@ public class TokenController extends Controller {
                 response.addProperty("type", "reponseToken");
                 response.addProperty("succes", true);
                 JsonObject dataResponse = new JsonObject();
+                SessionRole role = (SessionRole) associatedSession.getAttributes().get("role");
+                dataResponse.addProperty("role", role.toString());
                 response.add("data", dataResponse);
                 TextMessage message = new TextMessage(response.toString());
                 session.sendMessage(message);
