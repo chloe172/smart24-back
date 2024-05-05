@@ -10,8 +10,8 @@ import jakarta.persistence.ManyToOne;
 public class PlateauEnCours {
 
     @Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     @ManyToOne
     private Partie partie;
@@ -36,7 +36,7 @@ public class PlateauEnCours {
     public void setPlateau(Plateau plateau) {
         this.plateau = plateau;
     }
-    
+
     public Activite getProchaineActivite() {
         if (dernierIndice >= plateau.getListeActivites().size()) {
             return null;

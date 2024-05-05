@@ -36,6 +36,7 @@ import com.playit.backend.websocket.controller.MettreEnPauseController;
 import com.playit.backend.websocket.controller.ModifierEquipeController;
 import com.playit.backend.websocket.controller.RejoindrePartieEquipeController;
 import com.playit.backend.websocket.controller.SoumettreReponseController;
+import com.playit.backend.websocket.controller.SoumettreScoreMiniJeuController;
 import com.playit.backend.websocket.controller.TerminerExplicationController;
 import com.playit.backend.websocket.controller.TerminerPartieController;
 import com.playit.backend.websocket.controller.ValiderCodePinController;
@@ -209,6 +210,10 @@ public class PlayITHandler extends TextWebSocketHandler {
 			}
 			case "rejoindrePartieEquipe": {
 				controller = new RejoindrePartieEquipeController();
+				break;
+			}
+			case "soumettreScoreMinijeu": {
+				controller = new SoumettreScoreMiniJeuController();
 				break;
 			}
 		}

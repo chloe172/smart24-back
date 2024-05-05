@@ -17,6 +17,7 @@ import com.playit.backend.metier.model.Avatar;
 import com.playit.backend.metier.model.Equipe;
 import com.playit.backend.metier.model.EtatPartie;
 import com.playit.backend.metier.model.MaitreDuJeu;
+import com.playit.backend.metier.model.MiniJeu;
 import com.playit.backend.metier.model.Partie;
 import com.playit.backend.metier.model.Plateau;
 import com.playit.backend.metier.model.PlateauEnCours;
@@ -24,6 +25,7 @@ import com.playit.backend.metier.model.Proposition;
 import com.playit.backend.metier.model.Question;
 import com.playit.backend.metier.model.Reponse;
 import com.playit.backend.metier.model.ScorePlateau;
+import com.playit.backend.metier.model.SoumissionMiniJeu;
 import com.playit.backend.repository.ActiviteEnCoursRepository;
 import com.playit.backend.repository.EquipeRepository;
 import com.playit.backend.repository.MaitreDuJeuRepository;
@@ -32,6 +34,7 @@ import com.playit.backend.repository.PlateauEnCoursRepository;
 import com.playit.backend.repository.PlateauRepository;
 import com.playit.backend.repository.PropositionRepository;
 import com.playit.backend.repository.ReponseRepository;
+import com.playit.backend.repository.SoumissionMiniJeuRepository;
 
 @Service
 public class PlayITService {
@@ -54,6 +57,8 @@ public class PlayITService {
 	private PropositionRepository propositionRepository;
 	@Autowired
 	private PlateauEnCoursRepository plateauEnCoursRepository;
+	@Autowired
+	private SoumissionMiniJeuRepository soumissionMiniJeuRepository;
 
 	public MaitreDuJeu authentifier(String login, String mdp) {
 		Optional<MaitreDuJeu> result = this.maitreDuJeuRepository.findByNom(login);
@@ -267,6 +272,34 @@ public class PlayITService {
 		return score;
 	}
 
+	public void soumettreScoreMiniJeu(Partie partie, ActiviteEnCours activiteEnCours, Equipe equipe, int score) {
+		if (partie.getEtat() != EtatPartie.ACTIVITE_EN_COURS) {
+			throw new IllegalStateException("Impossible de soumettre une réponse");
+		}
+
+		Activite activite = activiteEnCours.getActivite();
+		if (!(activite instanceof MiniJeu)) {
+			throw new IllegalStateException("L'activité n'est pas un mini jeu !");
+		}
+
+		MiniJeu miniJeu = (MiniJeu) activite;
+
+		Optional<SoumissionMiniJeu> soumissionExistante = this.soumissionMiniJeuRepository
+				.findByMiniJeuAndEquipe(miniJeu, equipe);
+		if (soumissionExistante.isPresent()) {
+			throw new IllegalStateException("L'équipe a déjà soumis une réponse pour ce mini jeu");
+		}
+
+		SoumissionMiniJeu soumissionMiniJeu = new SoumissionMiniJeu();
+		soumissionMiniJeu.setEquipe(equipe);
+		soumissionMiniJeu.setMiniJeu(miniJeu);
+		soumissionMiniJeu.setScore(score);
+		this.soumissionMiniJeuRepository.saveAndFlush(soumissionMiniJeu);
+
+		equipe.ajouterScore(score);
+		this.equipeRepository.saveAndFlush(equipe);
+	}
+
 	public void choisirPlateau(Partie partie, Plateau plateau) {
 		if (partie.getEtat() != EtatPartie.CHOIX_PLATEAU) {
 			throw new IllegalStateException("Impossible de sélectionner un plateau");
@@ -346,8 +379,13 @@ public class PlayITService {
 		List<Pair<Equipe, Integer>> scores = new ArrayList<>();
 		for (Equipe e : partie.getEquipesConnectees()) {
 			Integer score = this.reponseRepository.findScoreByEquipeAndPlateau(e.getId(), plateau.getId());
+			Optional<Integer> scoreMiniJeu = this.soumissionMiniJeuRepository.findScoreByEquipeAndPlateau(e.getId(),
+					plateau.getId());
 			if (score == null) {
 				score = 0;
+			}
+			if (scoreMiniJeu.isPresent()) {
+				score += scoreMiniJeu.get();
 			}
 			scores.add(Pair.of(e, score));
 		}
