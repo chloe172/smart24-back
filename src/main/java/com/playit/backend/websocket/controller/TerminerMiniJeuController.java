@@ -56,7 +56,7 @@ public class TerminerMiniJeuController extends Controller {
         Plateau plateau = partie.getPlateauCourant().getPlateau();
         List<ScorePlateau> listeScore = playITService.obtenirEquipesParRang(partie, plateau);
         dataObject.addProperty("nomPlateauCourant", plateau.getNom());
-        dataObject.addProperty("typeActivite", "question");
+        dataObject.addProperty("typeActivite", "finMinijeu");
 
         for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
             Long idEquipe = (Long) sessionEquipe.getAttributes().get("idEquipe");
@@ -77,6 +77,7 @@ public class TerminerMiniJeuController extends Controller {
                     .orElse(0);
             equipeJson.addProperty("score", score);
             dataObject.add("equipe", equipeJson);
+            response.add("data", dataObject);
             TextMessage miniJeuMessage = new TextMessage(response.toString());
             try {
                 sessionEquipe.sendMessage(miniJeuMessage);

@@ -312,10 +312,6 @@ public class PlayITService {
 				.findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("Le plateau n'appartient pas à la partie"));
 
-		if (plateauEnCours.estTermine()) {
-			throw new IllegalStateException("Le plateau est déjà terminé");
-		}
-
 		partie.setEtat(EtatPartie.ATTENTE_ACTIVITE);
 		partie.setPlateauCourant(plateauEnCours);
 		this.partieRepository.saveAndFlush(partie);
