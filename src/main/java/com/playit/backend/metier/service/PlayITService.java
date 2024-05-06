@@ -209,7 +209,7 @@ public class PlayITService {
 			throw new IllegalStateException("Equipe non présente à la session précédente");
 		}
 		if (equipe.getEstConnecte() == true) {
-			throw new IllegalStateException("Equipe déjà connecté à la session");
+			throw new IllegalStateException("Equipe déjà connectée à la session");
 		}
 		equipe.setEstConnecte(true);
 		this.equipeRepository.saveAndFlush(equipe);

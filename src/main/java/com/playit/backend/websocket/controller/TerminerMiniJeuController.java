@@ -1,6 +1,5 @@
 package com.playit.backend.websocket.controller;
 
-import java.time.Duration;
 import java.util.List;
 
 import org.springframework.web.socket.TextMessage;
@@ -21,38 +20,38 @@ import com.playit.backend.websocket.handler.SessionRole;
 public class TerminerMiniJeuController extends Controller {
 
     public void handleRequest(WebSocketSession session, JsonObject data, PlayITService playITService) throws Exception {
-		this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
+        this.userHasRoleOrThrow(session, SessionRole.MAITRE_DU_JEU);
 
-		JsonElement idPartieObjet = data.get("idPartie");
-		Long idPartie = idPartieObjet.getAsLong();
+        JsonElement idPartieObjet = data.get("idPartie");
+        Long idPartie = idPartieObjet.getAsLong();
 
-		JsonObject response = new JsonObject();
-		response.addProperty("type", "reponseTerminerMinijeu");
-		response.addProperty("succes", true);
+        JsonObject response = new JsonObject();
+        response.addProperty("type", "reponseTerminerMinijeu");
+        response.addProperty("succes", true);
 
-		Partie partie;
-		try {
-			partie = playITService.trouverPartieParId(idPartie);
-		} catch (NotFoundException e) {
-			response.addProperty("messageErreur", "Partie non trouvée");
-			response.addProperty("codeErreur", 404);
-			response.addProperty("succes", false);
-			TextMessage responseMessage = new TextMessage(response.toString());
-			session.sendMessage(responseMessage);
-			return;
-		}
+        Partie partie;
+        try {
+            partie = playITService.trouverPartieParId(idPartie);
+        } catch (NotFoundException e) {
+            response.addProperty("messageErreur", "Partie non trouvée");
+            response.addProperty("codeErreur", 404);
+            response.addProperty("succes", false);
+            TextMessage responseMessage = new TextMessage(response.toString());
+            session.sendMessage(responseMessage);
+            return;
+        }
 
         TextMessage reponseTerminerMessage = new TextMessage(response.toString());
         try {
             session.sendMessage(reponseTerminerMessage);
         } catch (Exception e) {
         }
-        
-        response.addProperty("type", "notificationReponseActivite");
-		List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
-		JsonObject dataObject = new JsonObject();
 
-		playITService.passerEnModeExplication(partie);
+        response.addProperty("type", "notificationReponseActivite");
+        List<WebSocketSession> listeSocketSessionsEquipes = AssociationSessionsParties.getEquipesParPartie(partie);
+        JsonObject dataObject = new JsonObject();
+
+        playITService.passerEnModeExplication(partie);
         Plateau plateau = partie.getPlateauCourant().getPlateau();
         List<ScorePlateau> listeScore = playITService.obtenirEquipesParRang(partie, plateau);
         dataObject.addProperty("nomPlateauCourant", plateau.getNom());
@@ -118,6 +117,5 @@ public class TerminerMiniJeuController extends Controller {
         }
 
     }
-
 
 }
