@@ -47,8 +47,10 @@ public class TokenController extends Controller {
 
             } else { // une session est déjà associée à ce token
                 for (Map.Entry<String, Object> entry : associatedSession.getAttributes().entrySet()) {
+                    System.out.println(entry.getKey() + " : " + entry.getValue());
                     session.getAttributes().put(entry.getKey(), entry.getValue());
                 }
+                TokenSessionAssociation.addSession(session, token);
 
                 JsonObject response = new JsonObject();
                 response.addProperty("type", "reponseToken");
