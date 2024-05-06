@@ -52,6 +52,7 @@ public class LancerActiviteController extends Controller {
 		ActiviteEnCours activiteEnCours;
 		try {
 			activiteEnCours = playITService.lancerActivite(partie);
+			System.out.println("score activite"+activiteEnCours.getActivite().getDifficulte().getPoints());
 			// TODO : vérifier qu'il y a un plateau sélectionné
 		} catch (IllegalStateException e) {
 			response.addProperty("messageErreur", e.getMessage());

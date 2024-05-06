@@ -68,6 +68,7 @@ public class TerminerMiniJeuController extends Controller {
             JsonObject equipeJson = new JsonObject();
             equipeJson.addProperty("id", equipe.getId());
             equipeJson.addProperty("nom", equipe.getNom());
+			equipeJson.addProperty("avatar", equipe.getAvatar().toString());
             final Equipe finalEquipe = equipe; // Pour fix un problème de portée askip
             int score = listeScore.stream()
                     .filter(scorePlateau -> scorePlateau.getEquipe().getId().equals(finalEquipe.getId()))
