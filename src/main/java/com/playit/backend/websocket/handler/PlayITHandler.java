@@ -131,6 +131,12 @@ public class PlayITHandler extends TextWebSocketHandler {
 					TextMessage responseMessage = new TextMessage(response.toString());
 					sessionMaitreDuJeu.sendMessage(responseMessage);
 
+					List<WebSocketSession> sessionsEquipes = AssociationSessionsParties
+							.getEquipesParPartie(partie);
+					for (WebSocketSession s : sessionsEquipes) {
+						s.sendMessage(responseMessage);
+					}
+
 					if (etatPartie == EtatPartie.ATTENTE_EQUIPE_INSCRIPTION) {
 						playITService.supprimerEquipe(equipe);
 					}
