@@ -22,7 +22,7 @@ public class Equipe {
 
 	private int score;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Partie partie;
 
 	@Enumerated(EnumType.STRING)
