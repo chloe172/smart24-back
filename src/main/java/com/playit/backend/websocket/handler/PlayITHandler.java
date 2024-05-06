@@ -110,6 +110,39 @@ public class PlayITHandler extends TextWebSocketHandler {
 			Equipe equipe = playITService.trouverEquipeParId(idEquipe);
 			equipe.setEstConnecte(false);
 			equipeRepository.saveAndFlush(equipe);
+
+			Partie partie = equipe.getPartie();
+			if (partie != null) {
+				EtatPartie etatPartie = partie.getEtat();
+				if (etatPartie == EtatPartie.ATTENTE_EQUIPE_RECONNEXION
+						|| etatPartie == EtatPartie.ATTENTE_EQUIPE_INSCRIPTION) {
+					JsonObject response = new JsonObject();
+					JsonObject dataObject = new JsonObject();
+					JsonObject equipeObject = new JsonObject();
+					equipeObject.addProperty("id", equipe.getId());
+					equipeObject.addProperty("nom", equipe.getNom());
+					equipeObject.addProperty("avatar", equipe.getAvatar().toString());
+					dataObject.add("equipe", equipeObject);
+					response.addProperty("type", "notificationDeconnexionEquipe");
+					response.addProperty("succes", true);
+					response.add("data", dataObject);
+					WebSocketSession sessionMaitreDuJeu = AssociationSessionsParties
+							.getMaitreDuJeuPartie(partie);
+					TextMessage responseMessage = new TextMessage(response.toString());
+					sessionMaitreDuJeu.sendMessage(responseMessage);
+
+					List<WebSocketSession> sessionsEquipes = AssociationSessionsParties
+							.getEquipesParPartie(partie);
+					for (WebSocketSession s : sessionsEquipes) {
+						s.sendMessage(responseMessage);
+					}
+
+					if (etatPartie == EtatPartie.ATTENTE_EQUIPE_INSCRIPTION) {
+						playITService.supprimerEquipe(equipe);
+					}
+				}
+			}
+
 			session.getAttributes().put("role", SessionRole.ANONYME);
 			session.getAttributes().remove("idEquipe");
 		}
