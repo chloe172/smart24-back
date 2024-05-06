@@ -158,6 +158,7 @@ public class SoumettreReponseController extends Controller {
 				JsonObject equipeJson = new JsonObject();
 				equipeJson.addProperty("id", equipeSessinoFinal.getId());
 				equipeJson.addProperty("nom", equipeSessinoFinal.getNom());
+				equipeJson.addProperty("avatar", equipeSessinoFinal.getAvatar().toString());
 				int scoreEquipePlateauCourant = listeScore.stream()
 						.filter(s -> s.getEquipe()
 								.getId()
@@ -213,6 +214,7 @@ public class SoumettreReponseController extends Controller {
 		equipeObject.addProperty("id", equipe.getId());
 		equipeObject.addProperty("nom", equipe.getNom());
 		equipeObject.addProperty("score", equipe.getScore());
+		equipeObject.addProperty("avatar", equipe.getAvatar().toString());
 		reponseObject.add("equipe", equipeObject);
 		JsonObject propositionObject = new JsonObject();
 		propositionObject.addProperty("id", proposition.getId());
