@@ -21,7 +21,7 @@ public class PlayITConfig {
 		return args -> {
 			String motDePasseEncode = encoder().encode("1234");
 			maitreDuJeuRepository.save(new MaitreDuJeu("admin@volvo.fr", motDePasseEncode));
-			maitreDuJeuRepository.save(new MaitreDuJeu("admin1@volvo.fr", motDePasseEncode));
+			maitreDuJeuRepository.save(new MaitreDuJeu("admin2@volvo.fr", motDePasseEncode));
 			maitreDuJeuRepository.save(new MaitreDuJeu("admin3@volvo.fr", motDePasseEncode));
 			maitreDuJeuRepository.flush();
 			System.out.println("Maitres du jeu ajoutés");
