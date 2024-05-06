@@ -36,6 +36,7 @@ import com.playit.backend.websocket.controller.ListerPlateauxController;
 import com.playit.backend.websocket.controller.ListerPlateauxPartieController;
 import com.playit.backend.websocket.controller.MettreEnPauseController;
 import com.playit.backend.websocket.controller.ModifierEquipeController;
+import com.playit.backend.websocket.controller.ObtenirClassementGeneralController;
 import com.playit.backend.websocket.controller.RejoindrePartieEquipeController;
 import com.playit.backend.websocket.controller.SoumettreReponseController;
 import com.playit.backend.websocket.controller.SoumettreScoreMiniJeuController;
@@ -274,6 +275,10 @@ public class PlayITHandler extends TextWebSocketHandler {
 			}
 			case "terminerMinijeu": {
 				controller = new TerminerMiniJeuController();
+				break;
+			}
+			case "obtenirClassementGeneral": {
+				controller = new ObtenirClassementGeneralController();
 				break;
 			}
 		}

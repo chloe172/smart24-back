@@ -125,9 +125,15 @@ public class TerminerExplicationController extends Controller {
 			Equipe equipe = playITService.trouverEquipeParId(idEquipe);
 
 			JsonObject equipeObject = new JsonObject();
+			ScorePlateau scoreEquipe = listeScorePlateauEnCours.stream()
+					.filter(s -> s.getEquipe()
+							.getId()
+							.equals(idEquipe))
+					.findFirst()
+					.orElse(null);
 			equipeObject.addProperty("id", equipe.getId());
 			equipeObject.addProperty("nom", equipe.getNom());
-			equipeObject.addProperty("score", equipe.getScore());
+			equipeObject.addProperty("score", scoreEquipe.getScore());
 			equipeObject.addProperty("avatar", equipe
 					.getAvatar().toString());
 			int rang = listeScorePlateauEnCours.stream()
