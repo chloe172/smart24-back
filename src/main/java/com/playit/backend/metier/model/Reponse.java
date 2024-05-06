@@ -40,16 +40,18 @@ public class Reponse {
 	public int calculerScoreEquipe() {
 		Question question = ((Question) this.activiteEnCours.getActivite());
 		Proposition bonneProposition = question.getBonneProposition();
-		if (bonneProposition.getId()==this.proposition.getId()) {
+		System.out.println("id "+ bonneProposition.getId()+ " "+this.proposition.getId());
+		if (bonneProposition.getId().equals(this.proposition.getId())) {
 			int scoreMax = question.getScore();
 			this.scoreEquipe = scoreMax / 2;
-
+			System.out.println("scoreMax"+ scoreMax);
 			LocalDateTime debutQuestion = this.activiteEnCours.getDate();
 			Duration dureeQuestion = question.getTemps();
 			LocalDateTime finQuestion = debutQuestion.plus(dureeQuestion);
 			// Normalisation du temps restant
 			Duration tempsRestant = Duration.between(this.dateSoumission, finQuestion);
 			double coefficient = (double) tempsRestant.toSeconds() / dureeQuestion.toSeconds();
+			System.out.println("coeff"+ coefficient);
 			this.scoreEquipe += coefficient * (scoreMax / 2.0);
 		} else {
 			this.scoreEquipe = 0;

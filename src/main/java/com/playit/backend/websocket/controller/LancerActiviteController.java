@@ -52,6 +52,7 @@ public class LancerActiviteController extends Controller {
 		ActiviteEnCours activiteEnCours;
 		try {
 			activiteEnCours = playITService.lancerActivite(partie);
+			System.out.println("score activite"+activiteEnCours.getActivite().getDifficulte().getPoints());
 			// TODO : vérifier qu'il y a un plateau sélectionné
 		} catch (IllegalStateException e) {
 			response.addProperty("messageErreur", e.getMessage());
@@ -103,8 +104,8 @@ public class LancerActiviteController extends Controller {
 
 				playITService.passerEnModeExplication(partie);
 				Partie finPartie = playITService.trouverPartieParId(idPartie);
-				Plateau plateau = partie.getPlateauCourant().getPlateau();
-				List<ScorePlateau> listeScore = playITService.obtenirEquipesParRang(partie, plateau);
+				Plateau plateau = finPartie.getPlateauCourant().getPlateau();
+				List<ScorePlateau> listeScores = playITService.obtenirEquipesParRang(finPartie, plateau);
 
 				Proposition bonneProposition = question.getBonneProposition();
 				JsonObject bonnePropositionObject = new JsonObject();
@@ -129,12 +130,13 @@ public class LancerActiviteController extends Controller {
 					equipeJson.addProperty("id", equipe.getId());
 					equipeJson.addProperty("nom", equipe.getNom());
 					final Equipe finalEquipe = equipe; // Pour fix un problème de portée askip
-					int score = listeScore.stream()
+					int score = listeScores.stream()
 							.filter(scorePlateau -> scorePlateau.getEquipe().getId().equals(finalEquipe.getId()))
 							.findFirst()
 							.map(ScorePlateau::getScore)
 							.orElse(0);
 					equipeJson.addProperty("score", score);
+					equipeJson.addProperty("avatar", equipe.getAvatar().toString());
 					dataObject.add("equipe", equipeJson);
 					TextMessage bonnePropositionMessage = new TextMessage(response.toString());
 					try {
@@ -146,14 +148,14 @@ public class LancerActiviteController extends Controller {
 				// Envoi au maitre du jeu : bonne proposition et explication
 				questionJson.addProperty("explication", question.getExplication());
 				JsonArray listeEquipesJson = new JsonArray();
-				List<Equipe> listeEquipes = playITService.obtenirEquipesParRang(finPartie);
-				for (int i = 0; i < listeEquipes.size(); i++) {
-					Equipe equipe = listeEquipes.get(i);
+				for (int i = 0; i < listeScores.size(); i++) {
+					ScorePlateau scorePlateau = listeScores.get(i);
+					Equipe equipe = scorePlateau.getEquipe();
 					JsonObject equipeJson = new JsonObject();
 					equipeJson.addProperty("id", equipe.getId());
 					equipeJson.addProperty("nom", equipe.getNom());
-					int score = listeScore.stream()
-							.filter(scorePlateau -> scorePlateau.getEquipe().getId().equals(equipe.getId()))
+					int score = listeScores.stream()
+							.filter(sp -> sp.getEquipe().getId().equals(equipe.getId()))
 							.findFirst()
 							.map(ScorePlateau::getScore)
 							.orElse(0);
@@ -164,7 +166,6 @@ public class LancerActiviteController extends Controller {
 					} else {
 						equipeJson.addProperty("rang", i + 1 + "ème");
 					}
-
 					listeEquipesJson.add(equipeJson);
 				}
 				dataObject.add("listeEquipes", listeEquipesJson);

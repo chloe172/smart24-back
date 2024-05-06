@@ -89,6 +89,7 @@ public class SoumettreReponseController extends Controller {
 		int score = 0;
 		try {
 			score = playITService.soumettreReponse(partie, equipe, proposition, activiteEnCours);
+			System.out.println("score BD"+score);
 		} catch (IllegalStateException | IllegalArgumentException e) {
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 422);
@@ -144,7 +145,7 @@ public class SoumettreReponseController extends Controller {
 			dataObject.add("question", questionJson);
 			notification.add("data", dataObject);
 			Plateau plateau = partie.getPlateauCourant().getPlateau();
-			List<ScorePlateau> listeScore = playITService.obtenirEquipesParRang(partie, plateau);
+			List<ScorePlateau> listeScores = playITService.obtenirEquipesParRang(partie, plateau);
 
 			for (WebSocketSession sessionEquipe : listeSocketSessionsEquipes) {
 				Long id = (Long) sessionEquipe.getAttributes().get("idEquipe");
@@ -158,7 +159,8 @@ public class SoumettreReponseController extends Controller {
 				JsonObject equipeJson = new JsonObject();
 				equipeJson.addProperty("id", equipeSessinoFinal.getId());
 				equipeJson.addProperty("nom", equipeSessinoFinal.getNom());
-				int scoreEquipePlateauCourant = listeScore.stream()
+				equipeJson.addProperty("avatar", equipeSessinoFinal.getAvatar().toString());
+				int scoreEquipePlateauCourant = listeScores.stream()
 						.filter(s -> s.getEquipe()
 								.getId()
 								.equals(equipeSessinoFinal.getId()))
@@ -177,27 +179,24 @@ public class SoumettreReponseController extends Controller {
 			// Envoi au maitre du jeu : bonne proposition et explication
 			questionJson.addProperty("explication", question.getExplication());
 			JsonArray listeEquipesJson = new JsonArray();
-			List<Equipe> listeEquipes = playITService.obtenirEquipesParRang(partie);
-			for (int i = 0; i < listeEquipes.size(); i++) {
-				Equipe e = listeEquipes.get(i);
+			for (int i = 0; i < listeScores.size(); i++) {
+				ScorePlateau scorePlateau = listeScores.get(i);
+				Equipe equipeMDJ = scorePlateau.getEquipe();
 				JsonObject equipeJson = new JsonObject();
-				equipeJson.addProperty("id", e.getId());
-				equipeJson.addProperty("nom", e.getNom());
-				int scoreEquipePlateauCourant = listeScore.stream()
-						.filter(scorePlateau -> scorePlateau.getEquipe()
-								.getId()
-								.equals(e.getId()))
+				equipeJson.addProperty("id", equipeMDJ.getId());
+				equipeJson.addProperty("nom", equipeMDJ.getNom());
+				int scoreMDJ = listeScores.stream()
+						.filter(sp -> sp.getEquipe().getId().equals(equipeMDJ.getId()))
 						.findFirst()
-						.get()
-						.getScore();
-				equipeJson.addProperty("score", scoreEquipePlateauCourant);
-				equipeJson.addProperty("avatar", e.getAvatar().toString());
+						.map(ScorePlateau::getScore)
+						.orElse(0);
+				equipeJson.addProperty("score", scoreMDJ);
+				equipeJson.addProperty("avatar", equipeMDJ.getAvatar().toString());
 				if (i == 0) {
 					equipeJson.addProperty("rang", "1er");
 				} else {
 					equipeJson.addProperty("rang", i + 1 + "ème");
 				}
-
 				listeEquipesJson.add(equipeJson);
 			}
 			dataObject.add("listeEquipes", listeEquipesJson);
@@ -212,7 +211,16 @@ public class SoumettreReponseController extends Controller {
 		JsonObject equipeObject = new JsonObject();
 		equipeObject.addProperty("id", equipe.getId());
 		equipeObject.addProperty("nom", equipe.getNom());
-		equipeObject.addProperty("score", equipe.getScore());
+		Plateau plateau = partie.getPlateauCourant().getPlateau();
+		List<ScorePlateau> listeScores = playITService.obtenirEquipesParRang(partie, plateau);
+		final Equipe equipefinal = equipe;
+		score = listeScores.stream()
+						.filter(sp -> sp.getEquipe().getId().equals(equipefinal.getId()))
+						.findFirst()
+						.map(ScorePlateau::getScore)
+						.orElse(0);
+		equipeObject.addProperty("score", score);
+		equipeObject.addProperty("avatar", equipe.getAvatar().toString());
 		reponseObject.add("equipe", equipeObject);
 		JsonObject propositionObject = new JsonObject();
 		propositionObject.addProperty("id", proposition.getId());
