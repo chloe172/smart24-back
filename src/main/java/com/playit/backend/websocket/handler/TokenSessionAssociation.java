@@ -20,6 +20,10 @@ public class TokenSessionAssociation {
         return token;
     }
 
+    public static void addSession(WebSocketSession session, String token) {
+        tokenSessionMap.put(token, session);
+    }
+
     public static WebSocketSession getSession(String token) {
         return tokenSessionMap.get(token);
     }
