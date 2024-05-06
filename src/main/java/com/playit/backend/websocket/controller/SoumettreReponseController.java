@@ -89,7 +89,6 @@ public class SoumettreReponseController extends Controller {
 		int score = 0;
 		try {
 			score = playITService.soumettreReponse(partie, equipe, proposition, activiteEnCours);
-			System.out.println("score BD"+score);
 		} catch (IllegalStateException | IllegalArgumentException e) {
 			response.addProperty("succes", false);
 			response.addProperty("codeErreur", 422);
@@ -101,7 +100,6 @@ public class SoumettreReponseController extends Controller {
 
 		boolean arreter = playITService.verifierSoumissionParToutesLesEquipes(activiteEnCours);
 		if (arreter) {
-			System.out.println("Toutes les équipes ont soumis leur réponse");
 			PartieThreadAttente.stopThread(partie);
 			JsonObject notification = new JsonObject();
 			notification.addProperty("type", "notificationReponseActivite");

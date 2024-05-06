@@ -262,7 +262,6 @@ public class PlayITService {
 		LocalDateTime tempsLimite = activiteEnCours.getDate()
 				.plus(dureeQuestion);
 		Reponse reponse = new Reponse();
-		System.out.println("dureeQuestion" + tempsLimite.toString());
 
 		if (reponse.getDateSoumission()
 				.isAfter(tempsLimite)) {
@@ -271,12 +270,7 @@ public class PlayITService {
 		reponse.setEquipe(equipe);
 		reponse.setProposition(proposition);
 		activiteEnCours.addReponse(reponse);
-		System.out.println("activite en cours" + activiteEnCours.getActivite().getDifficulte().getPoints());
-		System.out.println("reponse" + reponse.getDateSoumission().toString());
-		System.out.println("proposition " + proposition.getId());
-
 		int score = reponse.calculerScoreEquipe();
-
 		equipe.ajouterScore(score);
 
 		this.reponseRepository.saveAndFlush(reponse);
